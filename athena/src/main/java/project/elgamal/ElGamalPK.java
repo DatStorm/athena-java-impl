@@ -3,11 +3,19 @@ package project.elgamal;
 import java.math.BigInteger;
 
 public class ElGamalPK {
-    private BigInteger g;
-    private BigInteger h;
+    private GroupDescription group;
+    private BigInteger h; //g^sk
 
-    public ElGamalPK(BigInteger g, BigInteger h) {
-        this.g = g;
+    public ElGamalPK(GroupDescription group, BigInteger h) {
+        this.group = group;
         this.h = h;
+    }
+
+    public BigInteger getH() {
+        return h;
+    }
+
+    public GroupDescription getGroup() {
+        return this.group;
     }
 }

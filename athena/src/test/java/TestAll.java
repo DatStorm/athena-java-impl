@@ -7,8 +7,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitPlatform.class)
 @SelectPackages("")
-@IncludeTags({"TestsSigma1"
-//        "TestBits",
+@IncludeTags({"TestsSigma1",
+        "TestElgamal",
 //        "TestObliviousTransfer",
 //        "offline.TestBitMatrix",
 //        "offline.TestEncryption"

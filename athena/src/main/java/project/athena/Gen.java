@@ -9,6 +9,7 @@ import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
 
 import java.math.BigInteger;
+import java.util.Random;
 
 public class Gen {
     private final ElGamal elGamal;
@@ -18,16 +19,18 @@ public class Gen {
             throw new RuntimeException("Gen() => Coins r is null");
         }
         if(kappa == 0){
-            throw new RuntimeException("Gen() => kappa is null");
+            throw new RuntimeException("Gen() => kappa is 0");
         }
 
-        this.elGamal = new ElGamal(CONSTANTS.ELGAMAL_BIT_LENGTH);
+        this.elGamal = new ElGamal(kappa, new Random(r.getValue()));
+    }
 
-        System.err.println("COINS AND KAPPA NOT USED!!");
+    public ElGamal getElGamal() {
+        return elGamal;
     }
 
     public PK_SK_FRAKM generate() {
-        ElGamalSK sk = elGamal.generateSk();
+        ElGamalSK sk = elGamal.generateSK();
         ElGamalPK pk = elGamal.generatePk(sk);
 
         BigInteger start = BigInteger.ONE;
