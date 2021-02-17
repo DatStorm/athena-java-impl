@@ -18,6 +18,7 @@ import java.util.Random;
 @SelectPackages("")
 @IncludeTags({"TestsSigma1",
         "TestElgamal",
+        "TestsSigma3",
 //        "TestObliviousTransfer",
 //        "offline.TestBitMatrix",
 //        "offline.TestEncryption"

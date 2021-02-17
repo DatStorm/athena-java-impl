@@ -1,6 +1,8 @@
 package sigmas;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.athena.Gen;
@@ -21,6 +23,8 @@ import java.util.Random;
 
 import static org.junit.Assert.assertTrue;
 
+@Tag("TestsSigma3")
+@DisplayName("Test Sigma3")
 public class TestSigma3 {
     private final int kappa = CONSTANTS.KAPPA;
     private Sigma3 sigma3;
@@ -89,8 +93,6 @@ public class TestSigma3 {
 
         boolean check2 = sigma3.checkPart2(c1, r, b, z, c,p);
         assertTrue("Verify check2", check2);
-
-
     }
 
 
