@@ -48,26 +48,29 @@ public class ElGamal {
      * Generating El Gamal encryption on a message msg using public key pk
      * @param msg bigint in range [0; 2^bitlength -1]
      */
-//    public Tuple encrypt(BigInteger msg, ElGamalPK pk) {
-//        if (msg.bitLength() > bitLength) {
-//            throw new IllegalArgumentException("BigInteger, of length " + msg.bitLength() +", too long for " + bitLength + " bit ElGamal");
-//        }
-//
-//        if (msg.signum() == -1) {
-//                throw new IllegalArgumentException("BigInteger must be positive. Was " + msg);
-//        }
-//        // Check for 0 invalid
-//
-//        // Extract public key
-//        BigInteger g = pk.g;
-//        BigInteger h = pk.h;
-//
-//        // sample random r
-//        BigInteger r = new BigInteger(p.bitCount() - 1, this.random);
-//
-//        // C = (g^r, m·h^r)
-//        return new Tuple(g.modPow(r, p), msg.multiply(h.modPow(r, p)).mod(p).add(p).mod(p));
-//    }
+    public CipherText encrypt(BigInteger msg, ElGamalPK pk) {
+        BigInteger p = pk.getGroup().getP();
+        int bitLength = p.bitLength();
+        
+        if (msg.bitLength() > bitLength) {
+            throw new IllegalArgumentException("BigInteger, of length " + msg.bitLength() +", too long for " + bitLength + " bit ElGamal");
+        }
+
+        if (msg.signum() == -1) {
+                throw new IllegalArgumentException("BigInteger must be positive. Was " + msg);
+        }
+        // Check for 0 invalid
+
+        // Extract public key
+        BigInteger g = pk.getGroup().getG();
+        BigInteger h = pk.getH();
+
+        // sample random r
+        BigInteger r = new BigInteger(p.bitCount() - 1, this.random);
+
+        // C = (g^r, m·h^r)
+        return new CipherText(g.modPow(r, p), msg.multiply(h.modPow(r, p)).mod(p).add(p).mod(p));
+    }
 //
 //
 //    // Decrypting El Gamal encryption using secret key

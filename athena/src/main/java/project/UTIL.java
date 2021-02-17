@@ -36,7 +36,7 @@ public class UTIL {
         boolean gIsInAllowedRange;
         BigInteger g = null;
         do {
-            // Sample random number g between 1 and p
+            // Sample random number g between 0 and 2^{numbits} -1
             g = new BigInteger(to.bitLength(), random);
 
             //Check range
