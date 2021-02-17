@@ -58,9 +58,13 @@ public class TestSigma1 {
     void TestFRAKM() {
 
         BigInteger start = BigInteger.ONE;
-        BigInteger end = elGamal.getP().subtract(BigInteger.ONE);
+        BigInteger end = BigInteger.valueOf(100);
         FRAKM frakm = new FRAKM(start, end);
-        assertEquals(frakm, true);
+        assertTrue("2 should be in range [1, 100]", frakm.isInRange(BigInteger.TWO));
+        assertTrue("1 should be in range [1, 100]", frakm.isInRange(BigInteger.ONE));
+        assertTrue("100 should be in range [1, 100]", frakm.isInRange(BigInteger.valueOf(100)));
+        assertFalse("101 should be in range [1, 100]", frakm.isInRange(BigInteger.valueOf(101)));
+        assertFalse("0 should be in range [1, 100]", frakm.isInRange(BigInteger.ZERO));
     }
 
     @Test
@@ -115,8 +119,33 @@ public class TestSigma1 {
         BigInteger yj = y1_yk.get(j);
 
         boolean verify = sigma1.checkStep3(coinFlipInfo_pairs, s1_sk, y1_yk, g, p, yj);
-        assertTrue("fi ?=? F_i(ri,b_A_i)", verify);
+        assertTrue("bi=0 g^si = yi :: bi=1 g^si = yiyj^-1", verify);
     }
+
+    @Test
+    void TestProveKey_Verify_step4() throws IOException {
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk_sk_m.getPK(), this.pk_sk_m.getFRAKM());
+        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
+        ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
+        ArrayList<BigInteger> s1_sk = rho.getS1_Sk();
+        ArrayList<BigInteger> y1_yk = rho.getY1_Yk();
+
+        // index j
+        int j = UTIL.findFirstOne(coinFlipInfo_pairs, 1); // find index j
+
+        // bigints g,p,h,yj,zeta
+        BigInteger g = publicInfoSigma1.getPK().getGroup().getG();
+        BigInteger p = publicInfoSigma1.getPK().getGroup().getP();
+        BigInteger h = publicInfoSigma1.getPK().getH();
+        BigInteger yj = y1_yk.get(j);
+        BigInteger zeta = rho.getZeta();
+
+        boolean verify = sigma1.checkStep4(g, h, p, yj, zeta);
+        assertTrue("g^zeta ?=? hy_j^-1", verify);
+    }
+
+
+
 
 
 

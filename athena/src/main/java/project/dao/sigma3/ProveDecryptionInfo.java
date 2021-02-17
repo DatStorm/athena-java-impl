@@ -8,6 +8,6 @@ import java.util.List;
 
 public class ProveDecryptionInfo {
     public ElGamalPK pk;
-    public List<CipherText> cipherTextList;
-    public List<BigInteger> plainTextList;
+    public CipherText cipherText;
+    public BigInteger plainText;
 }

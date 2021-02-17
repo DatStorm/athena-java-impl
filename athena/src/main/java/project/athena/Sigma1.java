@@ -151,7 +151,6 @@ public class Sigma1 {
         // index j
         int j = UTIL.findFirstOne(coinFlipInfoPairs, 1); // find index j
 
-
         // bigints g,p,yj
         BigInteger g = publicInfoSigma1.getPK().getGroup().getG();
         BigInteger p = publicInfoSigma1.getPK().getGroup().getP();
@@ -171,9 +170,9 @@ public class Sigma1 {
         return checkStep2 && checkStep3 && checkStep4;
     }
 
-    private boolean checkStep4(BigInteger g, BigInteger h, BigInteger p, BigInteger yj, BigInteger zeta) {
-        BigInteger hyi = h.multiply(yj.modInverse(p));
-        return (g.modPow(zeta, p).compareTo(hyi.mod(p))) == 0;
+    public boolean checkStep4(BigInteger g, BigInteger h, BigInteger p, BigInteger yj, BigInteger zeta) {
+        BigInteger hyi = h.multiply(yj.modInverse(p)).mod(p);
+        return (g.modPow(zeta, p).compareTo(hyi)) == 0;
     }
 
     public boolean checkStep3(ArrayList<CoinFlipInfo> coinFlipInfoPairs, ArrayList<BigInteger> s1_sk, ArrayList<BigInteger> y1_yk, BigInteger g, BigInteger p, BigInteger yj) {
@@ -188,11 +187,11 @@ public class Sigma1 {
             BigInteger g_pow_si = g.modPow(si, p);
             if (bi) {
                 // b_i = 1 => g^s_i ?=? y_iy_j^-1
-                BigInteger yiyj_inverse = yi.multiply(yj.modInverse(p));
+                BigInteger yiyj_inverse = yi.multiply(yj.modInverse(p)).mod(p);
                 equality = g_pow_si.compareTo(yiyj_inverse) == 0;
             } else {
                 // b_i = 0 => g^s_i ?=? y_i
-                equality = g_pow_si.compareTo(yi) == 0;
+                equality = g_pow_si.compareTo(yi.mod(p)) == 0;
             }
 
             if (!equality){

@@ -28,16 +28,21 @@ public class UTIL {
 
     // Generate random element in range [1,p[
     public static BigInteger getRandomElement(BigInteger p, Random random) {
+        return getRandomElement(BigInteger.ZERO, p, random);
+    }
+
+    // Generate random element in range [from, to[
+    public static BigInteger getRandomElement(BigInteger from, BigInteger to, Random random) {
         boolean gIsInAllowedRange;
         BigInteger g = null;
         do {
             // Sample random number g between 1 and p
-            g = new BigInteger(p.bitLength(), random);
+            g = new BigInteger(to.bitLength(), random);
 
             //Check range
-            boolean gIsGreaterThatZero = g.compareTo(BigInteger.ZERO) == 1;
-            boolean gIsLesserThanP = g.compareTo(p) == -1;
-            gIsInAllowedRange = gIsGreaterThatZero && gIsLesserThanP;
+            boolean gIsGreaterEqualThanFrom = g.compareTo(from) >= 0;
+            boolean gIsLesserThanTo = g.compareTo(to) == -1;
+            gIsInAllowedRange = gIsGreaterEqualThanFrom && gIsLesserThanTo;
         } while (!gIsInAllowedRange);
 
         return g;
