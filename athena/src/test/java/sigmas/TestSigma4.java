@@ -40,8 +40,11 @@ public class TestSigma4 {
     }
 
 
+    /**
+     * START HERE FUCKERSS!!!!!!!!!!
+     */
     @Test
-    void TestSigma4_step2_Tally_single() {
+    void TestSigma4_Tally_single() {
         //(c1,c2) = (b1^n,b2^n)
         BigInteger p = pk.getGroup().getP();
 
