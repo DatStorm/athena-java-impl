@@ -7,6 +7,7 @@ public class ElGamalSK {
     private BigInteger sk;
 
     public ElGamalSK(GroupDescription group, BigInteger sk) {
+        this.group = group;
         this.sk = sk;
     }
 

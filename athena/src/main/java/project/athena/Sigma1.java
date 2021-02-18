@@ -22,7 +22,6 @@ public class Sigma1 {
     private MessageDigest hashFunctionH;
 
     public Sigma1(MessageDigest hashFunctionH) {
-
         this.hashFunctionH = hashFunctionH;
     }
 

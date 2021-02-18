@@ -15,6 +15,8 @@ import project.dao.sigma1.ProveKeyInfo;
 import project.dao.sigma1.PublicInfoSigma1;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
+import project.factory.Factory;
+import project.factory.MainFactory;
 
 
 import java.io.IOException;
@@ -30,27 +32,20 @@ import static org.junit.Assert.*;
 @Tag("TestsSigma1")
 @DisplayName("Test Sigma1")
 public class TestSigma1 {
-
     private final int kappa = CONSTANTS.KAPPA;
-    private SK_R sk_r;
-    private PK_SK_FRAKM pk_sk_m;
+    private ElGamalPK pk;
+    private FRAKM frakm;
     private Sigma1 sigma1;
-    private ElGamal elGamal;
-
+    private SK_R sk_r;
 
     @BeforeEach
-    void setUp() throws NoSuchAlgorithmException {
-        MessageDigest sha3_256 = MessageDigest.getInstance("SHA3-256");
-        Random random = new Random(0);
-        Randomness r = new Randomness(random.nextLong());
-
-        Gen gen = new Gen(r, kappa);
-
-        sigma1 = new Sigma1(sha3_256);
-        elGamal = gen.getElGamal();
-
-        this.pk_sk_m = gen.generate();
-        this.sk_r = new SK_R(this.pk_sk_m.getSK(), r);
+    void setUp() {
+        
+        Factory factory = new MainFactory();
+        this.pk = factory.getPK();
+        this.frakm = factory.getFRAKM();
+        this.sk_r = factory.getSK_R();
+        this.sigma1 = new Sigma1(factory.getHash());
 
     }
 
@@ -95,7 +90,7 @@ public class TestSigma1 {
      */
     @Test
     void TestProveKey_Verify_step2() throws IOException {
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk_sk_m.getPK(), this.pk_sk_m.getFRAKM());
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk, this.frakm);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         boolean verify = sigma1.checkStep2(coinFlipInfo_pairs);
@@ -104,7 +99,7 @@ public class TestSigma1 {
 
     @Test
     void TestProveKey_Verify_step3() throws IOException {
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk_sk_m.getPK(), this.pk_sk_m.getFRAKM());
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk, frakm);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         ArrayList<BigInteger> s1_sk = rho.getS1_Sk();
@@ -124,7 +119,7 @@ public class TestSigma1 {
 
     @Test
     void TestProveKey_Verify_step4() throws IOException {
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk_sk_m.getPK(), this.pk_sk_m.getFRAKM());
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk, frakm);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         ArrayList<BigInteger> s1_sk = rho.getS1_Sk();
@@ -152,8 +147,7 @@ public class TestSigma1 {
     @Test
     void TestProveKey_Verify() throws IOException {
 
-        ElGamalPK pk = this.pk_sk_m.getPK();
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, pk, this.pk_sk_m.getFRAKM());
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, pk, this.frakm);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
         boolean verification = sigma1.VerifyKey(publicInfoSigma1, rho, this.kappa);
 
@@ -164,9 +158,9 @@ public class TestSigma1 {
 
 
     @Test
-    void TestValues() throws IOException {
+    void TestSigma1() throws IOException {
 
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk_sk_m.getPK(), this.pk_sk_m.getFRAKM());
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk, this.frakm);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
         boolean verification = sigma1.VerifyKey(publicInfoSigma1, rho, this.kappa);
 

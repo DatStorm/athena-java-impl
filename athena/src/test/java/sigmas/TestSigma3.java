@@ -15,6 +15,8 @@ import project.elgamal.CipherText;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
+import project.factory.Factory;
+import project.factory.MainFactory;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -33,20 +35,18 @@ public class TestSigma3 {
 
 
     @BeforeEach
-    void setUp() throws NoSuchAlgorithmException {
-        MessageDigest sha3_256 = MessageDigest.getInstance("SHA3-256");
-        sigma3 = new Sigma3(sha3_256);
+    void setUp() {
+        Factory factory = new MainFactory();
+        ElGamal elGamal = factory.getElgamal();
+        ElGamalPK pk = factory.getPK();
+        sk = factory.getSK();
+        sigma3 = new Sigma3(factory.getHash());
 
-        Gen gen = new Gen(new Randomness(new Random(0).nextLong()), kappa);
-        PK_SK_FRAKM pk_sk_frakm = gen.generate();
-        ElGamalPK pk = pk_sk_frakm.getPK();
-        ElGamal elGamal = gen.getElGamal();
-        sk = pk_sk_frakm.getSK();
+        BigInteger msg_m = new BigInteger("491");
 
-        BigInteger plainText = new BigInteger("491");
 
-        CipherText cipherText = elGamal.encrypt(plainText, pk);
-        info = new PublicInfoSigma3(pk, cipherText, plainText);
+        CipherText cipherText = elGamal.encrypt(msg_m, pk);
+        info = new PublicInfoSigma3(pk, cipherText, msg_m);
     }
 
 
@@ -101,6 +101,14 @@ public class TestSigma3 {
     void TestSigma3() {
         DecryptionProof decryptionProof = sigma3.proveDecryption(info, sk, kappa);
         boolean verification = sigma3.verifyDecryption(info, decryptionProof, kappa);
+        assertTrue("Should be 1", verification);
+
+    }
+
+    @Test
+    void TestSigma3New() {
+        DecryptionProof decryptionProof = sigma3.proveDecryptionNew(info.cipherText, info.plainText, sk, kappa);
+        boolean verification = sigma3.verifyDecryptionNew(info.cipherText, info.plainText, sk.getPK(), decryptionProof, kappa);
         assertTrue("Should be 1", verification);
 
     }

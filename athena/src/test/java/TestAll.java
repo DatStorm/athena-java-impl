@@ -16,9 +16,12 @@ import java.util.Random;
 
 @RunWith(JUnitPlatform.class)
 @SelectPackages("")
-@IncludeTags({"TestsSigma1",
+@IncludeTags({
         "TestElgamal",
+        "TestsSigma1",
+        "TestsSigma2",
         "TestsSigma3",
+        "TestsSigma4",
 //        "TestObliviousTransfer",
 //        "offline.TestBitMatrix",
 //        "offline.TestEncryption"

@@ -4,9 +4,9 @@ import java.math.BigInteger;
 
 // Used for sending the ElGamal description over network
 public class GroupDescription {
-    BigInteger g;
-    BigInteger q;
-    BigInteger p;
+    public final BigInteger g;
+    public final BigInteger q;
+    public final BigInteger p;
 
     GroupDescription(BigInteger g, BigInteger p, BigInteger q) {
         this.g = g;
