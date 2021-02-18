@@ -2,8 +2,8 @@ package project.athena;
 
 import com.google.common.primitives.Bytes;
 import project.UTIL;
-import project.dao.sigma3.PublicInfoSigma3;
-import project.dao.sigma3.DecryptionProof;
+import project.dao.sigma3.Sigma3Statement;
+import project.dao.sigma3.Sigma3Proof;
 import project.elgamal.CipherText;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
@@ -14,15 +14,23 @@ import java.security.SecureRandom;
 import java.util.Random;
 
 public class Sigma3 {
-
-
     private MessageDigest hashH;
 
     public Sigma3(MessageDigest hashH) {
         this.hashH = hashH;
     }
 
-    public DecryptionProof proveLogEquality(PublicInfoSigma3 info, ElGamalSK sk, int kappa) {
+    // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
+    public Sigma3Proof proveDecryption(CipherText ciphertext, BigInteger plaintext, ElGamalSK sk, int kappa) {
+        return proveLogEquality(createStatement(sk.getPK(),ciphertext,plaintext), sk, kappa);
+    }
+
+
+    public boolean verifyDecryption(CipherText ciphertext, BigInteger plaintext, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
+        return verifyLogEquality(createStatement(pk,ciphertext,plaintext), decProof, kappa);
+    }
+
+    public Sigma3Proof proveLogEquality(Sigma3Statement info, ElGamalSK sk, int kappa) {
         Random random = new SecureRandom();
         BigInteger p = info.group.p;
         BigInteger q = info.group.q;
@@ -45,112 +53,10 @@ public class Sigma3 {
         BigInteger r = s.add(alpha_c).mod(q); //r = s + c*sk
 
         // ProveDecryptionInfo
-        return new DecryptionProof(a, b, r);
+        return new Sigma3Proof(a, b, r);
     }
 
-    // (pk, c', N), sk, k)
-    // prove h=g^sk  ===  m^sk
-    public DecryptionProof proveDecryption(PublicInfoSigma3 info, ElGamalSK sk, int kappa) {
-        Random random = new SecureRandom();
-
-        BigInteger g = info.pk.getGroup().getG();
-        BigInteger p = info.pk.getGroup().getP();
-        BigInteger q = info.pk.getGroup().getQ();
-        BigInteger h = info.pk.getH();
-
-        BigInteger c1 = info.cipherText.c1;
-
-        BigInteger m = info.plainText;
-        BigInteger c2 = info.cipherText.c2;
-
-        //Step 1
-        BigInteger s = UTIL.getRandomElement(BigInteger.ZERO, q, random);
-
-        BigInteger a = g.modPow(s, p);
-        BigInteger b = c1.modPow(s, p);
-
-        BigInteger z = c2.multiply(m.modInverse(p)).mod(p); //c1^sk = c2/m
-
-
-        //Step 2-3
-        BigInteger c = hash(a, b, g, h, z, c1, c2);
-
-        BigInteger alpha_c = c.multiply(sk.toBigInteger()); // .mod(p) ???
-        BigInteger r = s.add(alpha_c).mod(q); //r = s + c*sk
-
-        // ProveDecryptionInfo
-        return new DecryptionProof(a, b, r);
-    }
-
-    // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
-    public DecryptionProof proveDecryptionNew(CipherText ciphertext, BigInteger plaintext, ElGamalSK sk, int kappa) {
-        ElGamalPK pk = sk.getPK();
-        BigInteger p = pk.getGroup().getP();
-
-        // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
-        BigInteger alpha = pk.getH();
-        BigInteger beta = ciphertext.c2.multiply(plaintext.modInverse(p)).mod(p);
-        BigInteger alpha_base = pk.getGroup().getG();
-        BigInteger beta_base = ciphertext.c1;
-
-        PublicInfoSigma3 statement = new PublicInfoSigma3(pk.getGroup(), alpha, beta, alpha_base, beta_base);
-
-        return proveLogEquality(statement, sk, kappa);
-    }
-    
-
-    public BigInteger hash(BigInteger a, BigInteger b, BigInteger g, BigInteger h, BigInteger z, BigInteger c1, BigInteger c2) {
-
-        byte[] bytes_a = a.toByteArray();
-        byte[] bytes_b = b.toByteArray();
-        byte[] bytes_g = g.toByteArray();
-        byte[] bytes_h = h.toByteArray();
-        byte[] bytes_z = z.toByteArray();
-        byte[] bytes_c1 = c1.toByteArray();
-        byte[] bytes_c2 = c2.toByteArray();
-        byte[] concatenated = Bytes.concat(bytes_a, bytes_b, bytes_g, bytes_h, bytes_z, bytes_c1, bytes_c2);
-        byte[] hashed = this.hashH.digest(concatenated);
-        return new BigInteger(1,hashed);
-    }
-
-    public boolean verifyDecryption(PublicInfoSigma3 info, DecryptionProof decProof, int kappa) {
-        // for check part1
-        BigInteger g = info.pk.getGroup().getG();
-        BigInteger p = info.pk.getGroup().getP();
-        BigInteger h = info.pk.getH();
-
-        // for check part2
-        BigInteger c1 = info.cipherText.c1;
-        BigInteger c2 = info.cipherText.c2;
-        BigInteger z = c2.multiply(info.plainText.modInverse(p)).mod(p); //c1^sk = c2/m
-
-        BigInteger a = decProof.a;
-        BigInteger b = decProof.b;
-
-        BigInteger c = hash(a, b, g, h, z, c1, c2);
-        BigInteger r = decProof.r;
-
-        boolean checkPart1 = checkPart1(g, r, a, h, c,p);
-        boolean checkPart2 = checkPart2(c1, r, b, z, c,p);
-
-        return checkPart1 && checkPart2;
-    }
-
-    public boolean verifyDecryptionNew(CipherText ciphertext, BigInteger plaintext, ElGamalPK pk, DecryptionProof decProof, int kappa) {
-        BigInteger p = pk.getGroup().getP();
-
-        // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
-        BigInteger alpha = pk.getH();
-        BigInteger beta = ciphertext.c2.multiply(plaintext.modInverse(p)).mod(p);
-        BigInteger alpha_base = pk.getGroup().getG();
-        BigInteger beta_base = ciphertext.c1;
-
-        PublicInfoSigma3 statement = new PublicInfoSigma3(pk.getGroup(), alpha, beta, alpha_base, beta_base);
-
-        return verifyLogEquality(statement, decProof, kappa);
-    }
-
-    public boolean verifyLogEquality(PublicInfoSigma3 info, DecryptionProof decProof, int kappa) {
+    public boolean verifyLogEquality(Sigma3Statement info, Sigma3Proof decProof, int kappa) {
         BigInteger p = info.group.p;
 
         // verify that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
@@ -170,6 +76,53 @@ public class Sigma3 {
 
         return checkPart1 && checkPart2;
     }
+
+
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @param g
+     * @param h
+     * @param z
+     * @param c1
+     * @param c2
+     * @return
+     */
+    public BigInteger hash(BigInteger a, BigInteger b, BigInteger g, BigInteger h, BigInteger z, BigInteger c1, BigInteger c2) {
+        byte[] bytes_a = a.toByteArray();
+        byte[] bytes_b = b.toByteArray();
+        byte[] bytes_g = g.toByteArray();
+        byte[] bytes_h = h.toByteArray();
+        byte[] bytes_z = z.toByteArray();
+        byte[] bytes_c1 = c1.toByteArray();
+        byte[] bytes_c2 = c2.toByteArray();
+        byte[] concatenated = Bytes.concat(bytes_a, bytes_b, bytes_g, bytes_h, bytes_z, bytes_c1, bytes_c2);
+        byte[] hashed = this.hashH.digest(concatenated);
+        return new BigInteger(1,hashed);
+    }
+
+
+    /**
+     *
+     * @param pk
+     * @param cipher
+     * @param plain
+     * @return
+     */
+    public Sigma3Statement createStatement(ElGamalPK pk, CipherText cipher, BigInteger plain) {
+        BigInteger p = pk.getGroup().getP();
+
+        // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
+        BigInteger alpha = pk.getH();
+        BigInteger beta = cipher.c2.multiply(plain.modInverse(p)).mod(p);
+        BigInteger alpha_base = pk.getGroup().getG();
+        BigInteger beta_base = cipher.c1;
+
+        return new Sigma3Statement(pk.getGroup(), alpha, beta, alpha_base, beta_base);
+    }
+
 
     public boolean checkPart1(BigInteger g, BigInteger r, BigInteger a, BigInteger h, BigInteger c, BigInteger p) {
         BigInteger gr = g.modPow(r, p);
