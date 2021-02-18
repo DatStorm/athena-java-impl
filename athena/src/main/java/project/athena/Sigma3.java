@@ -20,6 +20,10 @@ public class Sigma3 {
         this.hashH = hashH;
     }
 
+    private static void d(String s) {
+        System.out.println("Sigma3: " + s);
+    }
+
     // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
     public Sigma3Proof proveDecryption(CipherText ciphertext, BigInteger plaintext, ElGamalSK sk, int kappa) {
         return proveLogEquality(createStatement(sk.getPK(),ciphertext,plaintext), sk, kappa);
@@ -30,6 +34,7 @@ public class Sigma3 {
         return verifyLogEquality(createStatement(pk,ciphertext,plaintext), decProof, kappa);
     }
 
+    // log_{alpha_base} alpha = log_{beta_base} beta}
     public Sigma3Proof proveLogEquality(Sigma3Statement info, ElGamalSK sk, int kappa) {
         Random random = new SecureRandom();
         BigInteger p = info.group.p;
@@ -57,6 +62,10 @@ public class Sigma3 {
     }
 
     public boolean verifyLogEquality(Sigma3Statement info, Sigma3Proof decProof, int kappa) {
+        if(decProof.isEmpty()){
+            System.err.println("Sigma3.verifyLogEquality=> decProof is empty");
+        }
+        
         BigInteger p = info.group.p;
 
         // verify that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
@@ -74,8 +83,12 @@ public class Sigma3 {
         boolean checkPart1 = checkPart1(alpha_base, r, a, alpha, c, p);
         boolean checkPart2 = checkPart2(beta_base,  r, b, beta,  c, p);
 
+        d("check1: " + checkPart1);
+        d("check2: " + checkPart2);
+
         return checkPart1 && checkPart2;
     }
+
 
 
 
@@ -127,12 +140,14 @@ public class Sigma3 {
     public boolean checkPart1(BigInteger g, BigInteger r, BigInteger a, BigInteger h, BigInteger c, BigInteger p) {
         BigInteger gr = g.modPow(r, p);
         BigInteger ahc = a.multiply(h.modPow(c,p)).mod(p);
+        d("p1: gr=" + gr + ", ahc="+ ahc);
         return gr.compareTo(ahc) == 0;
     }
 
     public boolean checkPart2(BigInteger c1, BigInteger r, BigInteger b, BigInteger z, BigInteger c, BigInteger p) {
         BigInteger c1_r = c1.modPow(r,p);
         BigInteger bz_c = b.multiply(z.modPow(c,p)).mod(p);
+        d("p2: c1_r=" + c1_r + ", bz_c="+ bz_c);
         return c1_r.compareTo(bz_c) == 0;
     }
 }

@@ -35,4 +35,9 @@ public class GroupDescription {
         }
         return p;
     }
+
+    @Override
+    public String toString() {
+        return "Group={'g': " + this.g + ",\n 'q': " + this.q + ",\n 'p': " + this.p + "\n}";
+    }
 }

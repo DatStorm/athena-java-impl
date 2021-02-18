@@ -1,6 +1,7 @@
 package project;
 
 import project.dao.sigma1.CoinFlipInfo;
+import project.elgamal.GroupDescription;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,5 +84,13 @@ public class UTIL {
         }
         System.out.println("Did not find the number in the list.... Returning -1");
         return -1;
+    }
+
+    public static void CompareElGamalGroup(GroupDescription a, GroupDescription b) {
+
+        assert a.getP().compareTo(b.getP()) == 0 : "a.p != b.p";
+        assert a.getQ().compareTo(b.getQ()) == 0 : "a.q != a.q";
+        assert a.getG().compareTo(b.getG()) == 0 : "a.g != b.g";
+
     }
 }

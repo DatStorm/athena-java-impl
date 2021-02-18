@@ -26,4 +26,19 @@ public class Sigma3Statement {
         this.alpha_base = alpha_base;
         this.beta_base = beta_base;
     }
+
+    public GroupDescription getGroup() {
+        return this.group;
+    }
+
+    @Override
+    public String toString() {
+        return "\nSigma3Statement{" +
+                "\n" + group.toString() +
+                ", alpha=" + alpha +
+                ", alpha_base=" + alpha_base +
+                ", beta=" + beta +
+                ", beta_base=" + beta_base +
+                "}\n";
+    }
 }

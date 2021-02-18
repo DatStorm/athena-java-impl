@@ -18,4 +18,9 @@ public class ElGamalPK {
     public GroupDescription getGroup() {
         return this.group;
     }
+
+    @Override
+    public String toString() {
+        return "pk={\n'h':" + this.h + ",\n " + this.group.toString() + "}";
+    }
 }

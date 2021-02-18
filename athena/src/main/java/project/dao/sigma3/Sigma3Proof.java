@@ -13,4 +13,19 @@ public class Sigma3Proof {
         this.b = b;
         this.r = r;
     }
+
+
+    @Override
+    public String toString() {
+        return "\nSigma3Proof{" +
+                "a=" + a +
+                ", b=" + b +
+                ", r=" + r +
+                "}\n";
+    }
+
+    public boolean isEmpty() {
+        // check if the number is bigger then zero
+        return this.a.signum() != 1 && this.b.signum() != 1 && this.r.signum() != 1 ;
+    }
 }
