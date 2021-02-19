@@ -66,23 +66,28 @@ public class ElGamal {
         BigInteger h = pk.getH();
 
         // sample random r
-        BigInteger r = new BigInteger(p.bitCount() - 1, this.random);
+//        BigInteger r = new BigInteger(p.bitCount() - 1, this.random); // FIXME: CHANGE HERE
+        BigInteger r = CONSTANTS.ELGAMAL_RAND_R;
 
         // C = (g^r, m·h^r)
         return new CipherText(g.modPow(r, p), msg.multiply(h.modPow(r, p)).mod(p).add(p).mod(p));
     }
-//
-//
-//    // Decrypting El Gamal encryption using secret key
-//    public BigInteger decrypt(Tuple cipherTextTuple, ElGamalSK sk) {
-//        BigInteger c1 = (BigInteger) cipherTextTuple.getElement0();
-//        BigInteger c2 = (BigInteger) cipherTextTuple.getElement1();
-//        BigInteger c1Alpha = c1.modPow(sk.toBigInteger, p);      // c1^\alpha
-//        BigInteger c1NegAlpha = c1Alpha.modInverse(p); // c1^-\alpha
+
+
+    // Decrypting El Gamal encryption using secret key
+    public BigInteger decrypt(CipherText cipherText, ElGamalSK sk) {
+        BigInteger c1 = cipherText.c1;
+        BigInteger c2 = cipherText.c2;
+        BigInteger p = sk.getPK().getGroup().getP();
+        BigInteger c1Alpha = c1.modPow(sk.toBigInteger(), p);      // c1^\alpha
+        BigInteger c1NegAlpha = c1Alpha.modInverse(p); // c1^-\alpha
+
+        // FIXME: OLD used this.p
 //        BigInteger plain = c2.multiply(c1NegAlpha).mod(this.p).add(this.p).mod(this.p); // m=c2 * c1^-alpha mod p
-//
-//        return plain;
-//    }
+        BigInteger plain = c2.multiply(c1NegAlpha).mod(p).add(p).mod(p); // m=c2 * c1^-alpha mod p
+
+        return plain;
+    }
 
 
     // Generate random sk

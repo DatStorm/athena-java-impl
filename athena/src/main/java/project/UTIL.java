@@ -5,7 +5,9 @@ import project.elgamal.GroupDescription;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -92,5 +94,25 @@ public class UTIL {
         assert a.getQ().compareTo(b.getQ()) == 0 : "a.q != a.q";
         assert a.getG().compareTo(b.getG()) == 0 : "a.g != b.g";
 
+    }
+
+    public static double BigLog(BigInteger base, BigInteger value) {
+        /*
+         * log_alphabase alpha = n =?= n
+         */
+        // Use identity:
+        // log_b(n) = log_e(n) / log_e(b)
+        /* EXAMPLE: [find the base-2 logarithm of 256]
+            Math.log(256) / Math.log(2)
+            => 8.0
+         */
+
+        double log_e_value = Math.log(value.doubleValue());
+        double log_e_base = Math.log(base.doubleValue());
+//        System.out.println("DOUBLE_V: " + log_e_value);
+//        System.out.println("DOUBLE_B: " + log_e_base);
+
+
+        return log_e_value / log_e_base;
     }
 }

@@ -9,6 +9,7 @@ import project.CONSTANTS;
 import project.athena.Sigma4;
 import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.CipherText;
+import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
 import project.factory.Factory;
@@ -29,11 +30,14 @@ public class TestSigma4 {
     private Sigma4 sigma4;
     private ElGamalSK sk;
     private ElGamalPK pk;
+    private ElGamal elgamal;
+
 
     @BeforeEach
     void setUp() {
         Factory factory = new MainFactory();
         sigma4 = new Sigma4(factory.getHash());
+        elgamal = factory.getElgamal();
         sk = factory.getSK();
         pk = factory.getPK();
 
@@ -41,28 +45,52 @@ public class TestSigma4 {
 
 
     /**
-     * START HERE FUCKERSS!!!!!!!!!!
+     * START HERE FUCKERS!!!!!!!!!!
      */
     @Test
     void TestSigma4_Tally_single() {
         //(c1,c2) = (b1^n,b2^n)
         BigInteger p = pk.getGroup().getP();
 
-        BigInteger c1 = BigInteger.valueOf(11);
-        BigInteger c2 = BigInteger.TWO;
+        BigInteger c1 = BigInteger.valueOf(3);
+        BigInteger c2 = BigInteger.valueOf(4);
 
-        int nonce_n = new Random(CONSTANTS.RANDOM_SEED).nextInt();
-        CipherText b0 = new CipherText(c1, c2);
-        CipherText c0 = b0.modPow(BigInteger.valueOf(nonce_n), p); // modpow(n,p)
+//        int nonce_n = new Random(CONSTANTS.RANDOM_SEED).nextInt();
+        int nonce_n = 4;
+        CipherText origin = new CipherText(c1, c2);
+        CipherText combination = origin.modPow(BigInteger.valueOf(nonce_n), p); // modpow(n,p)
 
-
-        List<CipherText> c_list = Arrays.asList(c0);
-        List<CipherText> b_list = Arrays.asList(b0);
-        Sigma4Proof omega = sigma4.proveCombination(sk, c_list, b_list, nonce_n,kappa);
-        boolean verification = sigma4.verifyCombination(pk, c_list, b_list, omega, kappa);
+        List<CipherText> origin_list = Arrays.asList(origin);
+        List<CipherText> combination_list = Arrays.asList(combination);
+        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n, kappa);
+        boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
         assertTrue("VerComb(...)=1", verification);
+    }
+
+
+    @Test
+    void TestSigma4_Tally_step3_proveComb() {
+
+
+        int n = 3;
+
+        // c1
+        CipherText c1 = elgamal.encrypt(new BigInteger("22"), pk);
+//        BigInteger plain = elgamal.decrypt(c1, sk);
+//        System.out.println("1=="+ plain);
+
+        // homo combination n times of c1
+        CipherText c_prime = new CipherText(c1.c1.pow(n), c1.c2.pow(n));
+//        CipherText c_prime_2 = c1.modPow(BigInteger.valueOf(n), pk.getGroup().getP());
+//        System.out.println("1=?"+ elgamal.decrypt(c_prime_2, sk));
+
+        List<CipherText> c_list = Arrays.asList(c_prime, c1);
+        Sigma4Proof omega = sigma4.proveCombination(sk, c_list, n, kappa);
+//        boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
+//        assertTrue("VerComb(...)=1", verification);
 
     }
+
 
     @Test
     void TestSigma4_step2_Tally() {

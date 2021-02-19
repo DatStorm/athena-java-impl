@@ -1,5 +1,6 @@
 package project.athena;
 
+import com.google.common.math.BigIntegerMath;
 import project.UTIL;
 import project.dao.sigma3.Sigma3Proof;
 import project.dao.sigma3.Sigma3Statement;
@@ -24,43 +25,50 @@ public class Sigma4 {
         this.sigma3 = new Sigma3(this.hashH);
     }
 
-    public Sigma4Proof proveCombination(ElGamalSK sk, List<CipherText> c0_c1, List<CipherText> b0_b1, int nonce_n, int kappa) {
+    /*
+    * secret key sk
+    * homo comb c0_c1 of b0_b1
+    */
+    // (c1',c2') = (c1,c2)^n
+    //combinedCiphertextList, //originCiphertextList
+    public Sigma4Proof proveCombination(ElGamalSK sk, List<CipherText> listOfcombinedCiphertext, List<CipherText> listOfCiphertexts, int nonce_n, int kappa) {
         ArrayList<Sigma3Proof> alpha_beta_omegaProofs = new ArrayList<>();
         ArrayList<Sigma3Proof> alpha_alpha_omegaProofs = new ArrayList<>();
 
-        assert c0_c1.size() == b0_b1.size() : "c0_c1.size() != b0_b1.size()";
+        // we must have pairs of homo comb and single ciphertexts
+        assert listOfcombinedCiphertext.size() == listOfCiphertexts.size() : "c0_c1.size() != b0_b1.size()";
 
         GroupDescription group = sk.getPK().getGroup();
 
         /*
          * SIGMA 3 (1)
-         * log_ai' a_i = log_bi' bi
+         * log_{alpha_base_i} alpha_{i} != log_{beta_base_i} beta_{i}
          */
         // Prove that the same nonce was used in both parts of the new ciphertext
-        for (int i = 0; i < c0_c1.size(); i++) {
-            CipherText c = c0_c1.get(i);
-            CipherText b = b0_b1.get(i);
+        for (int i = 0; i < listOfcombinedCiphertext.size(); i++) {
+            CipherText c = listOfcombinedCiphertext.get(i);
+            CipherText b = listOfCiphertexts.get(i);
 
             // Prove log equality
             Sigma3Statement statement = new Sigma3Statement(group, c.c1, c.c2, b.c1, b.c2);
 //            System.out.println("Sigma4.proveCombination: " + statement);
             //Sigma3Statement statement = createSigma3Statement(group, c, b);
-            Sigma3Proof omega_proof1 = sigma3.proveLogEquality(statement, sk, kappa);
+            Sigma3Proof omega_proof1 = sigma3.proveLogEquality(statement, BigInteger.valueOf(nonce_n), kappa); // <---- FIXME: HERE
             alpha_beta_omegaProofs.add(omega_proof1);
         }
 
         // Prove that the same nonce was used on each ballot
         // NOTE WE START AT 1
-        for (int i = 1; i < c0_c1.size(); i++) {
-            CipherText c_previous = c0_c1.get(i - 1);
-            CipherText c = c0_c1.get(i);
-            CipherText b_previous = b0_b1.get(i - 1);
-            CipherText b = b0_b1.get(i);
+        for (int i = 1; i < listOfcombinedCiphertext.size(); i++) {
+            CipherText c_previous = listOfcombinedCiphertext.get(i - 1);
+            CipherText c = listOfcombinedCiphertext.get(i);
+            CipherText b_previous = listOfCiphertexts.get(i - 1);
+            CipherText b = listOfCiphertexts.get(i);
 
             // Proove log equality
             Sigma3Statement statement = new Sigma3Statement(group, c_previous.c1, c.c1, b_previous.c1, b.c1);
             //Sigma3Statement statement = createSigma3Statement(group, c_previous, c);
-            Sigma3Proof omega_proof2 = sigma3.proveLogEquality(statement, sk, kappa);
+            Sigma3Proof omega_proof2 = sigma3.proveLogEquality(statement, BigInteger.valueOf(nonce_n), kappa);
             alpha_alpha_omegaProofs.add(omega_proof2);
         }
 
@@ -68,6 +76,7 @@ public class Sigma4 {
     }
 
     // Creates the statement for prooving log equality
+    /*
     private Sigma3Statement createSigma3Statement(GroupDescription group, CipherText a, CipherText b) {
         BigInteger alpha = a.c1;
         BigInteger beta = a.c2;
@@ -76,63 +85,99 @@ public class Sigma4 {
 
         return new Sigma3Statement(group, alpha, beta, alpha_base, beta_base);
     }
+    */
 
-    public boolean verifyCombination(ElGamalPK pk, List<CipherText> c0_c1, List<CipherText> b0_b1, Sigma4Proof proof, int kappa) {
+   /*
+    * secret key sk
+    * homo comb combinedCiphertextList of b0_b1
+    */
+
+    public boolean verifyCombination(ElGamalPK pk, List<CipherText> combinedCiphertextList, List<CipherText> listOfCipherTexts, Sigma4Proof proof, int kappa) {
         GroupDescription group = pk.getGroup();
 
-        int size = c0_c1.size();
-        assert size == b0_b1.size() : "c0_c1.size() != b0_b1.size()";
-        assert size == proof.getAlphaBetaProof().size() : "c0_c1.size() != proof.getAlphaBetaProof().size()";
-        assert size-1 == proof.getAlphaAlphaProof().size() : "b0_b1.size() != proof.getAlphaAlphaProof().size()";
+        int size = combinedCiphertextList.size();
+        assert size == listOfCipherTexts.size() : "combinedCiphertextList.size() != b0_b1.size()";
+        assert size == proof.getAlphaBetaProof().size() : "combinedCiphertextList.size() != proof.getAlphaBetaProof().size()";
+        assert size - 1 == proof.getAlphaAlphaProof().size() : "b0_b1.size() != proof.getAlphaAlphaProof().size()";
 
-        // verify log_ai' ai != log_bi' bi
-        for (int i = 0; i < c0_c1.size(); i++) {
-            CipherText c = c0_c1.get(i);
-            CipherText b = b0_b1.get(i);
+        // verify log_{alpha_base_i} alpha_{i} != log_{beta_base_i} beta_{i}
+        for (int i = 0; i < combinedCiphertextList.size(); i++) {
+            CipherText c = combinedCiphertextList.get(i);
+            CipherText b = listOfCipherTexts.get(i);
 
             // Prove log equality
             Sigma3Statement statement = new Sigma3Statement(group, c.c1, c.c2, b.c1, b.c2);
-//            System.out.println("Sigma4.verifyCombination: " + statement);
+//            Sigma3Statement statement_ = sigma3.createStatement(pk,c,b.c1);
 
-            /////// ANDERS!!!
-            //Sigma3Statement statement = createSigma3Statement(group, c, b);
+            System.out.println("---> alpha: " + UTIL.BigLog(b.c1,c.c1));
+            System.out.println("---> beta: " + UTIL.BigLog(b.c2,c.c2));
+
             Sigma3Proof proof_i = proof.getAlphaBetaProof().get(i);
 
             boolean isValid = sigma3.verifyLogEquality(statement, proof_i, kappa);
 
-            if(!isValid) {
+            if (!isValid) {
                 System.err.println("Sigma4.verifyCombination-> log_ai' ai != log_bi' bi");
-                System.out.println("PARAMS:\n " + pk + ", \nc0_c1 = " + Arrays.toString(c0_c1.toArray()) + ", \nb0_b1 = " + Arrays.toString(b0_b1.toArray()) + ", \nproof = " + proof + ", \nkappa = " + kappa);
+                System.out.println("PARAMS:\n " + pk + ", \ncombinedCiphertextList = " + Arrays.toString(combinedCiphertextList.toArray()) + ", \nb0_b1 = " + Arrays.toString(listOfCipherTexts.toArray()) + ", \nproof = " + proof + ", \nkappa = " + kappa);
                 System.out.println("--------------------------");
-                UTIL.CompareElGamalGroup(pk.getGroup(),statement.getGroup());
-                System.out.println("Statement: "+ statement + "\nproof_i=:" + proof_i + "isvalid: " + isValid);
+                UTIL.CompareElGamalGroup(pk.getGroup(), statement.getGroup());
+                System.out.println("Statement: " + statement + "\nproof_i=:" + proof_i + "isvalid: " + isValid);
                 return false;
             }
         }
 
         /*******************************************************************************/
-        // Verify log_a'_{i-1} a_{i-1} != log_ai' ai
+        // Verify log_{alpha_base_i-1} alpha_{i-1} != log_{alpha_base_i} alpha_{i}
         // Prove that the same nonce was used on each ballot
         // NOTE WE START AT 1
-        for (int i = 1; i < c0_c1.size(); i++) {
-            CipherText c_previous = c0_c1.get(i - 1);
-            CipherText c = c0_c1.get(i);
-            CipherText b_previous = b0_b1.get(i - 1);
-            CipherText b = b0_b1.get(i);
+        for (int i = 1; i < combinedCiphertextList.size(); i++) {
+            CipherText c_previous = combinedCiphertextList.get(i - 1);
+            CipherText c = combinedCiphertextList.get(i);
+            CipherText b_previous = listOfCipherTexts.get(i - 1);
+            CipherText b = listOfCipherTexts.get(i);
 
             // Proove log equality
             Sigma3Statement statement = new Sigma3Statement(group, c_previous.c1, c.c1, b_previous.c1, b.c1);
-            Sigma3Proof proofi = proof.getAlphaAlphaProof().get(i-1);
+            Sigma3Proof proofi = proof.getAlphaAlphaProof().get(i - 1);
             boolean isValid = sigma3.verifyLogEquality(statement, proofi, kappa);
 
-            if(!isValid){
+            if (!isValid) {
                 System.err.println("Sigma4.verifyCombination-> log_a'_{i-1} a_{i-1} != log_ai' ai");
                 return false;
             }
-
         }
 
-
         return true;
+    }
+
+
+    /******************************************************************************/
+    public Sigma4Proof proveCombination(ElGamalSK sk, List<CipherText> c_list, int nonce, int kappa) {
+        assert c_list.size() == 2 :"Should have c^prime,c1";
+
+        CipherText c_pow = c_list.get(0);   // = c^\prime
+        CipherText c_1 = c_list.get(1);     // = c_1
+
+        CipherText a = c_pow;
+        CipherText b = c_1;
+
+        BigInteger alpha = a.c1;            // a.c1;
+        BigInteger beta = a.c2;             // a.c2;
+        BigInteger alpha_base = b.c1;       // b.c1;
+        BigInteger beta_base = b.c2;        // b.c2;
+        System.out.println("proveCombination() => group = " + sk.getPK().getGroup() + ", alpha = " + alpha + ", beta = " + beta + ", alpha_base = " + alpha_base + ", beta_base = " + beta_base);
+
+        System.out.println("---> alpha: " + UTIL.BigLog(alpha_base,alpha));
+        System.out.println("---> beta: " + UTIL.BigLog(beta_base,beta));
+
+        Sigma3Statement statement = new Sigma3Statement(sk.getPK().getGroup(), alpha, beta, alpha_base, beta_base);
+
+
+        Sigma3Proof omega_proof = sigma3.proveLogEquality(statement, BigInteger.valueOf(nonce), kappa);
+        boolean isValid = sigma3.verifyLogEquality(statement, omega_proof, kappa);
+        System.out.println("--> VALID: " + isValid);
+
+
+        return null;
     }
 }

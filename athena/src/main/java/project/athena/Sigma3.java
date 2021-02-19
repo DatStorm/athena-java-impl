@@ -26,7 +26,7 @@ public class Sigma3 {
 
     // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
     public Sigma3Proof proveDecryption(CipherText ciphertext, BigInteger plaintext, ElGamalSK sk, int kappa) {
-        return proveLogEquality(createStatement(sk.getPK(),ciphertext,plaintext), sk, kappa);
+        return proveLogEquality(createStatement(sk.getPK(),ciphertext,plaintext), sk.toBigInteger(), kappa);
     }
 
 
@@ -35,15 +35,15 @@ public class Sigma3 {
     }
 
     // log_{alpha_base} alpha = log_{beta_base} beta}
-    public Sigma3Proof proveLogEquality(Sigma3Statement info, ElGamalSK sk, int kappa) {
+    public Sigma3Proof proveLogEquality(Sigma3Statement statement, BigInteger secret, int kappa) {
         Random random = new SecureRandom();
-        BigInteger p = info.group.p;
-        BigInteger q = info.group.q;
+        BigInteger p = statement.group.p;
+        BigInteger q = statement.group.q;
 
-        BigInteger alpha = info.alpha;
-        BigInteger beta = info.beta;
-        BigInteger alpha_base = info.alpha_base;
-        BigInteger beta_base = info.beta_base;
+        BigInteger alpha = statement.alpha;
+        BigInteger beta = statement.beta;
+        BigInteger alpha_base = statement.alpha_base;
+        BigInteger beta_base = statement.beta_base;
 
         //Step 1
         BigInteger s = UTIL.getRandomElement(BigInteger.ZERO, q, random);
@@ -54,25 +54,28 @@ public class Sigma3 {
         //Step 2-3
         BigInteger c = hash(a, b, alpha, beta, alpha_base, beta_base, beta_base); // FIXME::: MAKRK's (m,m)
 
-        BigInteger alpha_c = c.multiply(sk.toBigInteger()).mod(q);
-        BigInteger r = s.add(alpha_c).mod(q); //r = s + c*sk
+        BigInteger alpha_c = c.multiply(secret).mod(q);
+        BigInteger r = s.add(alpha_c).mod(q); //r = s + c*secret
 
-        // ProveDecryptionInfo
+        d("prove.check1: " + checkPart1(alpha_base, r, a, alpha, c, p));
+        d("prove.check2: " + checkPart2(beta_base,  r, b, beta,  c, p));
+
+        // ProveDecryption
         return new Sigma3Proof(a, b, r);
     }
 
-    public boolean verifyLogEquality(Sigma3Statement info, Sigma3Proof decProof, int kappa) {
+    public boolean verifyLogEquality(Sigma3Statement statement, Sigma3Proof decProof, int kappa) {
         if(decProof.isEmpty()){
             System.err.println("Sigma3.verifyLogEquality=> decProof is empty");
         }
         
-        BigInteger p = info.group.p;
+        BigInteger p = statement.group.p;
 
         // verify that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
-        BigInteger alpha = info.alpha;
-        BigInteger beta = info.beta;
-        BigInteger alpha_base = info.alpha_base;
-        BigInteger beta_base = info.beta_base;
+        BigInteger alpha = statement.alpha;
+        BigInteger beta = statement.beta;
+        BigInteger alpha_base = statement.alpha_base;
+        BigInteger beta_base = statement.beta_base;
 
         BigInteger a = decProof.a;
         BigInteger b = decProof.b;
@@ -83,8 +86,8 @@ public class Sigma3 {
         boolean checkPart1 = checkPart1(alpha_base, r, a, alpha, c, p);
         boolean checkPart2 = checkPart2(beta_base,  r, b, beta,  c, p);
 
-        d("check1: " + checkPart1);
-        d("check2: " + checkPart2);
+        d("verify.check1: " + checkPart1);
+        d("verify.check2: " + checkPart2);
 
         return checkPart1 && checkPart2;
     }

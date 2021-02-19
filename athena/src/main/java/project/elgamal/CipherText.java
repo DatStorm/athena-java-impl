@@ -12,7 +12,12 @@ public class CipherText {
     }
 
     public CipherText modPow(BigInteger x, BigInteger p) {
-        return new CipherText(c1.modPow(x,p), c2.modPow(x,p));
+        BigInteger _c1 = this.c1.modPow(x, p);
+        BigInteger _c2 = this.c2.modPow(x, p);
+//        System.out.println("x = " + x + ", p = " + p);
+//        System.out.println("c1 = " + this.c1 + ", c2 = " + this.c2);
+//        System.out.println("_c1 = " + _c1 + ", _c2 = " + _c2);
+        return new CipherText(_c1, _c2);
     }
 
     @Override
