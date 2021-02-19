@@ -1,7 +1,5 @@
-package project.athena;
+package project.sigma;
 
-import com.google.common.math.BigIntegerMath;
-import project.UTIL;
 import project.dao.sigma3.Sigma3Proof;
 import project.dao.sigma3.Sigma3Statement;
 import project.dao.sigma4.Sigma4Proof;
@@ -9,11 +7,11 @@ import project.elgamal.CipherText;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
 import project.elgamal.GroupDescription;
+import project.sigma.Sigma3;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Sigma4 {
@@ -53,7 +51,7 @@ public class Sigma4 {
             Sigma3Statement statement = new Sigma3Statement(group, c.c1, c.c2, b.c1, b.c2);
 //            System.out.println("Sigma4.proveCombination: " + statement);
             //Sigma3Statement statement = createSigma3Statement(group, c, b);
-            Sigma3Proof omega_proof1 = sigma3.proveLogEquality(statement, BigInteger.valueOf(nonce_n), kappa); // <---- FIXME: HERE
+            Sigma3Proof omega_proof1 = sigma3.proveLogEquality(statement, BigInteger.valueOf(nonce_n), kappa);
             alpha_beta_omegaProofs.add(omega_proof1);
         }
 
@@ -98,7 +96,7 @@ public class Sigma4 {
         int size = combinedCiphertextList.size();
         assert size == listOfCipherTexts.size() : "combinedCiphertextList.size() != b0_b1.size()";
         assert size == proof.getAlphaBetaProof().size() : "combinedCiphertextList.size() != proof.getAlphaBetaProof().size()";
-        assert size - 1 == proof.getAlphaAlphaProof().size() : "b0_b1.size() != proof.getAlphaAlphaProof().size()";
+        assert size - 1 == proof.getAlphaAlphaProof().size() : "listOfCipherTexts.size() != proof.getAlphaAlphaProof().size()";
 
         // verify log_{alpha_base_i} alpha_{i} != log_{beta_base_i} beta_{i}
         for (int i = 0; i < combinedCiphertextList.size(); i++) {
@@ -107,21 +105,12 @@ public class Sigma4 {
 
             // Prove log equality
             Sigma3Statement statement = new Sigma3Statement(group, c.c1, c.c2, b.c1, b.c2);
-//            Sigma3Statement statement_ = sigma3.createStatement(pk,c,b.c1);
-
-            System.out.println("---> alpha: " + UTIL.BigLog(b.c1,c.c1));
-            System.out.println("---> beta: " + UTIL.BigLog(b.c2,c.c2));
 
             Sigma3Proof proof_i = proof.getAlphaBetaProof().get(i);
-
             boolean isValid = sigma3.verifyLogEquality(statement, proof_i, kappa);
 
             if (!isValid) {
-                System.err.println("Sigma4.verifyCombination-> log_ai' ai != log_bi' bi");
-                System.out.println("PARAMS:\n " + pk + ", \ncombinedCiphertextList = " + Arrays.toString(combinedCiphertextList.toArray()) + ", \nb0_b1 = " + Arrays.toString(listOfCipherTexts.toArray()) + ", \nproof = " + proof + ", \nkappa = " + kappa);
-                System.out.println("--------------------------");
-                UTIL.CompareElGamalGroup(pk.getGroup(), statement.getGroup());
-                System.out.println("Statement: " + statement + "\nproof_i=:" + proof_i + "isvalid: " + isValid);
+//                System.out.println("Sigma4.verifyCombination-> log_{alpha_base_i} alpha_{i} != log_{beta_base_i} beta_{i}");
                 return false;
             }
         }
@@ -142,42 +131,22 @@ public class Sigma4 {
             boolean isValid = sigma3.verifyLogEquality(statement, proofi, kappa);
 
             if (!isValid) {
-                System.err.println("Sigma4.verifyCombination-> log_a'_{i-1} a_{i-1} != log_ai' ai");
+//                System.out.println("--> Sigma4.verifyCombination-> log_{alpha_base_i-1} alpha_{i-1} != log_{alpha_base_i} alpha_{i}");
                 return false;
             }
         }
-
         return true;
     }
 
-
-    /******************************************************************************/
-    public Sigma4Proof proveCombination(ElGamalSK sk, List<CipherText> c_list, int nonce, int kappa) {
-        assert c_list.size() == 2 :"Should have c^prime,c1";
-
-        CipherText c_pow = c_list.get(0);   // = c^\prime
-        CipherText c_1 = c_list.get(1);     // = c_1
-
-        CipherText a = c_pow;
-        CipherText b = c_1;
-
-        BigInteger alpha = a.c1;            // a.c1;
-        BigInteger beta = a.c2;             // a.c2;
-        BigInteger alpha_base = b.c1;       // b.c1;
-        BigInteger beta_base = b.c2;        // b.c2;
-        System.out.println("proveCombination() => group = " + sk.getPK().getGroup() + ", alpha = " + alpha + ", beta = " + beta + ", alpha_base = " + alpha_base + ", beta_base = " + beta_base);
-
-        System.out.println("---> alpha: " + UTIL.BigLog(alpha_base,alpha));
-        System.out.println("---> beta: " + UTIL.BigLog(beta_base,beta));
-
-        Sigma3Statement statement = new Sigma3Statement(sk.getPK().getGroup(), alpha, beta, alpha_base, beta_base);
-
-
-        Sigma3Proof omega_proof = sigma3.proveLogEquality(statement, BigInteger.valueOf(nonce), kappa);
-        boolean isValid = sigma3.verifyLogEquality(statement, omega_proof, kappa);
-        System.out.println("--> VALID: " + isValid);
-
-
-        return null;
-    }
 }
+
+
+//                System.out.println("PARAMS:\n " + pk + ", \ncombinedCiphertextList = " + Arrays.toString(combinedCiphertextList.toArray()) + ", \nb0_b1 = " + Arrays.toString(listOfCipherTexts.toArray()) + ", \nproof = " + proof + ", \nkappa = " + kappa);
+//                System.out.println("--------------------------");
+//                UTIL.CompareElGamalGroup(pk.getGroup(), statement.getGroup());
+//                System.out.println("Statement: " + statement + "\nproof_i=:" + proof_i + "isvalid: " + isValid);
+
+//        System.out.println("proveCombination() => group = " + sk.getPK().getGroup() + ", alpha = " + alpha + ", beta = " + beta + ", alpha_base = " + alpha_base + ", beta_base = " + beta_base);
+//
+//                System.out.println("---> alpha: " + UTIL.BigLog(alpha_base,alpha));
+//                System.out.println("---> beta: " + UTIL.BigLog(beta_base,beta));

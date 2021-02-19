@@ -2,7 +2,7 @@ package sigmas;
 
 import org.junit.jupiter.api.*;
 import project.CONSTANTS;
-import project.athena.Sigma3;
+import project.sigma.Sigma3;
 import project.dao.sigma3.Sigma3Proof;
 import project.dao.sigma3.Sigma3Statement;
 import project.elgamal.CipherText;
@@ -62,7 +62,7 @@ public class TestSigma3 {
     }
 
 
-    @RepeatedTest(10)
+    @Test
     void TestSigma3() {
         Sigma3Proof sigma3Proof = sigma3.proveDecryption(cipher, plain_msg_m,sk, kappa);
         boolean verification = sigma3.verifyDecryption(cipher, plain_msg_m, sk.getPK(), sigma3Proof, kappa);

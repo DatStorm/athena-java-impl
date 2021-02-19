@@ -1,4 +1,4 @@
-package project.athena;
+package project.sigma;
 
 import com.google.common.primitives.Bytes;
 import project.UTIL;
@@ -21,7 +21,7 @@ public class Sigma3 {
     }
 
     private static void d(String s) {
-        System.out.println("Sigma3: " + s);
+//        System.out.println("Sigma3: " + s);
     }
 
     // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m

@@ -5,19 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import project.athena.Gen;
-import project.athena.Sigma1;
-import project.dao.Randomness;
-import project.dao.SK_R;
-import project.dao.sigma1.ProveKeyInfo;
-import project.dao.sigma1.PublicInfoSigma1;
+import project.sigma.Sigma2;
 import project.factory.Factory;
 import project.factory.MainFactory;
-
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Random;
 
 import static org.junit.Assert.assertTrue;
 
@@ -25,17 +15,21 @@ import static org.junit.Assert.assertTrue;
 @DisplayName("Test Sigma2")
 public class TestSigma2 {
 
+    private Sigma2 sigma2;
+
     @BeforeEach
     void setUp() {
         Factory factory = new MainFactory();
+        sigma2 = new Sigma2(factory.getHash());
 
 
     }
 
 
     @Test
-    void TestSigma2() {
+    void TestSigma2_EL() {
 
+//        sigma2.EL(x,r1,r2,g,h1,g2,h2,y1,y2);
 
         assertTrue("Should return 1", true);
     }

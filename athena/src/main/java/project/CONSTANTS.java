@@ -6,7 +6,8 @@ public class CONSTANTS {
 
 //    public static final int ELGAMAL_BIT_LENGTH = 2048; //SECURE
 //    public static final int ELGAMAL_BIT_LENGTH = 2048/4;
-    public static final int ELGAMAL_BIT_LENGTH = 8;
+//    public static final int ELGAMAL_BIT_LENGTH = 8;
+    public static final int ELGAMAL_BIT_LENGTH = 1024;
     public static final int KAPPA = ELGAMAL_BIT_LENGTH;
     public static final long RANDOM_SEED = 0;
     public static final BigInteger ELGAMAL_RAND_R = BigInteger.valueOf(2);

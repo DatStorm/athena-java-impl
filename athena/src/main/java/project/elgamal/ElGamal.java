@@ -66,8 +66,8 @@ public class ElGamal {
         BigInteger h = pk.getH();
 
         // sample random r
-//        BigInteger r = new BigInteger(p.bitCount() - 1, this.random); // FIXME: CHANGE HERE
-        BigInteger r = CONSTANTS.ELGAMAL_RAND_R;
+        BigInteger r = new BigInteger(p.bitCount() - 1, this.random);
+//        BigInteger r = CONSTANTS.ELGAMAL_RAND_R;
 
         // C = (g^r, m·h^r)
         return new CipherText(g.modPow(r, p), msg.multiply(h.modPow(r, p)).mod(p).add(p).mod(p));

@@ -1,12 +1,9 @@
 package sigmas;
 
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import project.CONSTANTS;
-import project.athena.Sigma4;
+import project.sigma.Sigma4;
 import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.CipherText;
 import project.elgamal.ElGamal;
@@ -18,8 +15,8 @@ import project.factory.MainFactory;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @Tag("TestsSigma4")
@@ -40,20 +37,19 @@ public class TestSigma4 {
         elgamal = factory.getElgamal();
         sk = factory.getSK();
         pk = factory.getPK();
-
     }
 
 
     /**
-     * START HERE FUCKERS!!!!!!!!!!
+     * Test equivalent to ProveComb of Tally step3
      */
     @Test
     void TestSigma4_Tally_single() {
         //(c1,c2) = (b1^n,b2^n)
         BigInteger p = pk.getGroup().getP();
 
-        BigInteger c1 = BigInteger.valueOf(3);
-        BigInteger c2 = BigInteger.valueOf(4);
+        BigInteger c1 = BigInteger.valueOf(6);
+        BigInteger c2 = BigInteger.valueOf(7);
 
 //        int nonce_n = new Random(CONSTANTS.RANDOM_SEED).nextInt();
         int nonce_n = 4;
@@ -67,29 +63,93 @@ public class TestSigma4 {
         assertTrue("VerComb(...)=1", verification);
     }
 
-
+    /**
+     * Test equivalent to ProveComb of Tally step3 but combination is not the same as nonce 
+     */
     @Test
-    void TestSigma4_Tally_step3_proveComb() {
+    void TestSigma4_Tally_single_different_amount_of_homo_comb() {
+        //(c1,c2) = (b1^n,b2^n)
+        BigInteger p = pk.getGroup().getP();
 
+        BigInteger c1 = BigInteger.valueOf(6);
+        BigInteger c2 = BigInteger.valueOf(7);
 
-        int n = 3;
+//        int nonce_n = new Random(CONSTANTS.RANDOM_SEED).nextInt();
+        int nonce_n = 4;
+        int numberComb = 5;
+        CipherText origin = new CipherText(c1, c2);
+        CipherText combination = origin.modPow(BigInteger.valueOf(numberComb), p); // modpow(n,p)
 
-        // c1
-        CipherText c1 = elgamal.encrypt(new BigInteger("22"), pk);
-//        BigInteger plain = elgamal.decrypt(c1, sk);
-//        System.out.println("1=="+ plain);
-
-        // homo combination n times of c1
-        CipherText c_prime = new CipherText(c1.c1.pow(n), c1.c2.pow(n));
-//        CipherText c_prime_2 = c1.modPow(BigInteger.valueOf(n), pk.getGroup().getP());
-//        System.out.println("1=?"+ elgamal.decrypt(c_prime_2, sk));
-
-        List<CipherText> c_list = Arrays.asList(c_prime, c1);
-        Sigma4Proof omega = sigma4.proveCombination(sk, c_list, n, kappa);
-//        boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
-//        assertTrue("VerComb(...)=1", verification);
-
+        List<CipherText> origin_list = Arrays.asList(origin);
+        List<CipherText> combination_list = Arrays.asList(combination);
+        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n, kappa);
+        boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
+        assertFalse("VerComb(...)=0", verification);
     }
+
+
+
+    /**
+    * Test equivalent to ProveComb of Tally step2
+    **/
+    @Test
+    void TestSigma4_Tally_two_ciphertexts() {
+        //(c1,c2) = (b1^n,b2^n)
+        BigInteger p = pk.getGroup().getP();
+
+        BigInteger c1 = BigInteger.valueOf(3);
+        BigInteger c2 = BigInteger.valueOf(4);
+
+        BigInteger c1_extra = BigInteger.valueOf(6);
+        BigInteger c2_extra = BigInteger.valueOf(7);
+
+//        int nonce_n = new Random(CONSTANTS.RANDOM_SEED).nextInt();
+        int nonce_n = 4;
+        CipherText origin = new CipherText(c1, c2);
+        CipherText combination = origin.modPow(BigInteger.valueOf(nonce_n), p); // modpow(n,p)
+
+        CipherText origin_extra = new CipherText(c1_extra, c2_extra);
+        CipherText combination_extra = origin_extra.modPow(BigInteger.valueOf(nonce_n), p); // modpow(n,p)
+
+        List<CipherText> origin_list = Arrays.asList(origin, origin_extra);
+        List<CipherText> combination_list = Arrays.asList(combination, combination_extra);
+        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n, kappa);
+        boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
+        assertTrue("VerComb(...)=1", verification);
+    }
+
+        /**
+        * Test equivalent to ProveComb of Tally step2 but with different nonce usage between i-1 and i
+        **/
+        @Test
+        void TestSigma4_Tally_two_ciphertexts_different_nonce() {
+            //(c1,c2) = (b1^n,b2^n)
+            BigInteger p = pk.getGroup().getP();
+
+            BigInteger c1 = BigInteger.valueOf(3);
+            BigInteger c2 = BigInteger.valueOf(4);
+
+            BigInteger c1_extra = BigInteger.valueOf(6);
+            BigInteger c2_extra = BigInteger.valueOf(7);
+
+    //        int nonce_n = new Random(CONSTANTS.RANDOM_SEED).nextInt();
+            int nonce_n = 4;
+            int nonce_n_alt = 7;
+            CipherText origin = new CipherText(c1, c2);
+            CipherText combination = origin.modPow(BigInteger.valueOf(nonce_n), p); // modpow(n,p)
+
+            CipherText origin_extra = new CipherText(c1_extra, c2_extra);
+            CipherText combination_extra = origin_extra.modPow(BigInteger.valueOf(nonce_n_alt), p); // modpow(n,p)
+
+            List<CipherText> origin_list = Arrays.asList(origin, origin_extra);
+            List<CipherText> combination_list = Arrays.asList(combination, combination_extra);
+            Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n, kappa);
+            boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
+            assertFalse("VerComb(...)=0", verification);
+        }
+
+
+
 
 
     @Test

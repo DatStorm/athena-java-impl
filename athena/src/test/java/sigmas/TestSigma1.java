@@ -7,13 +7,11 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.UTIL;
-import project.athena.Gen;
-import project.athena.Sigma1;
+import project.sigma.Sigma1;
 import project.dao.*;
 import project.dao.sigma1.CoinFlipInfo;
 import project.dao.sigma1.ProveKeyInfo;
 import project.dao.sigma1.PublicInfoSigma1;
-import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.factory.Factory;
 import project.factory.MainFactory;
@@ -21,10 +19,7 @@ import project.factory.MainFactory;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Random;
 
 import static org.junit.Assert.*;
 //import java.util.SecureRandom;
