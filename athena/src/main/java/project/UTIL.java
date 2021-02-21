@@ -134,14 +134,18 @@ public class UTIL {
     }
 
     // result = [obj_pi(0), obj_pi(1), ...]
-    public static <T> List<T> permute(List<T> list, List<Integer> permutation) {
+    public static <T> List<T> permute(List<T> objects, List<Integer> permutation) {
+        return objects;
+
+/* TODO: FIXME: comment me back in at some point
         //pi [0,2,3,1,4].
-        ArrayList<T> permutedList = new ArrayList<>();
+        ArrayList<T> permutedObjects = new ArrayList<>();
         for (Integer j : permutation) {
             // Move object pi(i) to position i in the new list
-            permutedList.add(list.get(j));
+            permutedObjects.add(objects.get(j));
         }
-        return permutedList;
+        return permutedObjects;
+        */
     }
 
     public static List<Integer> inversePermutation(List<Integer> permutation) {

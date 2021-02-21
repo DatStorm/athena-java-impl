@@ -46,7 +46,8 @@ public class TestCipherText {
         CipherText c_1 = elgamal.encrypt(BigInteger.valueOf(a), pk);
         CipherText c_2 = elgamal.encrypt(BigInteger.valueOf(b), pk);
 
-        CipherText cMult = c_1.multiply(c_2);
+        BigInteger q = pk.getGroup().getQ();
+        CipherText cMult = c_1.multiply(c_2, q);
         BigInteger dec_mult = elgamal.decrypt(cMult, sk);
         assertEquals("Should be " + "a=" + a + ", b=" + b + ", a*b=c=" + dec_mult, 0, dec_mult.compareTo(BigInteger.valueOf(c)));
     }

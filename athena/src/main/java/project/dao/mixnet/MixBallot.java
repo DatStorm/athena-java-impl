@@ -3,6 +3,8 @@ package project.dao.mixnet;
 import com.google.common.primitives.Bytes;
 import project.elgamal.CipherText;
 
+import java.math.BigInteger;
+
 public class MixBallot {
     private final CipherText c1;
     private final CipherText c_vote;
@@ -20,9 +22,9 @@ public class MixBallot {
         return Bytes.concat(c1_c1, c1_c2, cv_c1, cv_c2);
     }
 
-    public MixBallot multiply(MixBallot ballot) {
-        CipherText c1_mult = this.c1.multiply(ballot.c1);
-        CipherText c2_vote = this.c_vote.multiply(ballot.c_vote);
+    public MixBallot multiply(MixBallot ballot, BigInteger q) {
+        CipherText c1_mult = this.c1.multiply(ballot.c1, q);
+        CipherText c2_vote = this.c_vote.multiply(ballot.c_vote, q);
         return new MixBallot(c1_mult,c2_vote);
     }
 
@@ -36,5 +38,13 @@ public class MixBallot {
     }
     public CipherText getC2() {
         return c_vote;
+    }
+
+    @Override
+    public String toString() {
+        return "MixBallot{" +
+                "b1=" + c1.toString() +
+                ", b2=" + c_vote.toString() +
+                '}';
     }
 }

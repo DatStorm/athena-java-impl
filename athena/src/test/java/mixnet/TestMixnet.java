@@ -60,7 +60,8 @@ public class TestMixnet {
         MixBallot mb1 = new MixBallot(cipher_1, v1);
         MixBallot mb2 = new MixBallot(cipher_2, v2);
 
-        MixBallot mult = mb1.multiply(mb2);
+        BigInteger q = pk.getGroup().getQ();
+        MixBallot mult = mb1.multiply(mb2,q);
 
         BigInteger dec_c1 = elgamal.decrypt(mult.getC1(),sk);
         assertEquals("should be ??", BigInteger.valueOf(c), dec_c1);
@@ -92,6 +93,6 @@ public class TestMixnet {
         MixnetProof proof = mixnet.proveMix(stmt);
         boolean verification = mixnet.verify(BcalList, proof);
 
-        assertTrue("Should return 1", verification);
+        assertTrue("Should return 1: " + verification, verification);
     }
 }
