@@ -24,4 +24,15 @@ public class CipherText {
     public String toString() {
         return "\n\tCiphertext={'c1': " + this.c1 + ", 'c2':" +this.c2 + "}\n";
     }
+
+    public CipherText multiply(CipherText c) {
+
+        BigInteger _c1 = this.c1.multiply(c.c1);
+        BigInteger _c2 = this.c2.multiply(c.c2);
+
+        return new CipherText(_c1,_c2);
+    }
+
+
+
 }

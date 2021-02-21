@@ -18,12 +18,16 @@ public class MainFactory implements Factory {
     private final PK_SK_FRAKM pk_sk_m;
     private final SK_R sk_r;
     private final Gen gen;
+    private final Randomness randomness;
+    private final Random random;
+
 
     public MainFactory() {
-        Randomness r = new Randomness(new Random(CONSTANTS.RANDOM_SEED).nextLong());
-        this.gen = new Gen(r, CONSTANTS.KAPPA);
+        this.random = new Random(CONSTANTS.RANDOM_SEED);
+        this.randomness = new Randomness(random.nextLong());
+        this.gen = new Gen(this.randomness, CONSTANTS.KAPPA);
         this.pk_sk_m = gen.generate();
-        this.sk_r = new SK_R(this.pk_sk_m.getSK(), r);
+        this.sk_r = new SK_R(this.pk_sk_m.getSK(), this.randomness);
     }
 
 
@@ -32,7 +36,7 @@ public class MainFactory implements Factory {
 
         MessageDigest sha3_256 = null;
         try {
-            sha3_256 = MessageDigest.getInstance("SHA3-256");
+            sha3_256 = MessageDigest.getInstance(CONSTANTS.ALGORITHM_SHA3_256);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -69,4 +73,9 @@ public class MainFactory implements Factory {
     public FRAKM getFRAKM() {
         return this.getPK_SK_FRAKM().getFRAKM();
     }
+
+    @Override
+    public Random getRandom() { return this.random; }
+
+
 }

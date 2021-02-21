@@ -49,6 +49,9 @@ public class ElGamal {
      * @param msg bigint in range [0; 2^bitlength -1]
      */
     public CipherText encrypt(BigInteger msg, ElGamalPK pk) {
+        return encrypt(msg, pk, this.random.nextLong());
+    }
+    public CipherText encrypt(BigInteger msg, ElGamalPK pk, long randomSeed) {
         BigInteger p = pk.getGroup().getP();
         int bitLength = p.bitLength();
         
@@ -66,7 +69,7 @@ public class ElGamal {
         BigInteger h = pk.getH();
 
         // sample random r
-        BigInteger r = new BigInteger(p.bitCount() - 1, this.random);
+        BigInteger r = new BigInteger(p.bitCount() - 1, new Random(randomSeed));
 //        BigInteger r = CONSTANTS.ELGAMAL_RAND_R;
 
         // C = (g^r, m·h^r)

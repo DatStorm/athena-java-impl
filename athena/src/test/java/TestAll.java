@@ -13,6 +13,8 @@ import org.junit.runner.RunWith;
         "TestsSigma2",
         "TestsSigma3",
         "TestsSigma4",
+        "TestsMixnets",
+        "TestsCiphertexts",
 //        "TestObliviousTransfer",
 //        "offline.TestBitMatrix",
 //        "offline.TestEncryption"

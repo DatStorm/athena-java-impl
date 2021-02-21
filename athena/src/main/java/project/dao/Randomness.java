@@ -1,5 +1,7 @@
 package project.dao;
 
+import java.util.Random;
+
 public class Randomness {
     private long rand_r;
 
@@ -10,4 +12,5 @@ public class Randomness {
     public long getValue() {
         return this.rand_r;
     }
+
 }
