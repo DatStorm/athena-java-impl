@@ -9,13 +9,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import java.util.Collections;
 
 public class UTIL {
 
 
     /**
      * Converts a list of BigInteger elements into a long concatenated byte array.
+     *
      * @param list to convert
      * @return byt[] of all elements in the list.
      * @throws IOException
@@ -23,7 +29,7 @@ public class UTIL {
     public static byte[] ARRAYLIST_TO_BYTE_ARRAY(ArrayList<BigInteger> list) throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        for (BigInteger el : list ) {
+        for (BigInteger el : list) {
             stream.write(el.toByteArray());
         }
         return stream.toByteArray();
@@ -114,5 +120,53 @@ public class UTIL {
 
 
         return log_e_value / log_e_base;
+    }
+
+    public static boolean CompareLists(List<?> l1, List<?> l2) {
+        // make a copy of the list so the original list is not changed, and remove() is supported
+        ArrayList<?> cp = new ArrayList<>(l1);
+        for (Object o : l2) {
+            if (!cp.remove(o)) {
+                return false;
+            }
+        }
+        return cp.isEmpty();
+    }
+
+    // result = [obj_pi(0), obj_pi(1), ...]
+    public static <T> List<T> permute(List<T> list, List<Integer> permutation) {
+        //pi [0,2,3,1,4].
+        ArrayList<T> permutedList = new ArrayList<>();
+        for (Integer j : permutation) {
+            // Move object pi(i) to position i in the new list
+            permutedList.add(list.get(j));
+        }
+        return permutedList;
+    }
+
+    public static List<Integer> inversePermutation(List<Integer> permutation) {
+        // Find the permutation that will undo pi.
+        //(obj_pi(0), obj_pi(1),...)
+        //
+        int size = permutation.size();
+        List<Integer> inversePermutation = new ArrayList<>(permutation);
+        for(int i = 0; i < size; i++) {
+            int j = permutation.get(i);
+
+            // list is already filled
+            inversePermutation.set(j, i);
+        }
+
+        return inversePermutation;
+    }
+
+    public static List<Integer> newPermutation(int size, Random random) {
+        List<Integer> range = IntStream.range(0, size).boxed().collect(Collectors.toList());
+        Collections.shuffle(range);
+        return range;
+    }
+
+    public static List<Integer> composePermutation(List<Integer> pi1, List<Integer> pi2) {
+        return permute(pi1, pi2);
     }
 }

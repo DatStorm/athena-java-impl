@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
         "TestsSigma4",
         "TestsMixnets",
         "TestsCiphertexts",
+        "TestsUTIL",
 //        "TestObliviousTransfer",
 //        "offline.TestBitMatrix",
 //        "offline.TestEncryption"
