@@ -110,12 +110,15 @@ public class TestCipherText {
 
     @Test
     void TestCipherTextNegate() {
+        BigInteger p = elgamal.getDescription().p;
         BigInteger q = elgamal.getDescription().q;
         BigInteger r = UTIL.getRandomElement(q, new Random(0));
+        BigInteger m = BigInteger.TEN;
+
         CipherText c = elgamal.encrypt(BigInteger.ONE, pk, r);
         CipherText c_neg = elgamal.encrypt(BigInteger.ONE, pk, r.negate());
 
-        CipherText result = c.multiply(c_neg, q);
+        CipherText result = c.multiply(c_neg, p);
         CipherText expected = elgamal.encrypt(BigInteger.ONE, pk, BigInteger.ZERO);
 
         assertEquals(expected, result);
@@ -126,17 +129,20 @@ public class TestCipherText {
         BigInteger p = elgamal.getDescription().p;
         BigInteger q = elgamal.getDescription().q;
         BigInteger r = UTIL.getRandomElement(q, new Random(0));
+        BigInteger m = BigInteger.TEN;
 
         CipherText c = elgamal.encrypt(BigInteger.ONE, pk, r);
-        CipherText c_inv = c.modInverse(p);
+        CipherText c_neg = c.modInverse(p);
 
-        CipherText result = c.multiply(c_inv, p);
+        CipherText result = c.multiply(c_neg, p);
         CipherText expected = elgamal.encrypt(BigInteger.ONE, pk, BigInteger.ZERO);
+
         assertEquals(expected, result);
     }
 
     @Test
     void TestCipherTextInverseVSNeg() {
+        // Enc(m,r^-1) should equal Enc(m,r)^-1.
         BigInteger p = elgamal.getDescription().p;
         BigInteger q = elgamal.getDescription().q;
         BigInteger r = UTIL.getRandomElement(q, new Random(0));
@@ -146,5 +152,27 @@ public class TestCipherText {
         CipherText c_neg = elgamal.encrypt(BigInteger.ONE, pk, r.negate());
 
         assertEquals(c_inv, c_neg);
+    }
+
+    @Test
+    void TestCipherTextRandomnessComposition() {
+        // Enc(m,r^-1) should equal Enc(m,r)^-1.
+        BigInteger p = elgamal.getDescription().p;
+        BigInteger q = elgamal.getDescription().q;
+        BigInteger r = UTIL.getRandomElement(q, new Random(0));
+        BigInteger r1 = UTIL.getRandomElement(q, new Random(1));
+
+        CipherText c = elgamal.encrypt(BigInteger.TEN, pk, r);
+        CipherText c1 = elgamal.encrypt(BigInteger.ONE, pk, r1);
+
+        CipherText expected = c.multiply(c1, p);
+        CipherText result = elgamal.encrypt(BigInteger.TEN, pk, r.add(r1));
+
+        assertEquals(expected, result);
+
+
+        CipherText c1_inv = elgamal.encrypt(BigInteger.ONE, pk, r1.negate());
+        CipherText result2 = result.multiply(c1_inv, p);
+        assertEquals(c, result2);
     }
 }

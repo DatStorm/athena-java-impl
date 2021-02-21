@@ -5,7 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/athena/athena.iml" beforeDir="false" afterPath="$PROJECT_DIR$/athena/athena.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/test/java/elgamal/TestCipherText.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/elgamal/TestCipherText.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +41,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RecentsManager">
@@ -45,7 +49,7 @@
       <recent name="project.dao.mixnet" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.All in athena">
+  <component name="RunManager" selected="JUnit.TestMixnet.TestMixnet">
     <configuration name="All in athena" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="athena" />
       <option name="PACKAGE_NAME" value="" />
@@ -54,7 +58,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestCipherText.TestCipherTextInverse" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="TestCipherText.TestCipherTextRandomnessComposition" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="athena" />
       <extension name="coverage">
         <pattern>
@@ -64,45 +68,13 @@
       </extension>
       <option name="PACKAGE_NAME" value="elgamal" />
       <option name="MAIN_CLASS_NAME" value="elgamal.TestCipherText" />
-      <option name="METHOD_NAME" value="TestCipherTextInverse" />
+      <option name="METHOD_NAME" value="TestCipherTextRandomnessComposition" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestCipherText.TestCipherTextInverseVSNeg" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="elgamal.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="elgamal" />
-      <option name="MAIN_CLASS_NAME" value="elgamal.TestCipherText" />
-      <option name="METHOD_NAME" value="TestCipherTextInverseVSNeg" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestCipherText.TestCipherTextNegate" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="elgamal.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="elgamal" />
-      <option name="MAIN_CLASS_NAME" value="elgamal.TestCipherText" />
-      <option name="METHOD_NAME" value="TestCipherTextNegate" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestMixnet.TestMixBallot_Multiply" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="TestMixnet.TestMixnet" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="athena" />
       <extension name="coverage">
         <pattern>
@@ -112,19 +84,22 @@
       </extension>
       <option name="PACKAGE_NAME" value="mixnet" />
       <option name="MAIN_CLASS_NAME" value="mixnet.TestMixnet" />
-      <option name="METHOD_NAME" value="TestMixBallot_Multiply" />
+      <option name="METHOD_NAME" value="TestMixnet" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="JUnit.All in athena" />
+      <item itemvalue="JUnit.TestMixnet.TestMixnet" />
+      <item itemvalue="JUnit.TestCipherText.TestCipherTextRandomnessComposition" />
+    </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.TestMixnet.TestMixnet" />
+        <item itemvalue="JUnit.TestCipherText.TestCipherTextRandomnessComposition" />
         <item itemvalue="JUnit.All in athena" />
-        <item itemvalue="JUnit.TestMixnet.TestMixBallot_Multiply" />
-        <item itemvalue="JUnit.TestCipherText.TestCipherTextNegate" />
-        <item itemvalue="JUnit.TestCipherText.TestCipherTextInverse" />
-        <item itemvalue="JUnit.TestCipherText.TestCipherTextInverseVSNeg" />
       </list>
     </recent_temporary>
   </component>
@@ -138,5 +113,27 @@
       <updated>1613922969452</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java</url>
+          <line>239</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
