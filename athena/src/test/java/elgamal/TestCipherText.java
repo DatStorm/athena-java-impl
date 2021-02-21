@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import project.UTIL;
 import project.elgamal.CipherText;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
@@ -13,8 +14,11 @@ import project.factory.Factory;
 import project.factory.MainFactory;
 import project.mixnet.Mixnet;
 
+import javax.crypto.Cipher;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertArrayEquals;
@@ -46,8 +50,8 @@ public class TestCipherText {
         CipherText c_1 = elgamal.encrypt(BigInteger.valueOf(a), pk);
         CipherText c_2 = elgamal.encrypt(BigInteger.valueOf(b), pk);
 
-        BigInteger q = pk.getGroup().getQ();
-        CipherText cMult = c_1.multiply(c_2, q);
+        BigInteger p = pk.getGroup().p;
+        CipherText cMult = c_1.multiply(c_2, p);
         BigInteger dec_mult = elgamal.decrypt(cMult, sk);
         assertEquals("Should be " + "a=" + a + ", b=" + b + ", a*b=c=" + dec_mult, 0, dec_mult.compareTo(BigInteger.valueOf(c)));
     }
@@ -102,9 +106,45 @@ public class TestCipherText {
             }
         }
         assertArrayEquals(c1_c2_concat, concatenated);
-
-
     }
 
+    @Test
+    void TestCipherTextNegate() {
+        BigInteger q = elgamal.getDescription().q;
+        BigInteger r = UTIL.getRandomElement(q, new Random(0));
+        CipherText c = elgamal.encrypt(BigInteger.ONE, pk, r);
+        CipherText c_neg = elgamal.encrypt(BigInteger.ONE, pk, r.negate());
 
+        CipherText result = c.multiply(c_neg, q);
+        CipherText expected = elgamal.encrypt(BigInteger.ONE, pk, BigInteger.ZERO);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void TestCipherTextInverse() {
+        BigInteger p = elgamal.getDescription().p;
+        BigInteger q = elgamal.getDescription().q;
+        BigInteger r = UTIL.getRandomElement(q, new Random(0));
+
+        CipherText c = elgamal.encrypt(BigInteger.ONE, pk, r);
+        CipherText c_inv = c.modInverse(p);
+
+        CipherText result = c.multiply(c_inv, p);
+        CipherText expected = elgamal.encrypt(BigInteger.ONE, pk, BigInteger.ZERO);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void TestCipherTextInverseVSNeg() {
+        BigInteger p = elgamal.getDescription().p;
+        BigInteger q = elgamal.getDescription().q;
+        BigInteger r = UTIL.getRandomElement(q, new Random(0));
+
+        CipherText c = elgamal.encrypt(BigInteger.ONE, pk, r);
+        CipherText c_inv = c.modInverse(p);
+        CipherText c_neg = elgamal.encrypt(BigInteger.ONE, pk, r.negate());
+
+        assertEquals(c_inv, c_neg);
+    }
 }

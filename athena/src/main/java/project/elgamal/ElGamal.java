@@ -51,8 +51,15 @@ public class ElGamal {
     public CipherText encrypt(BigInteger msg, ElGamalPK pk) {
         return encrypt(msg, pk, this.random.nextLong());
     }
-    public CipherText encrypt(BigInteger msg, ElGamalPK pk, long randomSeed) {
+    public CipherText encrypt(BigInteger msg, ElGamalPK pk, long randomSeed) { //TODO: Remove randomSeed version? Confusing
+        return encrypt(msg, pk, UTIL.getRandomElement(groupDescription.q, new Random(randomSeed)));
+    }
+
+    public CipherText encrypt(BigInteger msg, ElGamalPK pk, BigInteger r) {
         BigInteger p = pk.getGroup().getP();
+        BigInteger q = pk.getGroup().getQ();
+        r = r.mod(q).add(q).mod(q); //FIXME: Needed? Yes i think
+
         int bitLength = p.bitLength();
         
         if (msg.bitLength() > bitLength) {
@@ -67,9 +74,6 @@ public class ElGamal {
         // Extract public key
         BigInteger g = pk.getGroup().getG();
         BigInteger h = pk.getH();
-
-        // sample random r
-        BigInteger r = new BigInteger(p.bitCount() - 1, new Random(randomSeed));
 //        BigInteger r = CONSTANTS.ELGAMAL_RAND_R;
 
         // C = (g^r, m·h^r)

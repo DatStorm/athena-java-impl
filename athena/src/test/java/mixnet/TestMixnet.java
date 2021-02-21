@@ -4,9 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import project.dao.mixnet.MixBallot;
-import project.dao.mixnet.MixnetProof;
-import project.dao.mixnet.MixnetStatement;
+import project.dao.mixnet.*;
 import project.elgamal.CipherText;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
@@ -60,8 +58,8 @@ public class TestMixnet {
         MixBallot mb1 = new MixBallot(cipher_1, v1);
         MixBallot mb2 = new MixBallot(cipher_2, v2);
 
-        BigInteger q = pk.getGroup().getQ();
-        MixBallot mult = mb1.multiply(mb2,q);
+        BigInteger p = pk.getGroup().getP();
+        MixBallot mult = mb1.multiply(mb2,p);
 
         BigInteger dec_c1 = elgamal.decrypt(mult.getC1(),sk);
         assertEquals("should be ??", BigInteger.valueOf(c), dec_c1);
@@ -88,10 +86,14 @@ public class TestMixnet {
         MixBallot mb3 = new MixBallot(cipher_1, v3);
 //        CipherText b4 = elgamal.encrypt(BigInteger.valueOf(103),pk);
 //        MixnetStatement stmt = new MixnetStatement(Arrays.asList(b1,b2,b3,b4));
+
+
         List<MixBallot> BcalList = Arrays.asList(mb1, mb2, mb3);
-        MixnetStatement stmt = new MixnetStatement(BcalList);
-        MixnetProof proof = mixnet.proveMix(stmt);
-        boolean verification = mixnet.verify(BcalList, proof);
+        MixStruct mixStruct = mixnet.mix(BcalList);
+        MixStatement statement = new MixStatement(BcalList, mixStruct.mixedBallots);
+        MixProof proof = mixnet.proveMix(statement, mixStruct.secret);
+
+        boolean verification = mixnet.verify(statement, proof);
 
         assertTrue("Should return 1: " + verification, verification);
     }

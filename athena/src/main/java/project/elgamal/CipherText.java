@@ -1,6 +1,7 @@
 package project.elgamal;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 public class CipherText {
     public BigInteger c1;
@@ -25,10 +26,16 @@ public class CipherText {
         return "\n\tCiphertext={'c1': " + this.c1 + ", 'c2':" +this.c2 + "}\n";
     }
 
-    public CipherText multiply(CipherText c, BigInteger q) {
+    public CipherText multiply(CipherText c, BigInteger p) { // TODO: Enforce mod p. User of function should not decide. Maybee include public key or group in fields?
+        BigInteger _c1 = this.c1.multiply(c.c1).mod(p);
+        BigInteger _c2 = this.c2.multiply(c.c2).mod(p);
 
-        BigInteger _c1 = this.c1.multiply(c.c1).mod(q);
-        BigInteger _c2 = this.c2.multiply(c.c2).mod(q);
+        return new CipherText(_c1,_c2);
+    }
+
+    public CipherText modInverse(BigInteger p) {
+        BigInteger _c1 = this.c1.modInverse(p);
+        BigInteger _c2 = this.c2.modInverse(p);
 
         return new CipherText(_c1,_c2);
     }
@@ -50,5 +57,18 @@ public class CipherText {
         }
 
         return _b_c1 && _b_c2;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CipherText that = (CipherText) o;
+        return Objects.equals(c1, that.c1) && Objects.equals(c2, that.c2);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(c1, c2);
     }
 }
