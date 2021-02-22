@@ -41,7 +41,7 @@ public class Mixnet {
         List<BigInteger> randomnessS = new ArrayList<>();           //For vote
         List<MixBallot> reencryptedBallots = new ArrayList<>();     //Result of mixnet
 
-        for (int i = 1; i < ell; i++) {
+        for (int i = 0; i < ell; i++) {
             MixBallot ballot = ballots.get(i);
 
             //Make randomness
@@ -87,19 +87,6 @@ public class Mixnet {
 
             shadowMixStructs.add(shadowMixStruct);
             shadowMixes.add(shadowMixStruct.mixedBallots);
-
-            //TODO: Remove below
-            CipherText c = ballots.get(0).getC2();
-            CipherText reenc = elgamal.encrypt(BigInteger.ONE, pk, shadowMixStruct.secret.randomnessS.get(0));
-            CipherText composed = c.multiply(reenc, p);
-
-            CipherText expected = shadowMixStruct.mixedBallots.get(0).getC2();
-
-            System.out.println("ballot " + c);
-            System.out.println("reenc " + reenc);
-            System.out.println("composed " + composed);
-            System.out.println("expected " + expected);
-            assert composed.equals(expected); //Dette check holder for RandomnessR, men ikke for RandomnessS. Check print
         }
 
         //Calculate challenges from hash

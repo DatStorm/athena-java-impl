@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/MixBallot.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/MixBallot.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/elgamal/TestCipherText.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/elgamal/TestCipherText.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/test/java/mixnet/TestMixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/mixnet/TestMixnet.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,7 +130,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java</url>
-          <line>239</line>
+          <line>230</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>

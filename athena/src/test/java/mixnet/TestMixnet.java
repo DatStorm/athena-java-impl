@@ -88,9 +88,10 @@ public class TestMixnet {
 //        MixnetStatement stmt = new MixnetStatement(Arrays.asList(b1,b2,b3,b4));
 
 
-        List<MixBallot> BcalList = Arrays.asList(mb1, mb2, mb3);
-        MixStruct mixStruct = mixnet.mix(BcalList);
-        MixStatement statement = new MixStatement(BcalList, mixStruct.mixedBallots);
+        List<MixBallot> ballots = Arrays.asList(mb1, mb2, mb3);
+        MixStruct mixStruct = mixnet.mix(ballots);
+
+        MixStatement statement = new MixStatement(ballots, mixStruct.mixedBallots);
         MixProof proof = mixnet.proveMix(statement, mixStruct.secret);
 
         boolean verification = mixnet.verify(statement, proof);
