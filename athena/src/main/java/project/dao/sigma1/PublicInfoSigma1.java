@@ -1,6 +1,5 @@
 package project.dao.sigma1;
 
-import project.dao.MessageSpace;
 import project.elgamal.ElGamalPK;
 
 public class PublicInfoSigma1 {
