@@ -135,9 +135,7 @@ public class UTIL {
 
     // result = [obj_pi(0), obj_pi(1), ...]
     public static <T> List<T> permute(List<T> objects, List<Integer> permutation) {
-        return objects;
 
-/* TODO: FIXME: comment me back in at some point
         //pi [0,2,3,1,4].
         ArrayList<T> permutedObjects = new ArrayList<>();
         for (Integer j : permutation) {
@@ -145,7 +143,6 @@ public class UTIL {
             permutedObjects.add(objects.get(j));
         }
         return permutedObjects;
-        */
     }
 
     public static List<Integer> inversePermutation(List<Integer> permutation) {

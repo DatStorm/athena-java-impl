@@ -6,9 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/MixBallot.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/MixBallot.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/MixnetProof.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/MixnetStatement.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/Step1Statement.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/Step2Statement.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/mixnet/TestMixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/mixnet/TestMixnet.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,7 +51,7 @@
       <recent name="project.dao.mixnet" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.TestMixnet.TestMixnet">
+  <component name="RunManager" selected="JUnit.All in athena">
     <configuration name="All in athena" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="athena" />
       <option name="PACKAGE_NAME" value="" />
@@ -97,9 +99,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.All in athena" />
         <item itemvalue="JUnit.TestMixnet.TestMixnet" />
         <item itemvalue="JUnit.TestCipherText.TestCipherTextRandomnessComposition" />
-        <item itemvalue="JUnit.All in athena" />
       </list>
     </recent_temporary>
   </component>
@@ -124,16 +126,6 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java</url>
-          <line>230</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>

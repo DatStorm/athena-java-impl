@@ -9,7 +9,6 @@ public class SK_R {
     private final Randomness r;
 
     public SK_R(ElGamalSK sk, Randomness r) {
-
         this.sk = sk;
         this.r = r;
     }

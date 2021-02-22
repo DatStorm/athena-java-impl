@@ -8,6 +8,7 @@ import project.UTIL;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -44,6 +45,33 @@ public class TestUTIL {
         assertArrayEquals(msg, objects.toArray(), result.toArray());
 
 
+    }
+
+    @Test
+    void TestInversePermOfIdentity() {
+        List<Integer> objects = UTIL.newPermutation(10, new Random(0));
+        List<Integer> objects_perm = UTIL.permute(objects, objects);
+        List<Integer> inversePermutation = UTIL.inversePermutation(objects);
+
+        List<Integer> result = UTIL.permute(objects_perm, inversePermutation);
+        assertArrayEquals(objects.toArray(), result.toArray());
+    }
+
+
+    @Test
+    void TestInversePermOfIdentity2() {
+        List<Integer> identity = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5));
+        List<Integer> inversePermutation = UTIL.inversePermutation(identity);
+        assertArrayEquals(identity.toArray(), inversePermutation.toArray());
+
+        List<Integer> identity2 = new ArrayList<>(Arrays.asList(0, 5, 1, 4, 3, 2));
+
+        List<Integer> inversePermutation2 = UTIL.inversePermutation(identity2);
+
+        List<Integer> obj = UTIL.permute(identity, identity2);
+        obj = UTIL.permute(obj, inversePermutation2);
+
+        assertArrayEquals(identity.toArray(), obj.toArray());
     }
 
 
