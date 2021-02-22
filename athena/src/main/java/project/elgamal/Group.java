@@ -3,12 +3,12 @@ package project.elgamal;
 import java.math.BigInteger;
 
 // Used for sending the ElGamal description over network
-public class GroupDescription {
+public class Group {
     public final BigInteger g;
     public final BigInteger q;
     public final BigInteger p;
 
-    GroupDescription(BigInteger g, BigInteger p, BigInteger q) {
+    Group(BigInteger g, BigInteger p, BigInteger q) {
         this.g = g;
         this.q = q;
         this.p = p;

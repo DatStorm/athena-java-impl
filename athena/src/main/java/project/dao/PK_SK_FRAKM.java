@@ -1,29 +1,21 @@
 package project.dao;
 
-import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
 
 public class PK_SK_FRAKM {
-    private final ElGamalPK pk;
-    private final ElGamalSK sk;
-    private final FRAKM frakm;
+    public final ElGamalSK sk;
+    public final MessageSpace messageSpace;
 
-    public PK_SK_FRAKM(ElGamalPK pk, ElGamalSK sk, FRAKM frakm) {
-
-        this.pk = pk;
+    public PK_SK_FRAKM(ElGamalSK sk, MessageSpace messageSpace) {
         this.sk = sk;
-        this.frakm = frakm;
+        this.messageSpace = messageSpace;
     }
 
     public ElGamalSK getSK() {
         return this.sk;
     }
 
-    public ElGamalPK getPK() {
-        return this.pk;
-    }
-
-    public FRAKM getFRAKM() {
-        return this.frakm;
+    public MessageSpace getMessageSpace() {
+        return this.messageSpace;
     }
 }

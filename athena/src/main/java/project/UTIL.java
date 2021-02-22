@@ -1,19 +1,16 @@
 package project;
 
 import project.dao.sigma1.CoinFlipInfo;
-import project.elgamal.GroupDescription;
+import project.elgamal.Group;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import java.util.Collections;
 
 public class UTIL {
@@ -94,7 +91,7 @@ public class UTIL {
         return -1;
     }
 
-    public static void CompareElGamalGroup(GroupDescription a, GroupDescription b) {
+    public static void CompareElGamalGroup(Group a, Group b) {
 
         assert a.getP().compareTo(b.getP()) == 0 : "a.p != b.p";
         assert a.getQ().compareTo(b.getQ()) == 0 : "a.q != a.q";

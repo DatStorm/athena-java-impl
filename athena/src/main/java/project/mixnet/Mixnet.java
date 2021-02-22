@@ -44,9 +44,8 @@ public class Mixnet {
             MixBallot ballot = ballots.get(i);
 
             //Make randomness
-            BigInteger toExclisive = BigInteger.valueOf(256); //TODO: q?
-            BigInteger ri = UTIL.getRandomElement(toExclisive, random);
-            BigInteger si = UTIL.getRandomElement(toExclisive, random);
+            BigInteger ri = UTIL.getRandomElement(BigInteger.ZERO, q, random);
+            BigInteger si = UTIL.getRandomElement(BigInteger.ZERO, q, random);
 
             //Make reencryption ciphertets
             CipherText reencryptRi = elgamal.encrypt(BigInteger.ONE, pk, ri);
@@ -89,7 +88,7 @@ public class Mixnet {
         }
 
         //Calculate challenges from hash
-        List<Boolean> challenges = hash(shadowMixes); //TODO: SHA-3-256 outputs byte[] 32 => n=32, needs to bigger
+        List<Boolean> challenges = hash(shadowMixes);
 
         //Calculate proof values
         List<MixSecret> composedMixSecrets = new ArrayList<>();
@@ -117,8 +116,6 @@ public class Mixnet {
             List<BigInteger> composedRandomnessR = new ArrayList<>();
             List<BigInteger> composedRandomnessS = new ArrayList<>();
             for (int i = 0; i < ell; i++) {
-
-                // TODO: Permute. IMPORTATNT!
                 // Compose randomness r for encrypted private credential
                 BigInteger shadowR = shadowMixSecret.randomnessR.get(i);    //Randomness used to make reencryption of shadow mix.
                 BigInteger realR = originalMixSecret.randomnessR.get(i);    //Randomness used to make reencryption of real mix.
@@ -130,32 +127,22 @@ public class Mixnet {
                 BigInteger realS = originalMixSecret.randomnessS.get(i);    //Randomness used to make reencryption of real mix.
                 BigInteger composedS = shadowS.negate().add(realS).mod(q);  // -s1 + s2
                 composedRandomnessS.add(composedS);
-
-
             }
             // Calculate composed permutation
             List<Integer> shadowPermutationInverse = UTIL.inversePermutation(shadowMixSecret.permutation);
             List<Integer> composedPermutation = UTIL.composePermutation(shadowPermutationInverse, originalMixSecret.permutation);
 
-            //Apply shadowPermutationInverse to randomness
+            //Apply shadowPermutation to randomness
             composedRandomnessR = UTIL.permute(composedRandomnessR, shadowMixSecret.permutation);
             composedRandomnessS = UTIL.permute(composedRandomnessS, shadowMixSecret.permutation);
 
             return new MixSecret(composedPermutation, composedRandomnessR, composedRandomnessS);
-
         } else { // challenge c = 0
-
             return shadowMixSecret; //permutation, randomnessR, randomnessS
         }
     }
 
-    //FIXME: Fy for satan!
-    private List<Boolean> hash(Map<Integer, List<MixBallot>> mapOfBj) {
-        List<List<MixBallot>> shadowMixes = new ArrayList<>(mapOfBj.values());
-        return hash(shadowMixes);
-    }
-
-    private List<Boolean> hash(List<List<MixBallot>> ballots) {
+        private List<Boolean> hash(List<List<MixBallot>> ballots) {
         byte[] concatenated = new byte[]{};
 
         // \mathcal{B}_j for j in [1,n]
@@ -173,9 +160,7 @@ public class Mixnet {
        assert n == 256;
        assert listOfC.size() == 256;
 
-
        return listOfC;
-
     }
 
     public boolean verify(MixStatement statement, MixProof proof) {
@@ -239,13 +224,6 @@ public class Mixnet {
             CipherText c2 = destinationBallot.getC2().multiply(reencryptionFactorS, p);
 
             reencryptedSourceMix.add(new MixBallot(c1, c2));
-
-            //Verify
-            //boolean isValid = c1.equals(sourceBallot.getC1()) && c2.equals(sourceBallot.getC2());
-            //if (!isValid) {
-//                      System.out.println("originalBallots = " + originalBallots.toString() + ", \nproof = " + proof);
-            //    return true;
-            //}
         }
 
         //Apply permutation

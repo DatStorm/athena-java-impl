@@ -2,11 +2,11 @@ package project.dao;
 
 import java.math.BigInteger;
 
-public class FRAKM {
+public class MessageSpace {
     private BigInteger start;
     private BigInteger end;
 
-    public FRAKM(BigInteger start, BigInteger end) {
+    public MessageSpace(BigInteger start, BigInteger end) {
         this.start = start;
         this.end = end;
     }

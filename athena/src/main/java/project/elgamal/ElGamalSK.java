@@ -3,24 +3,22 @@ package project.elgamal;
 import java.math.BigInteger;
 
 public class ElGamalSK {
-    private GroupDescription group;
-    private BigInteger sk;
-
-    public ElGamalSK(GroupDescription group, BigInteger sk) {
-        this.group = group;
+    public final BigInteger sk;
+    public final ElGamalPK pk;
+    
+    public ElGamalSK(Group group, BigInteger sk) {
         this.sk = sk;
+        
+        BigInteger h = group.g.modPow(sk, group.p); // h=g^sk
+        this.pk = new ElGamalPK(group, h);
     }
-
+    
     public BigInteger toBigInteger() {
-        return this.sk;
+        return sk;
     }
 
     public ElGamalPK getPK() {
-        BigInteger h = group.g.modPow(sk, group.p); // h=g^sk
-        return new ElGamalPK(group, h);
+        return this.pk;
     }
 
-    public BigInteger getSK() {
-        return sk;
-    }
 }

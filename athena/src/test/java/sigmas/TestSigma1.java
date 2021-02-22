@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.UTIL;
+import project.elgamal.ElGamalSK;
 import project.sigma.Sigma1;
 import project.dao.*;
 import project.dao.sigma1.CoinFlipInfo;
@@ -28,34 +29,35 @@ import static org.junit.Assert.*;
 @DisplayName("Test Sigma1")
 public class TestSigma1 {
     private final int kappa = CONSTANTS.KAPPA;
-    private ElGamalPK pk;
-    private FRAKM frakm;
     private Sigma1 sigma1;
-    private SK_R sk_r;
+    private ElGamalSK sk;
+    private ElGamalPK pk;
+    private Randomness randomness;
 
     @BeforeEach
     void setUp() {
-        
         Factory factory = new MainFactory();
+        this.sk = factory.getSK();
         this.pk = factory.getPK();
-        this.frakm = factory.getFRAKM();
-        this.sk_r = factory.getSK_R();
         this.sigma1 = new Sigma1(factory.getHash());
+        this.randomness = new Randomness(123);
 
     }
 
+    /*
     @Test
     void TestFRAKM() {
 
         BigInteger start = BigInteger.ONE;
         BigInteger end = BigInteger.valueOf(100);
-        FRAKM frakm = new FRAKM(start, end);
-        assertTrue("2 should be in range [1, 100]", frakm.isInRange(BigInteger.TWO));
-        assertTrue("1 should be in range [1, 100]", frakm.isInRange(BigInteger.ONE));
-        assertTrue("100 should be in range [1, 100]", frakm.isInRange(BigInteger.valueOf(100)));
-        assertFalse("101 should be in range [1, 100]", frakm.isInRange(BigInteger.valueOf(101)));
-        assertFalse("0 should be in range [1, 100]", frakm.isInRange(BigInteger.ZERO));
+        MessageSpace messageSpace = new MessageSpace(start, end);
+        assertTrue("2 should be in range [1, 100]", messageSpace.isInRange(BigInteger.TWO));
+        assertTrue("1 should be in range [1, 100]", messageSpace.isInRange(BigInteger.ONE));
+        assertTrue("100 should be in range [1, 100]", messageSpace.isInRange(BigInteger.valueOf(100)));
+        assertFalse("101 should be in range [1, 100]", messageSpace.isInRange(BigInteger.valueOf(101)));
+        assertFalse("0 should be in range [1, 100]", messageSpace.isInRange(BigInteger.ZERO));
     }
+    */
 
     @Test
     void TestBigIntegerMod2_IntValueExact() {
@@ -85,8 +87,8 @@ public class TestSigma1 {
      */
     @Test
     void TestProveKey_Verify_step2() throws IOException {
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk, this.frakm);
-        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk);
+        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         boolean verify = sigma1.checkStep2(coinFlipInfo_pairs);
         assertTrue("fi ?=? F_i(ri,b_A_i)", verify);
@@ -94,8 +96,8 @@ public class TestSigma1 {
 
     @Test
     void TestProveKey_Verify_step3() throws IOException {
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk, frakm);
-        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk);
+        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         ArrayList<BigInteger> s1_sk = rho.getS1_Sk();
         ArrayList<BigInteger> y1_yk = rho.getY1_Yk();
@@ -114,8 +116,8 @@ public class TestSigma1 {
 
     @Test
     void TestProveKey_Verify_step4() throws IOException {
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk, frakm);
-        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk);
+        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         ArrayList<BigInteger> s1_sk = rho.getS1_Sk();
         ArrayList<BigInteger> y1_yk = rho.getY1_Yk();
@@ -142,8 +144,8 @@ public class TestSigma1 {
     @Test
     void TestProveKey_Verify() throws IOException {
 
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, pk, this.frakm);
-        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, pk);
+        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         boolean verification = sigma1.VerifyKey(publicInfoSigma1, rho, this.kappa);
 
         assertTrue("Should return 1", verification);
@@ -155,8 +157,8 @@ public class TestSigma1 {
     @Test
     void TestSigma1() throws IOException {
 
-        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk, this.frakm);
-        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk_r, this.kappa);
+        PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk);
+        ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         boolean verification = sigma1.VerifyKey(publicInfoSigma1, rho, this.kappa);
 
         assertTrue("Should return 1", verification);
