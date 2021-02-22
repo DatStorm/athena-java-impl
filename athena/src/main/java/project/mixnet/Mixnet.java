@@ -12,10 +12,11 @@ import project.factory.Factory;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Mixnet {
     //    private final int n = CONSTANTS.MIXNET_N;
-    private final int n = 32;
+    private final int n = 256;
     private final MessageDigest hashH;
     private final ElGamal elgamal;
     private final Random random;
@@ -81,9 +82,9 @@ public class Mixnet {
 
         //Do shadow mix
         List<MixStruct> shadowMixStructs = new ArrayList<>();
-        List<List<MixBallot>> shadowMixes = new ArrayList<>();
+        List<List<MixBallot>> shadowMixes = new ArrayList<>(n);
         for (int i = 0; i < n; i++) { // Improve?
-            MixStruct shadowMixStruct = mix(ballots);
+            MixStruct shadowMixStruct = mix(ballots); // step 1 + 2
 
             shadowMixStructs.add(shadowMixStruct);
             shadowMixes.add(shadowMixStruct.mixedBallots);
@@ -93,7 +94,7 @@ public class Mixnet {
         List<Boolean> challenges = hash(shadowMixes);
 
         //Calculate proof values
-        List<MixSecret> composedMixSecrets = new ArrayList<>();
+        List<MixSecret> composedMixSecrets = new ArrayList<>(n);
         for (int j = 0; j < n; j++) {
             //Extract challenge
             Boolean challenge = challenges.get(j);
@@ -142,11 +143,6 @@ public class Mixnet {
         }
     }
 
-    //FIXME: Fy for satan!
-    private List<Boolean> hash(Map<Integer, List<MixBallot>> mapOfBj) {
-        List<List<MixBallot>> shadowMixes = new ArrayList<>(mapOfBj.values());
-        return hash(shadowMixes);
-    }
 
     private List<Boolean> hash(List<List<MixBallot>> ballots) {
         byte[] concatenated = new byte[]{};
@@ -159,21 +155,13 @@ public class Mixnet {
         }
 
         byte[] hashed = this.hashH.digest(concatenated);
-        assert hashed.length == n : "length not equal! hashed.length=";
 
         // create list of C
-//        List<Boolean> listOfC = ByteConverter.valueOf(hashed, hashed.length);
+        List<Boolean> listOfC = ByteConverter.valueOf(hashed, n);
+        assert listOfC.size() == n : "listOfC.size()=" + listOfC.size() + " != n= " + n;
 
-        // TODO: HACKY ONLY TAKES THE FIRST n......
-        //List<Boolean> firstNElementsOfC = listOfC.stream().limit(n).collect(Collectors.toList());
-
-//        assert firstNElementsOfC.size() == n : "listOfC.size()=" + listOfC.size() + " != n=" + n;
-//        return listOfC;
-        List<Boolean> listOfC = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            listOfC.add(false);
-        }
         return listOfC;
+
     }
 
     public boolean verify(MixStatement statement, MixProof proof) {
@@ -203,6 +191,7 @@ public class Mixnet {
             Boolean challenge = challenges.get(j);
             if (challenge) { // c = 1
 
+
             } else {
 
                 for (int i = 0; i < ell; i++) {
@@ -215,10 +204,6 @@ public class Mixnet {
                     CipherText reencryptionFactorR = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessR.get(i));
                     CipherText c1 = ballot.getC1().multiply(reencryptionFactorR, p);
 
-                    System.out.println("ballot " + ballot.getC1());
-                    System.out.println("reenc " + reencryptionFactorR);
-                    System.out.println("composed " + c1);
-                    System.out.println("expected " + shadowBallot.getC1());
 
                     //c2 * Enc(1,S)
                     CipherText reencryptionFactorS = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessS.get(i));
@@ -240,3 +225,5 @@ public class Mixnet {
     }
 
 }
+
+
