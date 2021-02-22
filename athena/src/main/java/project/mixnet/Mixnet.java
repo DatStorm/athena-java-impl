@@ -12,10 +12,11 @@ import project.factory.Factory;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Mixnet {
     //    private final int n = CONSTANTS.MIXNET_N;
-    private final int n = 32;
+    private final int n = 256;
     private final MessageDigest hashH;
     private final ElGamal elgamal;
     private final Random random;
@@ -90,7 +91,7 @@ public class Mixnet {
         }
 
         //Calculate challenges from hash
-        List<Boolean> challenges = hash(shadowMixes);
+        List<Boolean> challenges = hash(shadowMixes); //TODO: SHA-3-256 outputs byte[] 32 => n=32, needs to bigger
 
         //Calculate proof values
         List<MixSecret> composedMixSecrets = new ArrayList<>();
@@ -138,7 +139,7 @@ public class Mixnet {
             return new MixSecret(composedPermutation, composedRandomnessR, composedRandomnessS);
 
         } else { // challenge c = 0
-            return shadowMixSecret;
+            return shadowMixSecret; //permutation, randomnessR, randomnessS
         }
     }
 
@@ -159,26 +160,20 @@ public class Mixnet {
         }
 
         byte[] hashed = this.hashH.digest(concatenated);
-        assert hashed.length == n : "length not equal! hashed.length=";
 
         // create list of C
-//        List<Boolean> listOfC = ByteConverter.valueOf(hashed, hashed.length);
+       List<Boolean> listOfC = ByteConverter.valueOf(hashed, n);
+       assert listOfC.size() == n : "listOfC.size()=" + listOfC.size() + " != n=" + n;
+       assert n == 256;
+       assert listOfC.size() == 256;
 
-        // TODO: HACKY ONLY TAKES THE FIRST n......
-        //List<Boolean> firstNElementsOfC = listOfC.stream().limit(n).collect(Collectors.toList());
 
-//        assert firstNElementsOfC.size() == n : "listOfC.size()=" + listOfC.size() + " != n=" + n;
-//        return listOfC;
-        List<Boolean> listOfC = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            listOfC.add(false);
-        }
-        return listOfC;
+       return listOfC;
+
     }
 
     public boolean verify(MixStatement statement, MixProof proof) {
         int ell = statement.ballots.size();
-        System.out.println("Verify\n\n\n\n\n\n\n\n\n\n\n\n");
 
         // B^\prime (step 2)
         List<MixBallot> originalBallots = statement.ballots;
@@ -203,6 +198,28 @@ public class Mixnet {
             Boolean challenge = challenges.get(j);
             if (challenge) { // c = 1
 
+                for (int i = 0; i < ell; i++) {
+                    MixBallot mixedOriginalBallot = mixedOriginalBallots.get(i); //Mixed original ballot
+                    MixBallot shadowBallot = shadowMix.get(i);
+
+                    //TODO: Permute: permutation
+
+                    //c1 * Enc(1,R)
+                    CipherText reencryptionFactorR = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessR.get(i));
+                    CipherText c1 = shadowBallot.getC1().multiply(reencryptionFactorR, p);
+
+                    //c2 * Enc(1,S)
+                    CipherText reencryptionFactorS = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessS.get(i));
+                    CipherText c2 = shadowBallot.getC2().multiply(reencryptionFactorS, p);
+
+                    //Verify
+                    boolean isValid = c1.equals(mixedOriginalBallot.getC1()) && c2.equals(mixedOriginalBallot.getC2());
+                    if (!isValid) {
+//                      System.out.println("originalBallots = " + originalBallots.toString() + ", \nproof = " + proof);
+                        return false;
+                    }
+                }
+
             } else {
 
                 for (int i = 0; i < ell; i++) {
@@ -214,11 +231,6 @@ public class Mixnet {
                     //c1 * Enc(1,R)
                     CipherText reencryptionFactorR = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessR.get(i));
                     CipherText c1 = ballot.getC1().multiply(reencryptionFactorR, p);
-
-                    System.out.println("ballot " + ballot.getC1());
-                    System.out.println("reenc " + reencryptionFactorR);
-                    System.out.println("composed " + c1);
-                    System.out.println("expected " + shadowBallot.getC1());
 
                     //c2 * Enc(1,S)
                     CipherText reencryptionFactorS = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessS.get(i));
