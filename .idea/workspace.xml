@@ -6,11 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/MixnetProof.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/MixnetStatement.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/Step1Statement.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/mixnet/Step2Statement.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/athena/Gen.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/athena/Gen.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/MessageSpace.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/PK_SK_FRAKM.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/dao/sigma1/PublicInfoSigma1.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/dao/sigma1/PublicInfoSigma1.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/factory/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/factory/Factory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/factory/MainFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/factory/MainFactory.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,15 +93,33 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="TestUTIL.TestInversePermOfIdentity2" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="athena" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="util.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="util" />
+      <option name="MAIN_CLASS_NAME" value="util.TestUTIL" />
+      <option name="METHOD_NAME" value="TestInversePermOfIdentity2" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="JUnit.All in athena" />
       <item itemvalue="JUnit.TestMixnet.TestMixnet" />
       <item itemvalue="JUnit.TestCipherText.TestCipherTextRandomnessComposition" />
+      <item itemvalue="JUnit.TestUTIL.TestInversePermOfIdentity2" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="JUnit.All in athena" />
         <item itemvalue="JUnit.TestMixnet.TestMixnet" />
+        <item itemvalue="JUnit.TestUTIL.TestInversePermOfIdentity2" />
         <item itemvalue="JUnit.TestCipherText.TestCipherTextRandomnessComposition" />
       </list>
     </recent_temporary>

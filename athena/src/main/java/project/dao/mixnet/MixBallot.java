@@ -4,6 +4,7 @@ import com.google.common.primitives.Bytes;
 import project.elgamal.CipherText;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 public class MixBallot {
     private final CipherText c1;
@@ -43,5 +44,18 @@ public class MixBallot {
                 "b1=" + c1.toString() +
                 ", b2=" + c2.toString() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MixBallot mixBallot = (MixBallot) o;
+        return Objects.equals(c1, mixBallot.c1) && Objects.equals(c2, mixBallot.c2);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(c1, c2);
     }
 }

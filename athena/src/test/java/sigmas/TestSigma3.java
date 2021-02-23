@@ -47,7 +47,7 @@ public class TestSigma3 {
     void TestSigma3_checkPart1() {
         // ProveDec s1 = ProveDec(...)'
         Sigma3Proof proof = sigma3.proveDecryption(cipher, plain_msg_m, sk, kappa);
-        BigInteger c = sigma3.hash(proof.a, proof.b, statement.alpha, statement.beta, statement.alpha_base, statement.beta_base, statement.beta_base);
+        BigInteger c = sigma3.hash(proof.a, proof.b, statement.alpha, statement.beta, statement.alpha_base, statement.beta_base);
         boolean check1 = sigma3.checkPart1(statement.alpha_base, proof.r, proof.a, statement.alpha, c, statement.group.p);
         assertTrue("Verify check1", check1);
 
@@ -56,7 +56,7 @@ public class TestSigma3 {
     @Test
     void TestSigma3_checkPart2() {
         Sigma3Proof proof = sigma3.proveDecryption(cipher, plain_msg_m,sk, kappa);
-        BigInteger c = sigma3.hash(proof.a, proof.b, statement.alpha, statement.beta, statement.alpha_base, statement.beta_base, statement.beta_base);
+        BigInteger c = sigma3.hash(proof.a, proof.b, statement.alpha, statement.beta, statement.alpha_base, statement.beta_base);
         boolean check2 = sigma3.checkPart2(statement.beta_base, proof.r, proof.b, statement.beta,  c, statement.group.p);
         assertTrue("Verify check2", check2);
     }

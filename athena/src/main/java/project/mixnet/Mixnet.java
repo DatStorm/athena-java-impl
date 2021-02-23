@@ -1,7 +1,7 @@
 package project.mixnet;
 
 import com.google.common.primitives.Bytes;
-import jdk.jshell.execution.Util;
+import project.CONSTANTS;
 import project.UTIL;
 import project.dao.mixnet.*;
 import project.elgamal.CipherText;
@@ -12,11 +12,9 @@ import project.factory.Factory;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Mixnet {
-    //    private final int n = CONSTANTS.MIXNET_N;
-    private final int n = 256;
+        private final int n = CONSTANTS.MIXNET_N;
     private final MessageDigest hashH;
     private final ElGamal elgamal;
     private final Random random;
@@ -46,9 +44,8 @@ public class Mixnet {
             MixBallot ballot = ballots.get(i);
 
             //Make randomness
-            BigInteger toExclisive = BigInteger.valueOf(256); //TODO: q?
-            BigInteger ri = UTIL.getRandomElement(toExclisive, random);
-            BigInteger si = UTIL.getRandomElement(toExclisive, random);
+            BigInteger ri = UTIL.getRandomElement(BigInteger.ZERO, q, random);
+            BigInteger si = UTIL.getRandomElement(BigInteger.ZERO, q, random);
 
             //Make reencryption ciphertets
             CipherText reencryptRi = elgamal.encrypt(BigInteger.ONE, pk, ri);
@@ -82,19 +79,19 @@ public class Mixnet {
 
         //Do shadow mix
         List<MixStruct> shadowMixStructs = new ArrayList<>();
-        List<List<MixBallot>> shadowMixes = new ArrayList<>(n);
+        List<List<MixBallot>> shadowMixes = new ArrayList<>();
         for (int i = 0; i < n; i++) { // Improve?
-            MixStruct shadowMixStruct = mix(ballots); // step 1 + 2
+            MixStruct shadowMixStruct = mix(ballots);
 
             shadowMixStructs.add(shadowMixStruct);
             shadowMixes.add(shadowMixStruct.mixedBallots);
         }
 
         //Calculate challenges from hash
-        List<Boolean> challenges = hash(shadowMixes); //TODO: SHA-3-256 outputs byte[] 32 => n=32, needs to bigger
+        List<Boolean> challenges = hash(shadowMixes);
 
         //Calculate proof values
-        List<MixSecret> composedMixSecrets = new ArrayList<>(n);
+        List<MixSecret> composedMixSecrets = new ArrayList<>();
         for (int j = 0; j < n; j++) {
             //Extract challenge
             Boolean challenge = challenges.get(j);
@@ -115,15 +112,10 @@ public class Mixnet {
         int ell = originalMixSecret.permutation.size();
 
         if (challenge) {// challenge c = 1
-            // Calculate composed permutation
-            List<Integer> shadowPermutationInverse = UTIL.inversePermutation(shadowMixSecret.permutation);
-            List<Integer> composedPermutation = UTIL.composePermutation(shadowPermutationInverse, originalMixSecret.permutation);
-
             //Calculate composed reencyption randomness for each ballot
             List<BigInteger> composedRandomnessR = new ArrayList<>();
             List<BigInteger> composedRandomnessS = new ArrayList<>();
             for (int i = 0; i < ell; i++) {
-                // TODO: Permute. IMPORTATNT!
                 // Compose randomness r for encrypted private credential
                 BigInteger shadowR = shadowMixSecret.randomnessR.get(i);    //Randomness used to make reencryption of shadow mix.
                 BigInteger realR = originalMixSecret.randomnessR.get(i);    //Randomness used to make reencryption of real mix.
@@ -136,13 +128,19 @@ public class Mixnet {
                 BigInteger composedS = shadowS.negate().add(realS).mod(q);  // -s1 + s2
                 composedRandomnessS.add(composedS);
             }
-            return new MixSecret(composedPermutation, composedRandomnessR, composedRandomnessS);
+            // Calculate composed permutation
+            List<Integer> shadowPermutationInverse = UTIL.inversePermutation(shadowMixSecret.permutation);
+            List<Integer> composedPermutation = UTIL.composePermutation(shadowPermutationInverse, originalMixSecret.permutation);
 
+            //Apply shadowPermutation to randomness
+            composedRandomnessR = UTIL.permute(composedRandomnessR, shadowMixSecret.permutation);
+            composedRandomnessS = UTIL.permute(composedRandomnessS, shadowMixSecret.permutation);
+
+            return new MixSecret(composedPermutation, composedRandomnessR, composedRandomnessS);
         } else { // challenge c = 0
             return shadowMixSecret; //permutation, randomnessR, randomnessS
         }
     }
-
 
     private List<Boolean> hash(List<List<MixBallot>> ballots) {
         byte[] concatenated = new byte[]{};
@@ -157,12 +155,12 @@ public class Mixnet {
         byte[] hashed = this.hashH.digest(concatenated);
 
         // create list of C
-       List<Boolean> listOfC = ByteConverter.valueOf(hashed, n);
-       assert listOfC.size() == n : "listOfC.size()=" + listOfC.size() + " != n=" + n;
+        List<Boolean> listOfC = ByteConverter.valueOf(hashed, n);
+        assert listOfC.size() == n : "listOfC.size()=" + listOfC.size() + " != n=" + n;
+        assert n == 256;
+        assert listOfC.size() == 256;
 
-
-       return listOfC;
-
+        return listOfC;
     }
 
     public boolean verify(MixStatement statement, MixProof proof) {
@@ -174,78 +172,65 @@ public class Mixnet {
         List<List<MixBallot>> shadowMixes = proof.shadowMixes;
 
         // in this list there is n elements....
-        List<Boolean> challenges = hash(shadowMixes); //TODO: Er det nok? Skal vi have MixStatement med? :O
+        List<Boolean> challenges = hash(shadowMixes);
 
         for (int j = 0; j < n; j++) {
             //For each shadow mix
-            //Get permutation
-            //Get R
-            //Get S
             List<MixBallot> shadowMix = proof.shadowMixes.get(j);
-            List<Integer> permutation = proof.shadowSecrets.get(j).permutation;
-            List<BigInteger> randomnessR = proof.shadowSecrets.get(j).randomnessR;
-            List<BigInteger> randomnessS = proof.shadowSecrets.get(j).randomnessS;
-
+            MixSecret mixSecret = proof.shadowSecrets.get(j);
 
             //Check each challenge
             Boolean challenge = challenges.get(j);
+            List<MixBallot> sourceMix, destinationMix;
+
+            //Change proof based on challenge
             if (challenge) { // c = 1
-
-                for (int i = 0; i < ell; i++) {
-                    MixBallot mixedOriginalBallot = mixedOriginalBallots.get(i); //Mixed original ballot
-                    MixBallot shadowBallot = shadowMix.get(i);
-
-                    //TODO: Permute: permutation
-
-                    //c1 * Enc(1,R)
-                    CipherText reencryptionFactorR = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessR.get(i));
-                    CipherText c1 = shadowBallot.getC1().multiply(reencryptionFactorR, p);
-
-                    //c2 * Enc(1,S)
-                    CipherText reencryptionFactorS = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessS.get(i));
-                    CipherText c2 = shadowBallot.getC2().multiply(reencryptionFactorS, p);
-
-                    //Verify
-                    boolean isValid = c1.equals(mixedOriginalBallot.getC1()) && c2.equals(mixedOriginalBallot.getC2());
-                    if (!isValid) {
-//                      System.out.println("originalBallots = " + originalBallots.toString() + ", \nproof = " + proof);
-                        return false;
-                    }
-                }
-
-
+                sourceMix = shadowMix;
+                destinationMix = mixedOriginalBallots;
             } else {
-
-                for (int i = 0; i < ell; i++) {
-                    MixBallot ballot = originalBallots.get(i); //Mixed original ballot
-                    MixBallot shadowBallot = shadowMix.get(i);
-
-                    //TODO: Permute: permutation
-
-                    //c1 * Enc(1,R)
-                    CipherText reencryptionFactorR = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessR.get(i));
-                    CipherText c1 = ballot.getC1().multiply(reencryptionFactorR, p);
-
-
-                    //c2 * Enc(1,S)
-                    CipherText reencryptionFactorS = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessS.get(i));
-                    CipherText c2 = ballot.getC2().multiply(reencryptionFactorS, p);
-
-                    //Verify
-                    boolean isValid = c1.equals(shadowBallot.getC1()) && c2.equals(shadowBallot.getC2());
-                    if (!isValid) {
-//                      System.out.println("originalBallots = " + originalBallots.toString() + ", \nproof = " + proof);
-                        return false;
-                    }
-                }
-
-                //return compared;
+                sourceMix = shadowMix;
+                destinationMix = originalBallots;
             }
+
+            if (verifyShadowMix(sourceMix, destinationMix, mixSecret)) return false;
         }
 
         return true;
     }
 
+    private boolean verifyShadowMix(List<MixBallot> sourceMix, List<MixBallot> destinationMix, MixSecret secret) {
+        int ell = sourceMix.size();
+
+        List<Integer> permutation = secret.permutation;
+        List<BigInteger> randomnessR = secret.randomnessR;
+        List<BigInteger> randomnessS = secret.randomnessS;
+
+        //Undo permutation
+        // c = 0 => permutes B
+        // c = 1 => permutes mixed
+        //List<MixBallot> destinationMix = UTIL.permute(destinationMix, permutation);
+
+        List<MixBallot> reencryptedSourceMix = new ArrayList<>();
+        for (int i = 0; i < ell; i++) {
+            MixBallot sourceBallot = sourceMix.get(i); //Mixed original ballot
+            MixBallot destinationBallot = destinationMix.get(i);
+
+            //c1 * Enc(1,R)
+            CipherText reencryptionFactorR = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessR.get(i));
+            CipherText c1 = destinationBallot.getC1().multiply(reencryptionFactorR, p);
+
+            //c2 * Enc(1,S)
+            CipherText reencryptionFactorS = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessS.get(i));
+            CipherText c2 = destinationBallot.getC2().multiply(reencryptionFactorS, p);
+
+            reencryptedSourceMix.add(new MixBallot(c1, c2));
+        }
+
+        //Apply permutation
+        List<MixBallot> mixedSourceMix = UTIL.permute(reencryptedSourceMix, secret.permutation);
+
+        //Verify
+        return mixedSourceMix.equals(destinationMix);
+    }
+
 }
-
-

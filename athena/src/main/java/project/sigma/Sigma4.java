@@ -6,8 +6,7 @@ import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.CipherText;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
-import project.elgamal.GroupDescription;
-import project.sigma.Sigma3;
+import project.elgamal.Group;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -36,7 +35,7 @@ public class Sigma4 {
         // we must have pairs of homo comb and single ciphertexts
         assert listOfcombinedCiphertext.size() == listOfCiphertexts.size() : "c0_c1.size() != b0_b1.size()";
 
-        GroupDescription group = sk.getPK().getGroup();
+        Group group = sk.getPK().getGroup();
 
         /*
          * SIGMA 3 (1)
@@ -91,7 +90,7 @@ public class Sigma4 {
     */
 
     public boolean verifyCombination(ElGamalPK pk, List<CipherText> combinedCiphertextList, List<CipherText> listOfCipherTexts, Sigma4Proof proof, int kappa) {
-        GroupDescription group = pk.getGroup();
+        Group group = pk.getGroup();
 
         int size = combinedCiphertextList.size();
         assert size == listOfCipherTexts.size() : "combinedCiphertextList.size() != b0_b1.size()";

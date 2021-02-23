@@ -63,12 +63,9 @@ public class TestMixnet {
 
         BigInteger dec_c1 = elgamal.decrypt(mult.getC1(),sk);
         assertEquals("should be ??", BigInteger.valueOf(c), dec_c1);
-
-
+        
         BigInteger dec_c2 = elgamal.decrypt(mult.getC2(),sk);
         assertEquals("should be ??", BigInteger.valueOf(vc), dec_c2);
-
-
     }
 
     @Test

@@ -3,7 +3,6 @@ package project.elgamal;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-import project.CONSTANTS;
 import project.UTIL;
 
 import java.math.BigInteger;
@@ -12,7 +11,7 @@ import java.util.Random;
 
 public class ElGamal {
     //    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-    private GroupDescription groupDescription;
+    private Group group;
     private Random random;
 
     public ElGamal(int bitLength) {
@@ -23,7 +22,7 @@ public class ElGamal {
         this(generateGroup(bitLength, random), random);
     }
 
-    private static GroupDescription generateGroup(int bitLength, Random random) {
+    private static Group generateGroup(int bitLength, Random random) {
         BigInteger p = BigInteger.probablePrime(bitLength + 1, random);
         BigInteger g = UTIL.getRandomElement(p, random).modPow(BigInteger.TWO, p);;
         BigInteger q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO);
@@ -32,16 +31,16 @@ public class ElGamal {
             throw new RuntimeException("P, with bitLength " + p.bitLength() + ", is too small to encrypt numbers with bitlength " + bitLength);
         }
 
-        return new GroupDescription(g, p, q);
+        return new Group(g, p, q);
     }
 
-    public ElGamal(GroupDescription group, Random random) {
+    public ElGamal(Group group, Random random) {
         this.random = random;
-        this.groupDescription = group;
+        this.group = group;
     }
 
-    public GroupDescription getDescription() {
-        return groupDescription;
+    public Group getDescription() {
+        return group;
     }
 
     /**
@@ -49,16 +48,14 @@ public class ElGamal {
      * @param msg bigint in range [0; 2^bitlength -1]
      */
     public CipherText encrypt(BigInteger msg, ElGamalPK pk) {
-        return encrypt(msg, pk, this.random.nextLong());
-    }
-    public CipherText encrypt(BigInteger msg, ElGamalPK pk, long randomSeed) { //TODO: Remove randomSeed version? Confusing
-        return encrypt(msg, pk, UTIL.getRandomElement(groupDescription.q, new Random(randomSeed)));
+        BigInteger r = UTIL.getRandomElement(BigInteger.ZERO, group.q, this.random);
+        return encrypt(msg, pk, r);
     }
 
     public CipherText encrypt(BigInteger msg, ElGamalPK pk, BigInteger r) {
         BigInteger p = pk.getGroup().getP();
         BigInteger q = pk.getGroup().getQ();
-        r = r.mod(q).add(q).mod(q); //FIXME: Needed? Yes i think
+        r = r.mod(q).add(q).mod(q);
 
         int bitLength = p.bitLength();
         
@@ -74,7 +71,6 @@ public class ElGamal {
         // Extract public key
         BigInteger g = pk.getGroup().getG();
         BigInteger h = pk.getH();
-//        BigInteger r = CONSTANTS.ELGAMAL_RAND_R;
 
         // C = (g^r, m·h^r)
         return new CipherText(g.modPow(r, p), msg.multiply(h.modPow(r, p)).mod(p).add(p).mod(p));
@@ -89,8 +85,6 @@ public class ElGamal {
         BigInteger c1Alpha = c1.modPow(sk.toBigInteger(), p);      // c1^\alpha
         BigInteger c1NegAlpha = c1Alpha.modInverse(p); // c1^-\alpha
 
-        // FIXME: OLD used this.p
-//        BigInteger plain = c2.multiply(c1NegAlpha).mod(this.p).add(this.p).mod(this.p); // m=c2 * c1^-alpha mod p
         BigInteger plain = c2.multiply(c1NegAlpha).mod(p).add(p).mod(p); // m=c2 * c1^-alpha mod p
 
         return plain;
@@ -99,27 +93,27 @@ public class ElGamal {
 
     // Generate random sk
     public ElGamalSK generateSK() {
-        if (this.groupDescription == null){
+        if (this.group == null){
             System.out.println("MARKKKKKKKK");
         }
-        BigInteger q = this.groupDescription.getQ();
+        BigInteger q = this.group.getQ();
         BigInteger sk = UTIL.getRandomElement(q, random);
 
-        return new ElGamalSK(this.groupDescription, sk);
+        return new ElGamalSK(this.group, sk);
     }
 
 
     // Generating El Gamal public key from a specified secret key
     public ElGamalPK generatePk(ElGamalSK sk) {
-        BigInteger g = this.groupDescription.getG();
-        BigInteger p = this.groupDescription.getP();
+        BigInteger g = this.group.getG();
+        BigInteger p = this.group.getP();
         BigInteger h = g.modPow(sk.toBigInteger(), p);
-        return new ElGamalPK(this.groupDescription, h); // return pk=(g,h)
+        return new ElGamalPK(this.group, h); // return pk=(g,h)
     }
 
 
     public BigInteger getP(){
-        return this.groupDescription.getP();
+        return this.group.getP();
     }
 
 }

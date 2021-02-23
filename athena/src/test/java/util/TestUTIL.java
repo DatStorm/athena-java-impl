@@ -43,22 +43,21 @@ public class TestUTIL {
         String msg = "A: " + Arrays.toString(objects.toArray()) + "\n B: " + Arrays.toString(result.toArray()) + "\n";
 //        System.out.println(msg);
         assertArrayEquals(msg, objects.toArray(), result.toArray());
-
-
     }
 
     @Test
     void TestInversePermOfIdentity() {
         List<Integer> objects = UTIL.newPermutation(10, new Random(0));
-        List<Integer> objects_perm = UTIL.permute(objects, objects);
+        List<Integer> objects_perm = UTIL.permute(objects,objects);
         List<Integer> inversePermutation = UTIL.inversePermutation(objects);
 
         List<Integer> result = UTIL.permute(objects_perm, inversePermutation);
         assertArrayEquals(objects.toArray(), result.toArray());
+
+        
     }
 
-
-    @Test
+   @Test
     void TestInversePermOfIdentity2() {
         List<Integer> identity = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5));
         List<Integer> inversePermutation = UTIL.inversePermutation(identity);
@@ -73,6 +72,17 @@ public class TestUTIL {
 
         assertArrayEquals(identity.toArray(), obj.toArray());
     }
+
+
+
+
+    @Test
+    void TestInversePerm() {
+        List<Integer> objects = UTIL.newPermutation(10, new Random(0));
+
+    }
+
+
 
 
 }

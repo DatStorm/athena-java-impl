@@ -104,12 +104,6 @@ public class Sigma2EL {
         return n2;
     }
 
-
-
-
-
-
-
     public BigInteger hash(BigInteger a, BigInteger b) {
         byte[] bytes_a = a.toByteArray();
         byte[] bytes_b = b.toByteArray();

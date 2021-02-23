@@ -6,9 +6,9 @@ import com.google.common.primitives.Longs;
 import project.UTIL;
 import project.dao.sigma1.PublicInfoSigma1;
 import project.dao.Randomness;
-import project.dao.SK_R;
 import project.dao.sigma1.CoinFlipInfo;
 import project.dao.sigma1.ProveKeyInfo;
+import project.elgamal.ElGamalSK;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -26,7 +26,8 @@ public class Sigma1 {
     }
 
     //input pk, sk,
-    public ProveKeyInfo ProveKey(PublicInfoSigma1 publicInfoSigma1, SK_R sk_r, int kappa) throws IOException {
+    public ProveKeyInfo ProveKey(PublicInfoSigma1 publicInfoSigma1, ElGamalSK sk, Randomness r, int kappa) throws IOException {
+        Random random = new SecureRandom();
 
         // lists
         ArrayList<BigInteger> e1_ek = new ArrayList<>();
@@ -34,7 +35,7 @@ public class Sigma1 {
         ArrayList<BigInteger> s1_sk = new ArrayList<>();
 
         // secret keys
-        BigInteger alpha = sk_r.getElgamalSK().getSK();
+        BigInteger alpha = sk.toBigInteger();
 
         // public keys
         BigInteger g = publicInfoSigma1.getPK().getGroup().getG();
@@ -44,13 +45,12 @@ public class Sigma1 {
 
         BigInteger p_minus_1 = p.subtract(BigInteger.ONE);
         for (int i = 0; i < kappa; i++) {
-            long seed = sk_r.getR().getValue();
-            BigInteger ei = UTIL.getRandomElement(p_minus_1, new Random(seed)); //int ei = new rand ei in Z_p-1;
+            BigInteger ei = UTIL.getRandomElement(p_minus_1, random); //int ei = new rand ei in Z_p-1;
 
             e1_ek.add(ei);
             y1_yk.add(g.modPow(ei, p));
         }
-        ArrayList<CoinFlipInfo> coinFlipInfo_pairs = coinFlippingProtocol(sk_r.getR(), g, h, kappa, y1_yk);
+        ArrayList<CoinFlipInfo> coinFlipInfo_pairs = coinFlippingProtocol(r, g, h, kappa, y1_yk);
 
 
         // j <- min(i: b_i = 1)
@@ -91,10 +91,8 @@ public class Sigma1 {
         Random coinRandom = new SecureRandom();
         Random hashRandom = new Random(r.getValue());
 
-        //
-
         for (int i = 1; i <= kappa; i++) {
-            boolean bA = coinRandom.nextBoolean(); //FIXME: SEED HAS BEEN SET!!!
+            boolean bA = coinRandom.nextBoolean();
             // f -> F(r,b_A)
             Randomness ri = new Randomness(hashRandom.nextLong());
             byte[] fi = hashF(ri, bA); // H(...) mod 2 = {0,1} => See test that it works.

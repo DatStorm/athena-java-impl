@@ -52,7 +52,7 @@ public class Sigma3 {
         BigInteger b = beta_base.modPow(s, p);
 
         //Step 2-3
-        BigInteger c = hash(a, b, alpha, beta, alpha_base, beta_base, beta_base); // FIXME::: MAKRK's (m,m)
+        BigInteger c = hash(a, b, alpha, beta, alpha_base, beta_base);
 
         BigInteger alpha_c = c.multiply(secret).mod(q);
         BigInteger r = s.add(alpha_c).mod(q); //r = s + c*secret
@@ -80,7 +80,7 @@ public class Sigma3 {
         BigInteger a = decProof.a;
         BigInteger b = decProof.b;
 
-        BigInteger c = hash(a, b, alpha, beta, alpha_base, beta_base, beta_base);
+        BigInteger c = hash(a, b, alpha, beta, alpha_base, beta_base);
         BigInteger r = decProof.r;
 
         boolean checkPart1 = checkPart1(alpha_base, r, a, alpha, c, p);
@@ -95,26 +95,13 @@ public class Sigma3 {
 
 
 
-    /**
-     *
-     * @param a
-     * @param b
-     * @param g
-     * @param h
-     * @param z
-     * @param c1
-     * @param c2
-     * @return
-     */
-    public BigInteger hash(BigInteger a, BigInteger b, BigInteger g, BigInteger h, BigInteger z, BigInteger c1, BigInteger c2) {
-        byte[] bytes_a = a.toByteArray();
-        byte[] bytes_b = b.toByteArray();
-        byte[] bytes_g = g.toByteArray();
-        byte[] bytes_h = h.toByteArray();
-        byte[] bytes_z = z.toByteArray();
-        byte[] bytes_c1 = c1.toByteArray();
-        byte[] bytes_c2 = c2.toByteArray();
-        byte[] concatenated = Bytes.concat(bytes_a, bytes_b, bytes_g, bytes_h, bytes_z, bytes_c1, bytes_c2);
+
+    public BigInteger hash(BigInteger ... values) {
+        byte[] concatenated = new byte[]{};
+        for (BigInteger integer : values) {
+            concatenated = Bytes.concat(concatenated, integer.toByteArray());
+        }
+
         byte[] hashed = this.hashH.digest(concatenated);
         return new BigInteger(1,hashed);
     }
@@ -146,6 +133,7 @@ public class Sigma3 {
         d("p1: gr=" + gr + ", ahc="+ ahc);
         return gr.compareTo(ahc) == 0;
     }
+    
 
     public boolean checkPart2(BigInteger c1, BigInteger r, BigInteger b, BigInteger z, BigInteger c, BigInteger p) {
         BigInteger c1_r = c1.modPow(r,p);
@@ -153,4 +141,6 @@ public class Sigma3 {
         d("p2: c1_r=" + c1_r + ", bz_c="+ bz_c);
         return c1_r.compareTo(bz_c) == 0;
     }
+
+
 }
