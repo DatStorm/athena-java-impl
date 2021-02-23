@@ -13,8 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 @Tag("TestsUTIL")
 @DisplayName("Test UTIL")
@@ -79,6 +78,22 @@ public class TestUTIL {
     @Test
     void TestInversePerm() {
         List<Integer> objects = UTIL.newPermutation(10, new Random(0));
+
+    }
+
+    @Test
+    void TestRange() {
+        BigInteger start = BigInteger.valueOf(0);
+        BigInteger end = BigInteger.valueOf(10);
+
+        assertTrue(UTIL.BIGINT_IN_RANGE(start,end,BigInteger.valueOf(10)));
+        assertTrue(UTIL.BIGINT_IN_RANGE(start,end,BigInteger.valueOf(0)));
+        assertTrue(UTIL.BIGINT_IN_RANGE(start,end,BigInteger.valueOf(1)));
+
+        assertFalse(UTIL.BIGINT_IN_RANGE(start,end,BigInteger.valueOf(-11)));
+        assertFalse(UTIL.BIGINT_IN_RANGE(start,end,BigInteger.valueOf(-1)));
+        assertFalse(UTIL.BIGINT_IN_RANGE(start,end,BigInteger.valueOf(11)));
+        assertFalse(UTIL.BIGINT_IN_RANGE(start,end,BigInteger.valueOf(20)));
 
     }
 

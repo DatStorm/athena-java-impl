@@ -39,6 +39,10 @@ public class UTIL {
 
     // Generate random element in range [from, to[
     public static BigInteger getRandomElement(BigInteger startInclusive, BigInteger endExclusive, Random random) {
+        if(startInclusive.signum() == -1) {
+            System.out.println("Warning: UTIL.getRandomElement probably does not work for negative values.");
+        }
+
         boolean gIsInAllowedRange;
         BigInteger g = null;
         do {
@@ -165,5 +169,26 @@ public class UTIL {
 
     public static List<Integer> composePermutation(List<Integer> pi1, List<Integer> pi2) {
         return permute(pi1, pi2);
+    }
+
+
+    // https://www.geeksforgeeks.org/biginteger-compareto-method-in-java/
+    public static boolean BIGINT_IN_RANGE(BigInteger start, BigInteger end, BigInteger value) {
+        // value \in [start,end]
+
+        // start >= end
+        if (start.compareTo(end) > 0) {
+            System.out.println("Start range is higher or equal then end range");
+        }
+        // value <= end
+        if (value.compareTo(end) > 0) {
+            return false;
+
+        // value >= start
+        } else if (value.compareTo(start) <  0) {
+            return false;
+        }
+
+        return true;
     }
 }

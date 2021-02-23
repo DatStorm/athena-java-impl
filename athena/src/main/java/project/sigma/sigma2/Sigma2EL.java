@@ -20,7 +20,7 @@ public class Sigma2EL {
     private static final int l = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_L;
     private static final int s1 = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_S1;
     private static final int s2 = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_S2;
-    private static final BigInteger b = BigInteger.valueOf(110); //FIXME: WTF er b
+    private static final BigInteger b = BigInteger.valueOf(100); //FIXME: WTF er b
 
     public Sigma2EL(MessageDigest hash, Random random) {
         this.hashH = hash;
@@ -30,6 +30,10 @@ public class Sigma2EL {
 
     public ELProof prove(ELStatement statement, ElSecret secret) {
         BigInteger x = secret.x;
+
+        if (!UTIL.BIGINT_IN_RANGE(BigInteger.ZERO, b, x)) {
+            System.err.println("Secret x not in range [0,b]");
+        }
         BigInteger r1 = secret.r1;
         BigInteger r2 = secret.r2;
         //---------------
@@ -113,8 +117,6 @@ public class Sigma2EL {
         return g_D_mult_h_D1_OR_D2.multiply(y_negC).mod(p);
     }
 
-
-
     public static BigInteger getElementFromInterval(int l, int t, int s, BigInteger p, Random random) {
         // n1 \in [1; 2^{l+t+s1} * p-1]
         int exponent = l + t + s;
@@ -123,31 +125,30 @@ public class Sigma2EL {
     }
 
     public static BigInteger pickRand_r1(Random random, BigInteger p) {
-        // r1 \in [2^{s1} * p + 1; 2^{s1} * p-1]
-        BigInteger startInclusive = BigInteger.TWO.pow(s1).multiply(p).add(BigInteger.ONE); // (2^s1 * p) + 1 NOT 2^s1 * (p+1)
-        BigInteger endInclusive = BigInteger.TWO.pow(s1).multiply(p).subtract(BigInteger.ONE);
-        BigInteger r1 = UTIL.getRandomElement(startInclusive, endInclusive, random);
-        return r1;
+        return pickRand_r(random, s1, p);
     }
 
     public static BigInteger pickRand_r2(Random random, BigInteger p) {
-        // r2 \in [-2^{s2} * p+1; 2^{s2} * p-1]
-        BigInteger minus_two = BigInteger.TWO.negate();
-        BigInteger startInclusive = minus_two.pow(s2).multiply(p).add(BigInteger.ONE);
-        BigInteger endInclusive = BigInteger.TWO.pow(s2).multiply(p).subtract(BigInteger.ONE);
-        BigInteger r2 = UTIL.getRandomElement(startInclusive, endInclusive, random);
-        return r2;
+        return pickRand_r(random, s2, p);
     }
 
-
+    public static BigInteger pickRand_r(Random random, int s, BigInteger p) {
+        // r2 \in [-2^{s2} * p+1; 2^{s2} * p-1]
+        BigInteger startInclusive = BigInteger.TWO.pow(s).multiply(p).negate().add(BigInteger.ONE);
+        BigInteger endExclusive = BigInteger.TWO.pow(s).multiply(p);
+        BigInteger r = UTIL.getRandomElement(startInclusive, endExclusive, random);
+        return r;
+    }
 
     public BigInteger hash(BigInteger a, BigInteger b) {
         byte[] bytes_a = a.toByteArray();
         byte[] bytes_b = b.toByteArray();
         byte[] concatenated = Bytes.concat(bytes_a, bytes_b);
-        byte[] hashed = this.hashH.digest(concatenated);
+        byte[] hashed = this.hashH.digest(concatenated); // =>
 
-        assert hashed.length == 2 * t : "Hash output should be 2t";
+
+        // TODO: hash output should be 2*t bits
+        assert hashed.length == 2 * t / 8 : "Hash output should be 2t + hashed.length= " + hashed.length + ", t2=" + (2 * t / 8);
         return new BigInteger(1, hashed);
     }
 
