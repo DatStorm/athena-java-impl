@@ -33,21 +33,21 @@ public class UTIL {
     }
 
     // Generate random element in range [1,p[
-    public static BigInteger getRandomElement(BigInteger p, Random random) {
-        return getRandomElement(BigInteger.ZERO, p, random);
+    public static BigInteger getRandomElement(BigInteger endExclusive, Random random) {
+        return getRandomElement(BigInteger.ZERO, endExclusive, random);
     }
 
     // Generate random element in range [from, to[
-    public static BigInteger getRandomElement(BigInteger from, BigInteger to, Random random) {
+    public static BigInteger getRandomElement(BigInteger startInclusive, BigInteger endExclusive, Random random) {
         boolean gIsInAllowedRange;
         BigInteger g = null;
         do {
             // Sample random number g between 0 and 2^{numbits} -1
-            g = new BigInteger(to.bitLength(), random);
+            g = new BigInteger(endExclusive.bitLength(), random);
 
             //Check range
-            boolean gIsGreaterEqualThanFrom = g.compareTo(from) >= 0;
-            boolean gIsLesserThanTo = g.compareTo(to) == -1;
+            boolean gIsGreaterEqualThanFrom = g.compareTo(startInclusive) >= 0;
+            boolean gIsLesserThanTo = g.compareTo(endExclusive) == -1;
             gIsInAllowedRange = gIsGreaterEqualThanFrom && gIsLesserThanTo;
         } while (!gIsInAllowedRange);
 

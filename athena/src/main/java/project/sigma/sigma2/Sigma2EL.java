@@ -5,104 +5,141 @@ import project.CONSTANTS;
 import project.UTIL;
 import project.dao.sigma2.ELProof;
 import project.dao.sigma2.ELStatement;
+import project.dao.sigma2.ElSecret;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Random;
 
 public class Sigma2EL {
-    private MessageDigest hashH;
+    private final MessageDigest hashH;
+    private final Random random;
 
     private static final int t = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_T;
     private static final int l = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_L;
-    private static final int b = 2; //FIXME: WTF er b
+    private static final int s1 = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_S1;
+    private static final int s2 = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_S2;
+    private static final BigInteger b = BigInteger.valueOf(110); //FIXME: WTF er b
 
-    public Sigma2EL(MessageDigest hash) {
+    public Sigma2EL(MessageDigest hash, Random random) {
         this.hashH = hash;
+        this.random = random;
     }
 
 
-
-    public ELProof prove(ELStatement statement){
-        BigInteger q = null;
-        BigInteger x = null;
-        BigInteger r1 = null;
-        BigInteger r2 = null;
+    public ELProof prove(ELStatement statement, ElSecret secret) {
+        BigInteger x = secret.x;
+        BigInteger r1 = secret.r1;
+        BigInteger r2 = secret.r2;
         //---------------
-        BigInteger p = null;
-        BigInteger g1 = null;
-        BigInteger g2 = null;
-        BigInteger h1 = null;
-        BigInteger h2 = null;
+        BigInteger g1 = statement.g1;
+        BigInteger g2 = statement.g2;
+        BigInteger h1 = statement.h1;
+        BigInteger h2 = statement.h2;
+        BigInteger p = statement.group.p;
+        BigInteger q = statement.group.q;
 
-        BigInteger w = pickRand_w(new Random(CONSTANTS.RANDOM_SEED));
-        BigInteger n1 = pickRand_n1();
-        BigInteger n2 = pickRand_n2();
+        /* ********
+         * Step 1: get random range variables.
+         *********/
+        BigInteger w = getElementFromInterval(l, t, 0, b, random);
+        BigInteger n1 = getElementFromInterval(l, t, s1, p, random);
+        BigInteger n2 = getElementFromInterval(l, t, s2, p, random);
+
+        // W1 = g1^w * h1^n1
+        // W2 = g2^w * h2^n2
+        BigInteger W1 = g1.modPow(w, p).multiply(h1.modPow(n1, p)).mod(p);
+        BigInteger W2 = g2.modPow(w, p).multiply(h2.modPow(n2, p)).mod(p);
+
+        /* *******************
+         * Step 2: Create c = H(W1 || W2)
+         *********************/
+        BigInteger c = hash(W1, W2);
 
 
         /* *******************
-         * Create W1
+         * Step 3: Create D,D1,D2
          *********************/
-        BigInteger h1_n1 = h1.modPow(n1, p); // h1^n1
-        BigInteger W1 = g1.modPow(w,p).multiply(h1_n1).mod(p); // W_1 = g1^w * h1^n1 mod p
+        BigInteger D = w.add(c.multiply(x).mod(q)); // FIXME: Should be in Zq.
+        BigInteger D1 = n1.add(c.multiply(r1).mod(q)); // FIXME: Should be in Zq.
+        BigInteger D2 = n2.add(c.multiply(r2).mod(q)); // FIXME: Should be in Zq.
 
 
-        /* *******************
-         * Create W2
-         *********************/
-        BigInteger h2_n2 = h2.modPow(n2, p);
-        BigInteger W2 = g2.modPow(w,p).multiply(h2_n2).mod(p);
-
-        /* *******************
-         * Create c = H(W1 || W2)
-         *********************/
-        BigInteger c = hash(W1,W2);
-
-
-        /* *******************
-         * Create D,D1,D2
-         *********************/
-        BigInteger D  = w.add(c.multiply(x).mod(q)); // FIXME: Should be in Z.
-        BigInteger D1 = n1.add(c.multiply(r1).mod(q)); // FIXME: Should be in Z.
-        BigInteger D2 = n2.add(c.multiply(r2).mod(q)); // FIXME: Should be in Z.
-
-
-
-        return new ELProof(c,D,D1,D2);
+        return new ELProof(c, D, D1, D2);
     }
 
 
-    public boolean verify(ELProof proof){
+    public boolean verify(ELStatement statement, ELProof proof) {
+        BigInteger p = statement.group.p;
+        BigInteger c = proof.c;
 
-        BigInteger X1 = BigInteger.ONE;
-        BigInteger X2 = BigInteger.ONE;
 
-        BigInteger c = proof.getC();
+        /*
+         * Compute X1
+         */
+        BigInteger y1 = statement.y1;
+        BigInteger g1 = statement.g1;
+        BigInteger h1 = statement.h1;
+        BigInteger D = proof.D;
+        BigInteger D1 = proof.D1;
+        BigInteger X1 = createX(p, c, y1, g1, h1, D, D1);
 
-        BigInteger c_hashed = hash(X1,X2);
+
+        /*
+         * Compute X2
+         */
+        BigInteger y2 = statement.y2;
+        BigInteger g2 = statement.g2;
+        BigInteger h2 = statement.h2;
+        BigInteger D2 = proof.D2;
+        BigInteger X2 = createX(p, c, y2, g2, h2, D, D2);
+
+
+        /*
+         * Compute new c.
+         */
+        BigInteger c_hashed = hash(X1, X2);
 
         return c.compareTo(c_hashed) == 0;
     }
 
-
-    public static BigInteger pickRand_w(Random random){
-        // w \in [1; 2^{l+t} * b-1]
-        BigInteger to = BigInteger.TWO.pow(l+t).multiply(BigInteger.valueOf(b-1));
-        BigInteger w = UTIL.getRandomElement(to, random);
-        return w;
+    private BigInteger createX(BigInteger p, BigInteger c, BigInteger y, BigInteger g, BigInteger h, BigInteger D, BigInteger d1_OR_d2) {
+        BigInteger g_D = g.modPow(D,p);
+        BigInteger h_D1_OR_D2 = h.modPow(d1_OR_d2,p);
+        BigInteger y_negC = y.modPow(c.negate(),p); // c.negate() => (-c)
+        BigInteger g_D_mult_h_D1_OR_D2 = g_D.multiply(h_D1_OR_D2).mod(p);
+        // = X
+        return g_D_mult_h_D1_OR_D2.multiply(y_negC).mod(p);
     }
 
-    public static BigInteger pickRand_n1(){
+
+
+    public static BigInteger getElementFromInterval(int l, int t, int s, BigInteger p, Random random) {
         // n1 \in [1; 2^{l+t+s1} * p-1]
-        BigInteger n1 = BigInteger.valueOf(10);
-        return n1;
+        int exponent = l + t + s;
+        BigInteger endInclusive = BigInteger.TWO.pow(exponent).multiply(p);
+        return UTIL.getRandomElement(endInclusive, random);
     }
 
-    public static BigInteger pickRand_n2(){
-        // n2 \in [1; 2^{l+t+s2} * p-1]
-        BigInteger n2 = BigInteger.valueOf(10);
-        return n2;
+    public static BigInteger pickRand_r1(Random random, BigInteger p) {
+        // r1 \in [2^{s1} * p + 1; 2^{s1} * p-1]
+        BigInteger startInclusive = BigInteger.TWO.pow(s1).multiply(p).add(BigInteger.ONE); // (2^s1 * p) + 1 NOT 2^s1 * (p+1)
+        BigInteger endInclusive = BigInteger.TWO.pow(s1).multiply(p).subtract(BigInteger.ONE);
+        BigInteger r1 = UTIL.getRandomElement(startInclusive, endInclusive, random);
+        return r1;
     }
+
+    public static BigInteger pickRand_r2(Random random, BigInteger p) {
+        // r2 \in [-2^{s2} * p+1; 2^{s2} * p-1]
+        BigInteger minus_two = BigInteger.TWO.negate();
+        BigInteger startInclusive = minus_two.pow(s2).multiply(p).add(BigInteger.ONE);
+        BigInteger endInclusive = BigInteger.TWO.pow(s2).multiply(p).subtract(BigInteger.ONE);
+        BigInteger r2 = UTIL.getRandomElement(startInclusive, endInclusive, random);
+        return r2;
+    }
+
+
 
     public BigInteger hash(BigInteger a, BigInteger b) {
         byte[] bytes_a = a.toByteArray();
@@ -110,8 +147,8 @@ public class Sigma2EL {
         byte[] concatenated = Bytes.concat(bytes_a, bytes_b);
         byte[] hashed = this.hashH.digest(concatenated);
 
-        assert  hashed.length == 2*t : "Hash output should be 2t";
-        return new BigInteger(1,hashed);
+        assert hashed.length == 2 * t : "Hash output should be 2t";
+        return new BigInteger(1, hashed);
     }
 
 }

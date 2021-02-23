@@ -14,7 +14,7 @@ import java.security.MessageDigest;
 import java.util.*;
 
 public class Mixnet {
-        private final int n = CONSTANTS.MIXNET_N;
+    private final int n = CONSTANTS.MIXNET_N;
     private final MessageDigest hashH;
     private final ElGamal elgamal;
     private final Random random;
@@ -157,14 +157,11 @@ public class Mixnet {
         // create list of C
         List<Boolean> listOfC = ByteConverter.valueOf(hashed, n);
         assert listOfC.size() == n : "listOfC.size()=" + listOfC.size() + " != n=" + n;
-        assert n == 256;
-        assert listOfC.size() == 256;
 
         return listOfC;
     }
 
     public boolean verify(MixStatement statement, MixProof proof) {
-        int ell = statement.ballots.size();
 
         // B^\prime (step 2)
         List<MixBallot> originalBallots = statement.ballots;
@@ -192,7 +189,10 @@ public class Mixnet {
                 destinationMix = originalBallots;
             }
 
-            if (verifyShadowMix(sourceMix, destinationMix, mixSecret)) return false;
+            if (verifyShadowMix(sourceMix, destinationMix, mixSecret)) {
+                return false;
+            }
+            
         }
 
         return true;
