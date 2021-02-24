@@ -44,14 +44,16 @@ public class TestMixnet {
     void TestMixBallot_Multiply() {
         int a = 2;
         int b = 3;
-        int c = a * b;
+        int c = a + b;
         CipherText cipher_1 = elgamal.encrypt(BigInteger.valueOf(a), pk);
         CipherText cipher_2 = elgamal.encrypt(BigInteger.valueOf(b), pk);
+
+        BigInteger g = pk.getGroup().getG();
 
 
         int va = 10;
         int vb = 20;
-        int vc = va * vb;
+        int vc = va + vb;
         CipherText v1 = elgamal.encrypt(BigInteger.valueOf(va), pk);
         CipherText v2 = elgamal.encrypt(BigInteger.valueOf(vb), pk);
         // mb1 = (c1 = Enc(1),c2= Enc(v))
@@ -62,10 +64,10 @@ public class TestMixnet {
         MixBallot mult = mb1.multiply(mb2,p);
 
         BigInteger dec_c1 = elgamal.decrypt(mult.getC1(),sk);
-        assertEquals("should be ??", BigInteger.valueOf(c), dec_c1);
+        assertEquals("should be ??", g.modPow(BigInteger.valueOf(c),p), dec_c1);
         
         BigInteger dec_c2 = elgamal.decrypt(mult.getC2(),sk);
-        assertEquals("should be ??", BigInteger.valueOf(vc), dec_c2);
+        assertEquals("should be ??", g.modPow(BigInteger.valueOf(vc),p), dec_c2);
     }
 
     @Test

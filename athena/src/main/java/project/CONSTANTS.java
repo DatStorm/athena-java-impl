@@ -9,7 +9,7 @@ public class CONSTANTS {
     public static final int ELGAMAL_BIT_LENGTH = 1024;
 //    public static final int ELGAMAL_BIT_LENGTH = 128;
     public static final int KAPPA = ELGAMAL_BIT_LENGTH;
-    public static final long RANDOM_SEED = 0;
+    public static final long RANDOM_SEED = 2;
 
     public static final int SIGMA2_EL_SECURITY_PARAM_T = 128; // suggested old is 80
     public static final int SIGMA2_EL_SECURITY_PARAM_L = 40; // FIXME: should properly be somewhat larger!!!

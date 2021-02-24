@@ -40,8 +40,8 @@ public class Sigma2 {
 
     public Sigma2Proof proveCiph(Sigma2Statement statement, Sigma2Secret secret) {
         // Get the secret parts of the relation
-        BigInteger m = secret.m;
-        BigInteger r = secret.r;
+        BigInteger m = secret.m; // 5
+        BigInteger r = secret.r; // 2763
 
         // Get the publicly known parts
         BigInteger c = statement.c;
@@ -59,7 +59,7 @@ public class Sigma2 {
         /* ********
          * Step 1: Create (c1,c2)
          *********/
-        List<BigInteger> c1_c2 = createC1_C2(g, p, b.add(BigInteger.ONE), c.modInverse(p));
+        List<BigInteger> c1_c2 = createC1_C2(a, b, c, g, p);
         BigInteger c1 = c1_c2.get(0);
         BigInteger c2 = c1_c2.get(1);
 
@@ -72,11 +72,9 @@ public class Sigma2 {
         BigInteger r_prime = sampleRandomElementInZ_k2(this.random);
 
         // = b - m + 1
-        BigInteger b_m_add_1 = b.subtract(m.add(BigInteger.ONE)); //.mod(q); //TODO: mod q?
-        // = h^{r^\prime}
-        BigInteger h_r_prime = h.modPow(r_prime, p);
+        BigInteger b_m_add_1 = b.subtract(m).add(BigInteger.ONE);
         // c^\prime = c1^{b - m + 1} * h^{r_prime}
-        BigInteger c_prime = c1.modPow(b_m_add_1, p).multiply(h_r_prime).mod(p);
+        BigInteger c_prime = createC_prime(c1, h, r_prime, b_m_add_1, p);
 
 
         // x = b - m + 1
@@ -116,11 +114,16 @@ public class Sigma2 {
          *********/
 
         // Randomly choose m1, m2 and m4
-        BigInteger m_a_add1 = m.subtract(a.add(BigInteger.ONE));
+        // = m - a + 1
+        BigInteger m_a_add1 = m.subtract(a).add(BigInteger.ONE);
+
+        // pick from {0,..., w^2 * (m − a + 1) * (b − m + 1) }
         BigInteger w2_m_a_add1_b_m_add1 = w_squared.multiply(m_a_add1).multiply(b_m_add_1);
 
+        assert w2_m_a_add1_b_m_add1.compareTo(BigInteger.ZERO) > 0 : "Should be > 0";
+
         // returns = m1,m2,m3,m4
-        List<BigInteger> mList = sampleMs(w2_m_a_add1_b_m_add1);
+        List<BigInteger> mList = sampleMs(w2_m_a_add1_b_m_add1, q);
         BigInteger m1 = mList.get(0);
         BigInteger m2 = mList.get(1);
         BigInteger m3 = mList.get(2);
@@ -144,13 +147,14 @@ public class Sigma2 {
         BigInteger r3 = rList.get(2);
 
         // Compute c'_1, c'_2, c'_3
-        BigInteger c_prime_1 = g.modPow(m1, p).multiply(h.modPow(r1, p)).mod(p);
-        BigInteger c_prime_2 = g.modPow(m2, p).multiply(h.modPow(r2, p)).mod(p);
+        BigInteger c_prime_1 = g.modPow(m1, p).multiply(h.modPow(r1, p)).mod(p); ///FIXME: mod q in the exponent???
+        BigInteger c_prime_2 = g.modPow(m2, p).multiply(h.modPow(r2, p)).mod(p); //FIXME: mod q in the exponent???
+        // c3' = (c'' / c1') * c2' OR c'' / (c1' * c2') = c'' * c1'^{-1} * c2'^{-1}
         BigInteger c_prime_3 = c_prime_prime.multiply(c_prime_1.modInverse(p)).multiply(c_prime_2.modInverse(p)).mod(p);
 
         // SQR2(m_4, r_3 | g, h | c'_3)
-        SQRSecret secretSQR_2 = new SQRSecret(m4, r3);
         SQRStatement statementSQR_2 = new SQRStatement(g, h, c_prime_3, group);
+        SQRSecret secretSQR_2 = new SQRSecret(m4, r3);
         SQRProof proofSQR_2 = sigma2SQR.prove(statementSQR_2, secretSQR_2);
 
 
@@ -159,6 +163,7 @@ public class Sigma2 {
          *********/
         BigInteger s = UTIL.getRandomElement(BigInteger.ONE, k1, random);               // Z_k1 \ {0}
         BigInteger t = UTIL.getRandomElement(BigInteger.ONE, k1, random);               // Z_k1 \ {0}
+
         // FIXME: TODO: FIXME: Change the above to hashed??
 
 
@@ -171,26 +176,36 @@ public class Sigma2 {
         BigInteger v = r1.add(t.multiply(r2)).add(r3);
 
 
-        return new Sigma2Proof(stmntEL_0,
+        return new Sigma2Proof(
+                stmntEL_0,
                 statementSQR_1,
                 statementSQR_2,
                 proofEL_0,
                 proofSQR_1,
                 proofSQR_2,
-                c1,c2,
+                c1, c2,
                 c_prime_prime,
                 c_prime_1, c_prime_2, c_prime_3,
                 s, t,
                 x, y, u, v);
     }
 
-    private List<BigInteger> createC1_C2(BigInteger g, BigInteger p, BigInteger add, BigInteger bigInteger) {
+    public static List<BigInteger> createC1_C2(BigInteger a, BigInteger b, BigInteger c, BigInteger g, BigInteger p) {
         // c1 = c / g^{a-1} mod p
-        BigInteger c1 = c.multiply(g.modPow(a.subtract(BigInteger.ONE), p).modInverse(p).mod(p));
 
+        BigInteger c1 = c.multiply(g.modPow(a.subtract(BigInteger.ONE), p).modInverse(p)).mod(p);
         // c2 = g^{b+1}/c mod p
-        BigInteger c2 = g.modPow(add, p).multiply(bigInteger).mod(p);
-        return Arrays.asList(c1,c2);
+        BigInteger c2 = g.modPow(b.add(BigInteger.ONE), p).multiply(c.modInverse(p)).mod(p);
+
+        return Arrays.asList(c1, c2);
+    }
+
+    public static BigInteger createC_prime(BigInteger c1, BigInteger h, BigInteger r_prime, BigInteger b_m_add_1, BigInteger p) {
+        // = h^{r^\prime}
+        BigInteger h_r_prime = h.modPow(r_prime, p);
+        // c^\prime = c1^{b - m + 1} * h^{r_prime}
+        BigInteger c_prime = c1.modPow(b_m_add_1, p).multiply(h_r_prime).mod(p);
+        return c_prime;
     }
 
     private List<BigInteger> sampleRs(BigInteger targetValue) {
@@ -215,6 +230,7 @@ public class Sigma2 {
         BigInteger r2 = delimiterHigh.subtract(delimiterLow);
         BigInteger r3 = targetValue.subtract(delimiterHigh);
 
+
         BigInteger sum = r1.add(r2).add(r3);
         if (!targetValue.equals(sum)) {
             throw new RuntimeException("R values not sampled correctly");
@@ -223,16 +239,26 @@ public class Sigma2 {
         return Arrays.asList(r1, r2, r3);
     }
 
-    private List<BigInteger> sampleMs(BigInteger upperBoundExclusive) {
+    //FIXME: Plz kill me now
+    private List<BigInteger> sampleMs(BigInteger upperBoundExclusive, BigInteger q) {
 
         // Pick m4 randomly in [0;sqrt(bound)], ensuring that m3 is in [0;bound]
+        //TODO: Should we pick m4 in [0;bound] and m3 as m4^2 mod p ?
         BigInteger m4 = UTIL.getRandomElement(upperBoundExclusive.sqrt(), this.random);
-        BigInteger m3 = m4.modPow(m4, upperBoundExclusive);
+        BigInteger m3 = m4.pow(2);
 
-        BigInteger m1 = UTIL.getRandomElement(upperBoundExclusive, this.random);
+        // Choose m1,m2. We select m1 randomly in the interval, and set m2 to the remaining.
+        BigInteger m1 = UTIL.getRandomElement(upperBoundExclusive.subtract(m3), this.random);
         BigInteger m2 = upperBoundExclusive.subtract(m1).subtract(m3);
 
-        BigInteger m1_m2_m3 = m1.add(m2).add(m3); //FIXME: Modulo!!!
+        BigInteger m1_m2_m3 = m1.add(m2).add(m3); //FIXME: shoul there be modulo q?
+
+
+        assert m1.signum() >= 0 : "m1.signum() < 0";
+        assert m2.signum() >= 0 : "m2.signum() < 0";
+        assert m3.signum() >= 0 : "m3.signum() < 0";
+        assert m4.signum() >= 0 : "m4.signum() < 0";
+        assert upperBoundExclusive.equals(m1_m2_m3);
 
         if (!upperBoundExclusive.equals(m1_m2_m3)) {
             throw new RuntimeException("M values not sampled correctly");
@@ -260,11 +286,11 @@ public class Sigma2 {
         BigInteger q = statement.pk.getGroup().getQ();
 
         //Verify EL_0
-       boolean verificationEL0 = sigma2EL.verify(proof.statementEL_0, proof.proofEL_0);
-       if (!verificationEL0) {
-           System.out.println("sigma2EL_0 failed");
-           return false;
-       }
+        boolean verificationEL0 = sigma2EL.verify(proof.statementEL_0, proof.proofEL_0);
+        if (!verificationEL0) {
+            System.out.println("sigma2EL_0 failed");
+            return false;
+        }
 
         //Verify SQR_1
         boolean verificationSQR1 = sigma2SQR.verify(proof.statementSQR_1, proof.proofSQR_1);
@@ -274,11 +300,11 @@ public class Sigma2 {
         }
 
         //Verify SQR_2
-//        boolean verificationSQR2 = sigma2SQR.verify(proof.statementSQR_2, proof.proofSQR_2);
-//        if (!verificationSQR2) {
-//            System.out.println("sigma2SQR_2 failed");
-//            return false;
-//        }
+        boolean verificationSQR2 = sigma2SQR.verify(proof.statementSQR_2, proof.proofSQR_2);
+        if (!verificationSQR2) {
+            System.out.println("sigma2SQR_2 failed");
+            return false;
+        }
 
         // Verify the overall Sigma2 proof
         BigInteger c1 = proof.c1;
@@ -295,14 +321,15 @@ public class Sigma2 {
         BigInteger v = proof.v;
 
         // c1 = c * g^{-(a−1)} mod p
-        int check1 = c1.compareTo(c.multiply(g.modPow(a.subtract(BigInteger.ONE),p).modInverse(p)).mod(p));
+        int check1 = c1.compareTo(c.multiply(g.modPow(a.subtract(BigInteger.ONE), p).modInverse(p)).mod(p));
+//        int check1 = c1.compareTo(c.multiply(g.modPow(a.subtract(BigInteger.ONE).negate(), p).mod(p)));
         if (check1 != 0) { // compareTo returns 0 if the 2 BigIntegers are equal
             System.out.println("c1 != c * g^{-(a−1)} mod p");
             return false;
         }
 
         // c2 = g^{b+1} * c^{-1} mod p
-        int check2 = c2.compareTo(g.modPow(b.add(BigInteger.ONE),p).multiply(c.modInverse(p)).mod(p));
+        int check2 = c2.compareTo(g.modPow(b.add(BigInteger.ONE), p).multiply(c.modInverse(p)).mod(p));
         if (check2 != 0) {// compareTo returns 0 if the 2 BigIntegers are equal
             System.out.println("c2 != g^{b+1} * c^{-1} mod p");
             return false;
@@ -317,7 +344,7 @@ public class Sigma2 {
 
         // c'_1^s * c'_2 * c'_3 = g^x h^u mod p
         BigInteger check4Part1 = c_prime_1.modPow(s, p).multiply(c_prime_2).multiply(c_prime_3).mod(p);
-        BigInteger check4Part2 = g.modPow(x, p).multiply(h.modPow(u,p)).mod(p);
+        BigInteger check4Part2 = g.modPow(x, p).multiply(h.modPow(u, p)).mod(p);
         int check4 = check4Part1.compareTo(check4Part2);
         if (check4 != 0) { // compareTo returns 0 if the 2 BigIntegers are equal
             System.out.println("c'_1^s * c'_2 * c'_3 != g^x h^u mod p");
@@ -325,8 +352,8 @@ public class Sigma2 {
         }
 
         // c'_1 * c'_2^t * c'_3 = g^y h^v mod p
-        BigInteger check5Part1 = c_prime_1.multiply(c_prime_2.modPow(t,p)).multiply(c_prime_3).mod(p);
-        BigInteger check5Part2 = g.modPow(y, p).multiply(h.modPow(v,p)).mod(p);
+        BigInteger check5Part1 = c_prime_1.multiply(c_prime_2.modPow(t, p)).multiply(c_prime_3).mod(p);
+        BigInteger check5Part2 = g.modPow(y, p).multiply(h.modPow(v, p)).mod(p);
         int check5 = check5Part1.compareTo(check5Part2);
         if (check5 != 0) { // compareTo returns 0 if the 2 BigIntegers are equal
             System.out.println("c'_1 * c'_2^t * c'_3 != g^y h^v mod p");
@@ -343,11 +370,9 @@ public class Sigma2 {
         // y>0
         int check7 = y.compareTo(BigInteger.ZERO);
         if (check7 != 1) { // compareTo returns 1 if y>0
-            System.out.println("y<=0");
-
+            System.out.println("V.y= " + y);
             return false;
         }
-
 
         return true;
     }

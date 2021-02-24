@@ -34,6 +34,7 @@ public class CipherText {
 
         return new CipherText(_c1, _c2);
     }
+    
 
     public CipherText modInverse(BigInteger p) {
         BigInteger _c1 = this.c1.modInverse(p);

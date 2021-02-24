@@ -63,14 +63,17 @@ public class Sigma2EL {
          * Step 2: Create c = H(W1 || W2)
          *********************/
         BigInteger c = hash(W1, W2);
+//        System.out.println("Prove hash: \t\t" + c);
+//        System.out.println("Prove hash: W1 \t\t" + W1);
+//        System.out.println("Prove hash: W2 \t\t" + W2);
 
 
         /* *******************
          * Step 3: Create D,D1,D2
          *********************/
-        BigInteger D = w.add(c.multiply(x).mod(q)); // FIXME: Should be in Zq.
-        BigInteger D1 = n1.add(c.multiply(r1).mod(q)); // FIXME: Should be in Zq.
-        BigInteger D2 = n2.add(c.multiply(r2).mod(q)); // FIXME: Should be in Zq.
+        BigInteger D = w.add(c.multiply(x).mod(q)).mod(q); // FIXME: Should be in Zq.
+        BigInteger D1 = n1.add(c.multiply(r1).mod(q)).mod(q); // FIXME: Should be in Zq.
+        BigInteger D2 = n2.add(c.multiply(r2).mod(q)).mod(q); // FIXME: Should be in Zq.
 
 
         return new ELProof(c, D, D1, D2);
@@ -107,6 +110,13 @@ public class Sigma2EL {
          * Compute new c.
          */
         BigInteger c_hashed = hash(X1, X2);
+
+
+
+//        System.out.println("Verify hash: \t\t" + c_hashed);
+//        System.out.println("Verify hash: X1 \t" + X1);
+//        System.out.println("Verify hash: X2 \t" + X2);
+
 
         return c.compareTo(c_hashed) == 0;
     }
@@ -148,7 +158,6 @@ public class Sigma2EL {
         byte[] bytes_b = b.toByteArray();
         byte[] concatenated = Bytes.concat(bytes_a, bytes_b);
         byte[] hashed = this.hashH.digest(concatenated); // =>
-
 
         // TODO: hash output should be 2*t bits
         assert hashed.length == 2 * t / 8 : "Hash output should be 2t + hashed.length= " + hashed.length + ", t2=" + (2 * t / 8);

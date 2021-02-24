@@ -116,10 +116,11 @@ public class Sigma3 {
      */
     public Sigma3Statement createStatement(ElGamalPK pk, CipherText cipher, BigInteger plain) {
         BigInteger p = pk.getGroup().getP();
+        BigInteger g = pk.getGroup().getG();
 
-        // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
+        // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
         BigInteger alpha = pk.getH();
-        BigInteger beta = cipher.c2.multiply(plain.modInverse(p)).mod(p);
+        BigInteger beta = cipher.c2.multiply(g.modPow(plain,p).modInverse(p)).mod(p);
         BigInteger alpha_base = pk.getGroup().getG();
         BigInteger beta_base = cipher.c1;
 
