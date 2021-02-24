@@ -17,8 +17,6 @@ import org.junit.runner.RunWith;
         "TestsCiphertexts",
         "TestsUTIL",
 //        "TestObliviousTransfer",
-//        "offline.TestBitMatrix",
-//        "offline.TestEncryption"
 })
 @ExcludeTags({"TestsSigma1"})
 public class TestAll {
