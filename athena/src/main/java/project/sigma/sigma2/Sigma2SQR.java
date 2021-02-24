@@ -30,9 +30,7 @@ public class Sigma2SQR {
         BigInteger q = statementSQR.group.q;
 
         // step 1
-//        BigInteger startInclusive = (BigInteger.valueOf(2).pow(s).negate()).multiply(p).add(BigInteger.valueOf(1));
-//        BigInteger endExclusive = (BigInteger.valueOf(2).pow(s)).multiply(p); // +1 cancels out the -1 due to exclusivity
-        BigInteger r_2 = Sigma2EL.pickRand_r(random, s, p); // Within [-2^s p +1, 2^s p-1]
+        BigInteger r_2 = Sigma2EL.pickRand_r(random, s, p); // Within [-2^s p +1, 2^s p -1]
 
         // y_2 = E(x; r2) = g^x * h^r mod p
         BigInteger gx = g.modPow(x, p);
@@ -40,7 +38,7 @@ public class Sigma2SQR {
         BigInteger y_2 = gx.multiply(hr_2).mod(p);
 
         // step 2
-        BigInteger r_3 = r.subtract(r_2.multiply(x)).mod(q);
+        BigInteger r_3 = r.subtract(r_2.multiply(x)).mod(q); // this is in [-2^s b*p +1, 2^s b*p -1]
 
         //Then, y_1 = y_2^x h^{r_3} mod p.
         BigInteger y_2x = y_2.modPow(x, p);

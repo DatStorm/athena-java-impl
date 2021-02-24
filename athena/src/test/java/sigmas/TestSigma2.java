@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.dao.sigma2.*;
+import project.elgamal.ElGamalPK;
 import project.elgamal.Group;
 import project.sigma.sigma2.Sigma2;
 import project.factory.Factory;
@@ -27,6 +28,7 @@ public class TestSigma2 {
     private Sigma2SQR sigma2SQR;
     private Random random;
     private Group group;
+    private ElGamalPK pk;
 
 
     @BeforeEach
@@ -37,7 +39,8 @@ public class TestSigma2 {
 
         sigma2EL = new Sigma2EL(factory.getHash(), random);
         sigma2SQR = new Sigma2SQR(sigma2EL, random);
-        group = factory.getPK().getGroup();
+        pk = factory.getPK();
+        group = pk.getGroup();
 
     }
 
@@ -97,8 +100,22 @@ public class TestSigma2 {
 
     @Test
     void TestSigma2() {
-        Sigma2Statement statement = null;
-        Sigma2Secret secret = null;
+        BigInteger m = BigInteger.valueOf(5);
+
+        BigInteger a = BigInteger.ZERO;
+        BigInteger b = BigInteger.TEN;
+        BigInteger r = Sigma2.sampleRandomElementInZ_k2(this.random);
+        BigInteger p = group.p;
+        BigInteger h = pk.getH();
+        BigInteger g = group.g;
+
+        BigInteger h_r = h.modPow(r,p);
+        BigInteger c = g.modPow(m,p).multiply(h_r).mod(p);
+        Sigma2Statement statement = new Sigma2Statement(c,a,b,pk);
+
+
+
+        Sigma2Secret secret = new Sigma2Secret(m,r);
         Sigma2Proof proof = sigma2.proveCiph(statement, secret);
 
         boolean verification = sigma2.verifyCipher(statement, proof);

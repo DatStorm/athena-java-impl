@@ -20,7 +20,10 @@ public class Sigma2EL {
     private static final int l = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_L;
     private static final int s1 = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_S1;
     private static final int s2 = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_S2;
-    private static final BigInteger b = BigInteger.valueOf(100); //FIXME: WTF er b
+
+    // https://www.quora.com/How-many-digits-are-in-a-512-bit-number
+    //FIXME: article says |b|=512bits ^
+    private static final BigInteger b = new BigInteger("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095");
 
     public Sigma2EL(MessageDigest hash, Random random) {
         this.hashH = hash;
@@ -32,7 +35,7 @@ public class Sigma2EL {
         BigInteger x = secret.x;
 
         if (!UTIL.BIGINT_IN_RANGE(BigInteger.ZERO, b, x)) {
-            System.err.println("Secret x not in range [0,b]");
+            System.err.printf("Secret x=%d not in range [%d,%d] \n", x, BigInteger.ZERO, b);
         }
         BigInteger r1 = secret.r1;
         BigInteger r2 = secret.r2;

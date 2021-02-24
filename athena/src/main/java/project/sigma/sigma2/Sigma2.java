@@ -2,13 +2,14 @@ package project.sigma.sigma2;
 
 import project.UTIL;
 import project.dao.sigma2.*;
-import project.dao.sigma4.Sigma4Proof;
-import project.elgamal.ElGamalPK;
 import project.elgamal.Group;
 import project.factory.Factory;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 public class Sigma2 {
@@ -25,8 +26,8 @@ public class Sigma2 {
      * smaller than the order of G (e.g. 160 bits long) and k2 is
      * larger than the order of G (e.g. longer than 1024 bits).
      */
-    private final BigInteger k1 = BigInteger.valueOf(320); // k1 << k2   // TODO: CHANGE
-    private final BigInteger k2 = BigInteger.valueOf(1500); // 3000    // TODO: CHANGE
+    private final static BigInteger k1 = BigInteger.valueOf(320); // k1 << k2   // TODO: CHANGE
+    private final static BigInteger k2 = BigInteger.valueOf(1500); // 3000    // TODO: CHANGE
     private final Random random;
 
 
@@ -68,7 +69,7 @@ public class Sigma2 {
          *********/
 
         //Choose randomly in Z_k2
-        BigInteger r_prime = UTIL.getRandomElement(k2, random);
+        BigInteger r_prime = sampleRandomElementInZ_k2(this.random);
 
         // = b - m + 1
         BigInteger b_m_add_1 = b.subtract(m.add(BigInteger.ONE));
@@ -119,15 +120,32 @@ public class Sigma2 {
          *********/
 
         // Randomly choose m1, m2 and m4
-        BigInteger m1 = null;
-        BigInteger m2 = null;
-        BigInteger m4 = null;
+        BigInteger m_a_add1 = m.subtract(a.add(BigInteger.ONE));
+        BigInteger w2_m_a_add1_b_m_add1 = w_squared.multiply(m_a_add1).multiply(b_m_add_1);
+
+        // returns = m1,m2,m3,m4
+        List<BigInteger> mList = sampleMs(w2_m_a_add1_b_m_add1);
+        BigInteger m1 = mList.get(0);
+        BigInteger m2 = mList.get(1);
+        BigInteger m3 = mList.get(2);
+        BigInteger m4 = mList.get(3);
 
 
         // Randomly choose r1, r2, r3 to satisfy r1+r2+r3 = w^2((b − m + 1)r + r') + r''
-        BigInteger r1 = null;
-        BigInteger r2 = null;
-        BigInteger r3 = null;
+        // = (b − m + 1)r
+        BigInteger b_m_add_1_mult_r = b_m_add_1.multiply(r); // FIXME: mod p
+        // = (b − m + 1)r + r'
+        BigInteger b_m_add_1_mult_r_r_prime = b_m_add_1_mult_r.add(r_prime); // FIXME: mod p
+        // = w^2((b − m + 1)r + r')
+        BigInteger w2_b_m_add_1_mult_r_r_prime = w_squared.multiply(b_m_add_1_mult_r_r_prime); // FIXME: mod p
+        // = w^2((b − m + 1)r + r') + r''
+        BigInteger w2_b_m_add_1_mult_r_r_prime_r_prime_prime = w2_b_m_add_1_mult_r_r_prime.add(r_prime_prime); // FIXME: mod p
+
+        // returns = r1,r2,r3
+        List<BigInteger> rList = sampleRs(w2_b_m_add_1_mult_r_r_prime_r_prime_prime);
+        BigInteger r1 = rList.get(0);
+        BigInteger r2 = rList.get(1);
+        BigInteger r3 = rList.get(2);
 
         // Compute c'_1, c'_2, c'_3
         BigInteger c_prime_1 = g.modPow(m1, p).multiply(h.modPow(r1, p)).mod(p);
@@ -143,15 +161,83 @@ public class Sigma2 {
         /* ********
          * Step 5: Make non-interactive using Fiat-Shamir
          *********/
-
+        BigInteger s = UTIL.getRandomElement(BigInteger.ONE, k1, random);               // Z_k1 \ {0}
+        BigInteger t = UTIL.getRandomElement(BigInteger.ONE, k1, random);               // Z_k1 \ {0}
+        // TODO: Change the above to hashed??
 
 
         /* ********
          * Step 6:
          *********/
+        BigInteger x = s.multiply(m1).add(m2).add(m3);
+        BigInteger y = m1.add(t.multiply(m2)).add(m3);
+        BigInteger u = s.multiply(r1).add(r2).add(r3);
+        BigInteger v = r1.add(t.multiply(r2)).add(r3);
 
 
-        return new Sigma2Proof(proofEL_0, proofSQR_1, proofSQR_2);
+        return new Sigma2Proof(stmntEL_0,
+                statementSQR_1,
+                statementSQR_2,
+                proofEL_0,
+                proofSQR_1,
+                proofSQR_2,
+                c1,c2,
+                c_prime_prime,
+                c_prime_1, c_prime_2, c_prime_3,
+                s, t,
+                x, y, u, v);
+    }
+
+    private List<BigInteger> sampleRs(BigInteger targetValue) {
+        //Sample two values, and use them as delimiters for the r values.
+        BigInteger delimiter1 = UTIL.getRandomElement(targetValue, this.random);
+        BigInteger delimiter2 = UTIL.getRandomElement(targetValue, this.random);
+
+        // Find the lowest delimiter
+        BigInteger delimiterLow;
+        BigInteger delimiterHigh;
+        boolean delim1IsLowerThanDelim2 = delimiter1.compareTo(delimiter2) == -1;
+        if (delim1IsLowerThanDelim2) {
+            delimiterLow = delimiter1;
+            delimiterHigh = delimiter2;
+        } else {
+            delimiterLow = delimiter2;
+            delimiterHigh = delimiter1;
+        }
+
+        // Use delimiters to choose r values
+        BigInteger r1 = delimiterLow;
+        BigInteger r2 = delimiterHigh.subtract(delimiterLow);
+        BigInteger r3 = targetValue.subtract(delimiterHigh);
+
+        BigInteger sum = r1.add(r2).add(r3);
+        if (!targetValue.equals(sum)) {
+            throw new RuntimeException("R values not sampled correctly");
+        }
+
+        return Arrays.asList(r1, r2, r3);
+    }
+
+    private List<BigInteger> sampleMs(BigInteger upperBoundExclusive) {
+
+        // Pick m4 randomly in [0;sqrt(bound)], ensuring that m3 is in [0;bound]
+        BigInteger m4 = UTIL.getRandomElement(upperBoundExclusive.sqrt(), this.random);
+        BigInteger m3 = m4.modPow(m4, upperBoundExclusive);
+
+        BigInteger m1 = UTIL.getRandomElement(upperBoundExclusive, this.random);
+        BigInteger m2 = upperBoundExclusive.subtract(m1).subtract(m3);
+
+        BigInteger m1_m2_m3 = m1.add(m2).add(m3); //FIXME: Modulo!!!
+
+        if (!upperBoundExclusive.equals(m1_m2_m3)) {
+            throw new RuntimeException("M values not sampled correctly");
+        }
+
+        return Arrays.asList(m1, m2, m3, m4);
+    }
+
+    public static BigInteger sampleRandomElementInZ_k2(Random random) {
+        return UTIL.getRandomElement(k2, random);
     }
 
 
@@ -159,6 +245,96 @@ public class Sigma2 {
      * Step 7:
      *********/
     public boolean verifyCipher(Sigma2Statement statement, Sigma2Proof proof) {
+        // public knowledge
+        BigInteger c = statement.c;
+        BigInteger a = statement.a;
+        BigInteger b = statement.b;
+        BigInteger g = statement.pk.getGroup().getG();
+        BigInteger h = statement.pk.getH();
+        BigInteger p = statement.pk.getGroup().getP();
+        BigInteger q = statement.pk.getGroup().getQ();
+
+        //Verify EL_0
+        boolean verificationEL0 = sigma2EL.verify(proof.statementEL_0, proof.proofEL_0);
+        if (!verificationEL0) {
+            System.out.println("sigma2EL_0 failed");
+            return false;
+        }
+
+        //Verify SQR_1
+        boolean verificationSQR1 = sigma2SQR.verify(proof.statementSQR_1, proof.proofSQR_1);
+        if (!verificationSQR1) {
+            System.out.println("sigma2SQR_1 failed");
+
+            return false;
+        }
+
+        //Verify SQR_2
+        boolean verificationSQR2 = sigma2SQR.verify(proof.statementSQR_2, proof.proofSQR_2);
+        if (!verificationSQR2) {
+            System.out.println("sigma2SQR_2 failed");
+            return false;
+        }
+
+        // Verify the overall Sigma2 proof
+        BigInteger c1 = proof.c1;
+        BigInteger c2 = proof.c2;
+        BigInteger c_prime_1 = proof.c_prime_1;
+        BigInteger c_prime_2 = proof.c_prime_2;
+        BigInteger c_prime_3 = proof.c_prime_3;
+        BigInteger c_prime_prime = proof.c_prime_prime;
+        BigInteger s = proof.s;
+        BigInteger t = proof.t;
+        BigInteger x = proof.x;
+        BigInteger y = proof.y;
+        BigInteger u = proof.u;
+        BigInteger v = proof.v;
+
+        // c1 = c * g^{-(a−1)} mod p
+        int check1 = c1.compareTo(c.multiply(g.modPow(a.subtract(BigInteger.ONE),p).modInverse(p)).mod(p));
+        if (check1 != 0) { // compareTo returns 0 if the 2 BigIntegers are equal
+            return false;
+        }
+
+        // c2 = g^{b+1} * c^{-1} mod p
+        int check2 = c2.compareTo(g.modPow(b.add(BigInteger.ONE),p).multiply(c.modInverse(p)).mod(p));
+        if (check2 != 0) {// compareTo returns 0 if the 2 BigIntegers are equal
+            return false;
+        }
+
+        // c'' = c'_1 * c'_2 * c'_3 mod p
+        int check3 = c_prime_prime.compareTo(c_prime_1.multiply(c_prime_2).multiply(c_prime_3).mod(p));
+        if (check3 != 0) { // compareTo returns 0 if the 2 BigIntegers are equal
+            return false;
+        }
+
+        // c'_1^s * c'_2 * c'_3 = g^x h^u mod p
+        BigInteger check4Part1 = c_prime_1.modPow(s, p).multiply(c_prime_2).multiply(c_prime_3).mod(p);
+        BigInteger check4Part2 = g.modPow(x, p).multiply(h.modPow(u,p)).mod(p);
+        int check4 = check4Part1.compareTo(check4Part2);
+        if (check4 != 0) { // compareTo returns 0 if the 2 BigIntegers are equal
+            return false;
+        }
+
+        // c'_1 * c'_2^t * c'_3 = g^y h^v mod p
+        BigInteger check5Part1 = c_prime_1.multiply(c_prime_2.modPow(t,p)).multiply(c_prime_3).mod(p);
+        BigInteger check5Part2 = g.modPow(y, p).multiply(h.modPow(v,p)).mod(p);
+        int check5 = check5Part1.compareTo(check5Part2);
+        if (check5 != 0) { // compareTo returns 0 if the 2 BigIntegers are equal
+            return false;
+        }
+
+        // x>0
+        int check6 = x.compareTo(BigInteger.ZERO);
+        if (check6 != 1) { // compareTo returns 1 if x>0
+            return false;
+        }
+
+        // y>0
+        int check7 = y.compareTo(BigInteger.ZERO);
+        if (check7 != 1) { // compareTo returns 1 if y>0
+            return false;
+        }
 
 
         return true;
