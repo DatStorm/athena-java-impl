@@ -22,7 +22,7 @@ public class Sigma2EL {
     private static final int s2 = CONSTANTS.SIGMA2_EL_SECURITY_PARAM_S2;
 
     // https://www.quora.com/How-many-digits-are-in-a-512-bit-number
-    //FIXME: article says |b|=512bits ^
+    //FIXME: article says |b|=512bits
     private static final BigInteger b = new BigInteger("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095");
 
     public Sigma2EL(MessageDigest hash, Random random) {
