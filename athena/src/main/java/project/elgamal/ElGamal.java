@@ -44,7 +44,7 @@ public class ElGamal {
     }
 
     public ElGamal(int bitLength, Random random) {
-        this(generateGroup(bitLength, random), random); // FIXME:!!!!!!! MARK!!!!!!!
+        this(generateGroup(bitLength, random), random); 
 
     }
 

@@ -56,8 +56,6 @@ public class TestCipherText {
         CipherText cAdd = c_1.multiply(c_2, p);
         BigInteger dec_mult = elgamal.decrypt(cAdd, sk);
         BigInteger g_c = g.modPow(big_a.add(big_b).mod(q), p);
-        System.out.println(g_c);
-        System.out.println(dec_mult);
         assertEquals("Should be " + "a=" + a + ", b=" + b + ", a*b=c=" + dec_mult, 0, dec_mult.compareTo(g_c));
     }
 

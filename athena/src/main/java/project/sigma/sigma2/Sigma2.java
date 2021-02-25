@@ -1,16 +1,19 @@
 package project.sigma.sigma2;
 
+import com.google.common.primitives.Bytes;
 import project.UTIL;
 import project.dao.sigma2.*;
 import project.elgamal.Group;
 import project.factory.Factory;
 
 import java.math.BigInteger;
+import java.security.DigestException;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class Sigma2 {
     private final Sigma2EL sigma2EL;
@@ -161,11 +164,21 @@ public class Sigma2 {
         /* ********
          * Step 5: Make non-interactive using Fiat-Shamir
          *********/
-        BigInteger s = UTIL.getRandomElement(BigInteger.ONE, k1, random);               // Z_k1 \ {0}
-        BigInteger t = UTIL.getRandomElement(BigInteger.ONE, k1, random);               // Z_k1 \ {0}
+//        BigInteger _s = UTIL.getRandomElement(BigInteger.ONE, k1, random);               // Z_k1 \ {0}
+//        BigInteger _t = UTIL.getRandomElement(BigInteger.ONE, k1, random);               // Z_k1 \ {0}
+//        System.out.println("_s=" + _s);
+//        System.out.println("_t=" + _t);
 
-        // FIXME: TODO: FIXME: Change the above to hashed??
+        List<BigInteger> s_t = hash(c1, c2,                                 // (c1,c2)
+                c_prime,                                                    // c'
+                proofEL_0.c, proofEL_0.D, proofEL_0.D1, proofEL_0.D2,       // c^(0), D^(0), D1^(0), D2^(0)
+                c_prime_prime,                                              // c''
+                proofSQR_1.c, proofSQR_1.D, proofSQR_1.D1, proofSQR_1.D2,   // c^(1), D^(1), D1^(1), D2^(1)
+                c_prime_1, c_prime_2, c_prime_3,                            // c'_1, c'_2, c'_3
+                proofSQR_2.c, proofSQR_2.D, proofSQR_2.D1, proofSQR_2.D2);  // c^(2), D^(2), D1^(2), D2^(2)
 
+        BigInteger s = s_t.get(0);
+        BigInteger t = s_t.get(1);
 
         /* ********
          * Step 6:
@@ -188,6 +201,49 @@ public class Sigma2 {
                 c_prime_1, c_prime_2, c_prime_3,
                 s, t,
                 x, y, u, v);
+    }
+
+    private List<BigInteger> hash(BigInteger... values) {
+        byte[] concatenated = new byte[]{};
+        for (BigInteger integer : values) {
+            concatenated = Bytes.concat(concatenated, integer.toByteArray());
+        }
+
+        byte[] hashed = this.hashH.digest(concatenated);
+
+        // find the middle element
+        int middle = hashed.length / 2;
+        byte[] s_byte = new byte[middle];
+        byte[] t_byte = new byte[middle];
+        for (int i = 0; i < middle; i++) {
+
+            // fill s_bytes with the first H(..)/2 bytes
+            s_byte[i] = hashed[i];
+
+            // fill s_bytes with the last H(..)/2 bytes
+            t_byte[i] = hashed[i + middle];
+        }
+
+        // create two big ints.
+        BigInteger s = new BigInteger(1, s_byte);
+        BigInteger t = new BigInteger(1, t_byte);
+
+        // Validate that the are in the right range.
+        boolean s_should_be_in_Zk1_removed_0 = UTIL.BIGINT_IN_RANGE(BigInteger.ONE, k1, s);
+        boolean t_should_be_in_Zk1_removed_0 = UTIL.BIGINT_IN_RANGE(BigInteger.ONE, k1, t);
+
+        if (!s_should_be_in_Zk1_removed_0) {
+            System.out.println("Sigma2.hash:: s output of hash not in Z_k1 - {0}");
+            System.out.println("Sigma2.hash:: s=" + s ); // TODO: FOR STORE!
+            System.out.println("Sigma2.hash:: k1=" + k1 );
+        }
+        if (!t_should_be_in_Zk1_removed_0) {
+            System.out.println("Sigma2.hash:: t output of hash not in Z_k1 - {0}");
+            System.out.println("Sigma2.hash:: t=" + t ); // TODO: FOR STORE!!
+            System.out.println("Sigma2.hash:: k1=" + k1 );
+        }
+
+        return Arrays.asList(s, t);
     }
 
     public static List<BigInteger> createC1_C2(BigInteger a, BigInteger b, BigInteger c, BigInteger g, BigInteger p) {

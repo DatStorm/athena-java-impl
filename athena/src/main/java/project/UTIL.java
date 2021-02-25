@@ -40,7 +40,7 @@ public class UTIL {
     // Generate random element in range [from, to[
     public static BigInteger getRandomElement(BigInteger startInclusive, BigInteger endExclusive, Random random) {
         if(startInclusive.signum() == -1) {
-            System.out.println("Warning: UTIL.getRandomElement probably does not work for negative values.");
+            System.out.println("UTIL.getRandomElement::\tWarning: getRandomElement probably does not work for negative values.");
         }
 
         boolean gIsInAllowedRange;

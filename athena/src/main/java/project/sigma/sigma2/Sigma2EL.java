@@ -35,7 +35,7 @@ public class Sigma2EL {
         BigInteger x = secret.x;
 
         if (!UTIL.BIGINT_IN_RANGE(BigInteger.ZERO, b, x)) {
-            System.err.printf("Secret x=%d not in range [%d,%d] \n", x, BigInteger.ZERO, b);
+            System.out.printf("Sigma2EL.prove::\t\tWarning: Secret x=%d not in range [%d,%d] \n", x, BigInteger.ZERO, b);
         }
         BigInteger r1 = secret.r1;
         BigInteger r2 = secret.r2;
