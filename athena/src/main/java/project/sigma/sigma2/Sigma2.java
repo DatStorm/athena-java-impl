@@ -224,9 +224,12 @@ public class Sigma2 {
             t_byte[i] = hashed[i + middle];
         }
 
-        // create two big ints.
-        BigInteger s = new BigInteger(1, s_byte);
-        BigInteger t = new BigInteger(1, t_byte);
+        // create two big ints and convert to longs.
+        long l_s = new BigInteger(1, s_byte).longValue();
+        long l_t = new BigInteger(1, t_byte).longValue();
+
+        BigInteger s = UTIL.getRandomElement(BigInteger.ONE, k1, new Random(l_s)); // use as seed
+        BigInteger t = UTIL.getRandomElement(BigInteger.ONE, k1, new Random(l_t)); // use as seed
 
         // Validate that the are in the right range.
         boolean s_should_be_in_Zk1_removed_0 = UTIL.BIGINT_IN_RANGE(BigInteger.ONE, k1, s);
@@ -234,12 +237,12 @@ public class Sigma2 {
 
         if (!s_should_be_in_Zk1_removed_0) {
             System.out.println("Sigma2.hash:: s output of hash not in Z_k1 - {0}");
-            System.out.println("Sigma2.hash:: s=" + s ); // TODO: FOR STORE!
+            System.out.println("Sigma2.hash:: s=" + s );
             System.out.println("Sigma2.hash:: k1=" + k1 );
         }
         if (!t_should_be_in_Zk1_removed_0) {
             System.out.println("Sigma2.hash:: t output of hash not in Z_k1 - {0}");
-            System.out.println("Sigma2.hash:: t=" + t ); // TODO: FOR STORE!!
+            System.out.println("Sigma2.hash:: t=" + t );
             System.out.println("Sigma2.hash:: k1=" + k1 );
         }
 
