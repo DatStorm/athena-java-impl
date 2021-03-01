@@ -17,8 +17,8 @@ import java.io.IOException;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-@Tag("TestsAthenaSetup")
-@DisplayName("Test Athena Setup")
+@Tag("TestsAthenaRegister")
+@DisplayName("Test Athena Register")
 public class TestAthenaImplRegister {
 
     MainAthenaFactory msFactory;
