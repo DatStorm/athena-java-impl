@@ -19,4 +19,20 @@ public class Ballot {
         this.sigma_2 = sigma_2;
         this.cnt = cnt;
     }
+
+    public CipherText get1() {
+        return pd;
+    }
+
+    public CipherText get2() {
+        return c1;
+    }
+
+    public CipherText get3() {
+        return c2;
+    }
+
+    public int get6() {
+        return cnt;
+    }
 }

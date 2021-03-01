@@ -1,5 +1,6 @@
 package project.athena;
 
+import com.google.common.collect.Table;
 import project.dao.Randomness;
 import project.dao.athena.*;
 import project.dao.sigma1.ProveKeyInfo;
@@ -7,22 +8,25 @@ import project.dao.sigma1.PublicInfoSigma1;
 import project.dao.sigma2.Sigma2Proof;
 import project.dao.sigma2.Sigma2Secret;
 import project.dao.sigma2.Sigma2Statement;
+import project.dao.sigma3.Sigma3Proof;
 import project.elgamal.CipherText;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
 import project.factory.AthenaFactory;
 import project.sigma.Sigma1;
+import project.sigma.Sigma3;
 import project.sigma.sigma2.Sigma2;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Random;
+import java.util.*;
 
 public class AthenaImpl implements Athena {
     private final Sigma1 simga1;
     private final Random random;
     private final Sigma2 sigma2;
+    private final Sigma3 sigma3;
     private boolean initialised;
     private ElGamal elgamal;
 
@@ -30,6 +34,7 @@ public class AthenaImpl implements Athena {
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.simga1 = athenaFactory.getSigma1();
         this.sigma2 = athenaFactory.getSigma2();
+        this.sigma3 = athenaFactory.getSigma3();
         this.random = athenaFactory.getRandom();
 
         this.initialised = false;
@@ -147,8 +152,85 @@ public class AthenaImpl implements Athena {
     }
 
     @Override
-    public void Tally() {
+    public void Tally(SK_Vector skv, BullitinBoard bb, int nc, ElectoralRoll L, int kappa) {
+        ElGamalSK sk = skv.sk;
 
+        /* ********
+         * Step 1: Remove invalid ballots
+         *********/
+        List<Ballot> finalBallots = bb.getBallots();
+        for (Ballot b : bb.getBallots()) {
+
+            CipherText pd = b.pd; // TODO: Verify in L
+
+            // VerCiph( (pk, g, c1, M), sigma1, m, kappa)
+            boolean verify_c1 = sigma2.verifyCipher(null, b.sigma_1);
+
+            // remove invalid ballots.
+            if (!verify_c1) {
+                finalBallots.remove(b);
+            }
+
+
+            // VerCiph( (pk, c2, {1,...,nc}), sigma2, m, kappa)
+            boolean verify_c2 = sigma2.verifyCipher(null, b.sigma_2);
+
+            // remove invalid ballots.
+            if (!verify_c2) {
+                finalBallots.remove(b);
+            }
+
+        }
+
+
+
+        /* ********
+         * Step 2: Mix final votes
+         *********/
+        List<Integer> pfr = new ArrayList<>();
+        Map<MapAKey, MapAValue> A = new HashMap<>();
+
+        int nonce_n = 100; // TODO: generate nonce n.
+
+        int ell = finalBallots.size();
+        for (int i = 0; i < ell; i++) {
+            Ballot bi = finalBallots.get(i);
+
+            CipherText ci_prime = homoCombination(bi.get2(), nonce_n);
+
+            // N <- Dec(sk, ci_prime)
+            BigInteger N = elgamal.decrypt(ci_prime, sk);
+
+            MapAKey key_i = new MapAKey(bi.get1(), N);
+            MapAValue t = A.get(key_i);
+
+            int cnt = bi.get6();
+
+            if (t == null || t.get1() < cnt) {
+                // Update the map if A[(bi[1]; N)] is empty
+                // or contains a lower counter
+                MapAValue value = new MapAValue(cnt, bi.get1().xor(bi.get2()), bi.get3());
+                A.put(key_i,value);
+            } else if (t.get1() == cnt) {
+                // Disregard duplicate counters
+                MapAValue value = new MapAValue(cnt, null, null); // (bi[6], \bot, \bot)
+                A.put(key_i,value);
+            }
+
+//            Sigma3Proof xi = sigma3.proveDecryption(); // TODO: HER!!
+        }
+
+
+
+
+        /* ********
+         * Step 3: Reveal eligible votes
+         *********/
+
+    }
+
+    private CipherText homoCombination(CipherText c1, int n) {
+        return c1; // TODO: Hacky....
     }
 
     @Override

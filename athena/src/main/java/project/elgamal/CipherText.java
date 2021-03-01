@@ -55,4 +55,9 @@ public class CipherText {
     public int hashCode() {
         return Objects.hash(c1, c2);
     }
+
+    public CipherText xor(CipherText c) {
+        throw new UnsupportedOperationException("TODO: IMPLEMENT ME!!!!");
+//        return null;
+    }
 }
