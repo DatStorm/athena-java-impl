@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 @Tag("TestsSigma2")
 @DisplayName("Test Sigma2")
 public class TestSigma2 {
-
     private Sigma2 sigma2;
     private Sigma2EL sigma2EL;
     private Sigma2SQR sigma2SQR;
@@ -34,7 +33,7 @@ public class TestSigma2 {
     @BeforeEach
     void setUp() {
         Factory factory = new MainFactory();
-        sigma2 = new Sigma2(factory);
+        sigma2 = new Sigma2(factory.getHash(),factory.getRandom());
         random = factory.getRandom();
 
         sigma2EL = new Sigma2EL(factory.getHash(), random);

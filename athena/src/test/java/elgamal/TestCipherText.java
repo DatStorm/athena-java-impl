@@ -11,10 +11,7 @@ import project.factory.Factory;
 import project.factory.MainFactory;
 import project.mixnet.Mixnet;
 
-import javax.crypto.Cipher;
 import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.Random;
 
 import static org.junit.Assert.*;

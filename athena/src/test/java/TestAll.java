@@ -9,15 +9,15 @@ import org.junit.runner.RunWith;
 @SelectPackages("")
 @IncludeTags({
         "TestElgamal",
-//        "TestsSigma1",
+        "TestsSigma1",
         "TestsSigma2",
         "TestsSigma3",
         "TestsSigma4",
         "TestsMixnets",
         "TestsCiphertexts",
         "TestsUTIL",
-//        "TestObliviousTransfer",
+        "TestsAthenaSetup",
 })
-@ExcludeTags({"TestsSigma1"})
+//@ExcludeTags({"TestsSigma1"})
 public class TestAll {
 }

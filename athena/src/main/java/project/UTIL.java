@@ -6,6 +6,8 @@ import project.elgamal.Group;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -190,5 +192,17 @@ public class UTIL {
         }
 
         return true;
+    }
+
+    public static MessageDigest GET_HASH_FUNCTION() {
+
+        MessageDigest sha3_256 = null;
+        try {
+            sha3_256 = MessageDigest.getInstance(CONSTANTS.ALGORITHM_SHA3_256);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        return sha3_256;
     }
 }

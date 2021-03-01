@@ -14,8 +14,10 @@ import project.factory.MainFactory;
 import project.mixnet.Mixnet;
 
 import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -32,10 +34,13 @@ public class TestMixnet {
     @BeforeEach
     void setUp() {
         Factory factory = new MainFactory();
-        mixnet = new Mixnet(factory);
         elgamal = factory.getElgamal();
         pk = factory.getPK();
         sk = factory.getSK();
+        MessageDigest hash = factory.getHash();
+        Random random = factory.getRandom();
+
+        mixnet = new Mixnet(hash,random,elgamal,pk);
 
     }
 

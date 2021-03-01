@@ -1,6 +1,7 @@
 package project.factory;
 
 import project.CONSTANTS;
+import project.UTIL;
 import project.athena.Gen;
 import project.dao.Randomness;
 import project.elgamal.ElGamal;
@@ -19,22 +20,14 @@ public class MainFactory implements Factory {
 
     public MainFactory() {
         this.random = new Random(CONSTANTS.RANDOM_SEED);
-        this.gen = new Gen(new Randomness(this.random.nextLong()), CONSTANTS.KAPPA);
+        this.gen = new Gen(this.random, CONSTANTS.KAPPA);
         this.sk = gen.generate();
     }
 
 
     @Override
     public MessageDigest getHash() {
-
-        MessageDigest sha3_256 = null;
-        try {
-            sha3_256 = MessageDigest.getInstance(CONSTANTS.ALGORITHM_SHA3_256);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
-        return sha3_256;
+        return UTIL.GET_HASH_FUNCTION();
     }
 
     @Override

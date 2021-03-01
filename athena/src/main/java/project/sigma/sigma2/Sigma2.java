@@ -34,9 +34,9 @@ public class Sigma2 {
     private final Random random;
 
 
-    public Sigma2(Factory factory) {
-        this.hashH = factory.getHash();
-        this.random = factory.getRandom();
+    public Sigma2(MessageDigest hashH,Random random) {
+        this.hashH = hashH;
+        this.random = random;
         this.sigma2EL = new Sigma2EL(this.hashH, random);
         this.sigma2SQR = new Sigma2SQR(this.sigma2EL, random);
     }

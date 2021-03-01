@@ -22,11 +22,11 @@ public class Mixnet {
     private final BigInteger p;
     private final BigInteger q;
 
-    public Mixnet(Factory factory) {
-        this.hashH = factory.getHash();
-        this.elgamal = factory.getElgamal();
-        this.random = factory.getRandom();
-        this.pk = factory.getPK();
+    public Mixnet(MessageDigest hashH,Random random, ElGamal elgamal,ElGamalPK pk ) {
+        this.hashH = hashH;
+        this.elgamal = elgamal;
+        this.random = random;
+        this.pk = pk;
         this.p = this.pk.getGroup().getP();
         this.q = this.pk.getGroup().getQ();
     }
