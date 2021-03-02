@@ -1,5 +1,6 @@
 package project.dao.athena;
 
+import project.dao.mixnet.MixBallot;
 import project.elgamal.CipherText;
 
 public class MapAValue {
@@ -11,6 +12,10 @@ public class MapAValue {
         this.cnt = cnt;
         this.cipher1 = cipher1;
         this.cipher2 = cipher2;
+    }
+
+    public MixBallot toMixBallot() {
+        return new MixBallot(this.cipher1, this.cipher2);
     }
 
     public int get1() {

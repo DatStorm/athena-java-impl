@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 
 @Tag("TestsAthenaVote")
 @DisplayName("Test Athena Vote")
-public class TestAthenaImplVote {
+public class TestAthenaVote {
 
     MainAthenaFactory msFactory;
     private final int kappa = CONSTANTS.KAPPA;
@@ -33,6 +33,7 @@ public class TestAthenaImplVote {
         msFactory = new MainAthenaFactory();
         athena = new AthenaImpl(msFactory);
         SetupStruct setup = athena.Setup(kappa);
+
 
         pkv = setup.pkv;
         RegisterStruct register = athena.Register(pkv, kappa);

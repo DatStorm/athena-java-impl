@@ -40,10 +40,12 @@ public class Sigma1 {
         // public keys
         BigInteger g = publicInfoSigma1.getPK().getGroup().getG();
         BigInteger p = publicInfoSigma1.getPK().getGroup().getP();
+        BigInteger q = publicInfoSigma1.getPK().getGroup().getQ();
         BigInteger h = publicInfoSigma1.getPK().getH();
 
 
-        BigInteger p_minus_1 = p.subtract(BigInteger.ONE);
+        BigInteger _p_minus_1 = p.subtract(BigInteger.ONE);
+        BigInteger p_minus_1 = q; // TODO: Changed to q instead of p-1
         for (int i = 0; i < kappa; i++) {
             BigInteger ei = UTIL.getRandomElement(p_minus_1, random); //int ei = new rand ei in Z_p-1;
 

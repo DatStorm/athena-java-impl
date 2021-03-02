@@ -56,7 +56,7 @@ public class CipherText {
         return Objects.hash(c1, c2);
     }
 
-    public CipherText xor(CipherText c) {
+    public CipherText combine(CipherText c) {
         throw new UnsupportedOperationException("TODO: IMPLEMENT ME!!!!");
 //        return null;
     }

@@ -1,6 +1,7 @@
 package project.sigma.sigma2;
 
 import com.google.common.primitives.Bytes;
+import project.CONSTANTS;
 import project.UTIL;
 import project.dao.sigma2.*;
 import project.elgamal.Group;
@@ -29,8 +30,8 @@ public class Sigma2 {
      * smaller than the order of G (e.g. 160 bits long) and k2 is
      * larger than the order of G (e.g. longer than 1024 bits).
      */
-    private final static BigInteger k1 = BigInteger.valueOf(320); // k1 << k2   // TODO: CHANGE
-    private final static BigInteger k2 = BigInteger.valueOf(3000); // 3000    // TODO: CHANGE
+    private final static BigInteger k1 = BigInteger.valueOf(CONSTANTS.SIGMA2_SECURITY_PARAM_k1);
+    private final static BigInteger k2 = BigInteger.valueOf(CONSTANTS.SIGMA2_SECURITY_PARAM_k2);
     private final Random random;
 
 

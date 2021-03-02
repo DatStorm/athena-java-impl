@@ -17,4 +17,6 @@ public class CONSTANTS {
     public static final String ALGORITHM_SHA3_256 = "SHA3-256";
     public static final int SIGMA2_EL_SECURITY_PARAM_S1 = 40; // FIXME: should properly be somewhat larger!!!. Look at article for why these numbers
     public static final int SIGMA2_EL_SECURITY_PARAM_S2 = 552;// FIXME: should properly be somewhat larger!!!. Look at article for why these numbers
+    public static long SIGMA2_SECURITY_PARAM_k1 = 320;
+    public static long SIGMA2_SECURITY_PARAM_k2 = 2048;
 }

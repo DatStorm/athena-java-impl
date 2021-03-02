@@ -19,6 +19,8 @@ import org.junit.runner.RunWith;
         "TestsAthenaSetup",
         "TestsAthenaRegister",
         "TestsAthenaVote",
+        "TestsAthenaTally",
+        "TestsAthenaVerify",
 })
 //@ExcludeTags({"TestsSigma1"})
 public class TestAll {
