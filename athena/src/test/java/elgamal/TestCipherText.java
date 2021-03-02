@@ -164,6 +164,7 @@ public class TestCipherText {
         // Enc(m,r^-1) should equal Enc(m,r)^-1.
         BigInteger p = elgamal.getDescription().p;
         BigInteger q = elgamal.getDescription().q;
+
         BigInteger e = BigInteger.ZERO;
         BigInteger r = UTIL.getRandomElement(q, new Random(0));
         BigInteger r1 = UTIL.getRandomElement(q, new Random(1));

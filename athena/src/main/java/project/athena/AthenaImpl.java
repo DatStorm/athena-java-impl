@@ -89,7 +89,8 @@ public class AthenaImpl implements Athena {
 
         int d = 100; // TODO: Generate nonce d.
         BigInteger g = elgamal.getDescription().getG(); // TODO: Correct g ?????
-        BigInteger g_d = g.pow(d);
+        BigInteger q = elgamal.getDescription().getQ(); // TODO: COORECT??
+        BigInteger g_d = g.pow(d).mod(q);
         CipherText pd = elgamal.encrypt(g_d, pkv.pk);
 
         D_Vector d_vector = new D_Vector(pd, d);
@@ -126,30 +127,36 @@ public class AthenaImpl implements Athena {
 
         // dv = vector of (pd, d)
         CipherText pd = dv.pd;
-        int d = dv.d;
-        int d_neg = -d;
 
 
         ElGamalPK pk = pkv.pk;
         BigInteger g = pk.getGroup().getG();
+        BigInteger p = pk.getGroup().getP();
+        BigInteger q = pk.getGroup().getQ();
+
+        // -d mod q
+        BigInteger d_neg = BigInteger.valueOf(100).negate(); // TODO: Generate nonce.
+        d_neg = d_neg.mod(q).add(q).mod(q);
 
 
-        BigInteger g_neg_d = g.pow(d_neg);
+
+        // g^{-d}
+        //BigInteger g_neg_d = g.modPow(d_neg, p); // not in Z_q
         BigInteger s = BigInteger.valueOf(this.random.nextLong()); // FIXME: Generate coins s
-        CipherText c1 = elgamal.encrypt(g_neg_d, pk, s);
+        CipherText c1 = elgamal.encrypt(d_neg, pk, s);
 
 
-        BigInteger g_v = g.pow(vote);
+        BigInteger v_big = BigInteger.valueOf(vote);
         BigInteger t = BigInteger.valueOf(this.random.nextLong()); // FIXME: Generate coins t
-        CipherText c2 = elgamal.encrypt(g_v, pk, t);
+        CipherText c2 = elgamal.encrypt(v_big, pk, t);
 
 
         // FIXME: Create statement
-        Sigma2Proof sigma_1 = sigma2.proveCiph(null, new Sigma2Secret(BigInteger.valueOf(d_neg), s));
+        Sigma2Proof sigma_1 = sigma2.proveCiph(null, new Sigma2Secret(d_neg, s));
 
         // FIXME: Create statement
         // simga_2 <- ProveCiph( (pk, c2, {1,...,nc}),  (v, t), m, κ)
-        Sigma2Proof sigma_2 = sigma2.proveCiph(null, new Sigma2Secret(BigInteger.valueOf(vote), t)); // TODO: Should this be g^v NOT v.
+        Sigma2Proof sigma_2 = sigma2.proveCiph(null, new Sigma2Secret(v_big, t)); // TODO: Should this be g^v NOT v.
 
         return new Ballot(pd, c1, c2, sigma_1, sigma_2, cnt);
     }

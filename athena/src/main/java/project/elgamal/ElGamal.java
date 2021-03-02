@@ -44,7 +44,7 @@ public class ElGamal {
     }
 
     public ElGamal(int bitLength, Random random) {
-        this(generateGroup(bitLength, random), random); 
+        this(generateGroup(bitLength, random), random);
 
     }
 
@@ -67,6 +67,7 @@ public class ElGamal {
 
     /**
      * Generating El Gamal encryption on a message msg using public key pk
+     *
      * @param msg bigint in range [0; 2^bitlength -1]
      */
     public CipherText encrypt(BigInteger msg, ElGamalPK pk) {
@@ -80,14 +81,13 @@ public class ElGamal {
         BigInteger q = pk.getGroup().getQ();
         r = r.mod(q).add(q).mod(q);
 
-        int bitLength = p.bitLength();
-        
-        if (msg.bitLength() > bitLength) {
-            throw new IllegalArgumentException("BigInteger, of length " + msg.bitLength() +", too long for " + bitLength + " bit ElGamal");
+        msg = msg.mod(q).add(q).mod(q);
+        if (msg.compareTo(q) >= 0) {
+            System.err.println("Message was not be in Z_q. ElGamal encrypted msg.mod(q)");
         }
 
         if (msg.signum() == -1) {
-                throw new IllegalArgumentException("BigInteger must be positive. Was " + msg);
+            throw new IllegalArgumentException("BigInteger must be positive. Was " + msg);
         }
         // Check for 0 invalid
 
@@ -96,7 +96,7 @@ public class ElGamal {
         BigInteger h = pk.getH();
 
         // C = (g^r, g^m·h^r)
-        BigInteger expMsg = g.modPow(msg,p);
+        BigInteger expMsg = g.modPow(msg, p);
         return new CipherText(g.modPow(r, p), expMsg.multiply(h.modPow(r, p)).mod(p));
     }
 
@@ -118,7 +118,7 @@ public class ElGamal {
 
     // Generate random sk
     public ElGamalSK generateSK() {
-        if (this.group == null){
+        if (this.group == null) {
             System.out.println("MARKKKKKKKK");
         }
         BigInteger q = this.group.getQ();
@@ -137,7 +137,7 @@ public class ElGamal {
     }
 
 
-    public BigInteger getP(){
+    public BigInteger getP() {
         return this.group.getP();
     }
 
