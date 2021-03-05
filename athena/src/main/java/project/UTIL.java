@@ -34,7 +34,16 @@ public class UTIL {
         return stream.toByteArray();
     }
 
-    // Generate random element in range [1,p[
+    // Generate @size random elements in range [1,p[
+    public static List<BigInteger> getRandomElements(BigInteger endExclusive, int size, Random random) {
+        List<BigInteger> elements = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            elements.add(getRandomElement(endExclusive, random));
+        }
+        return elements;
+    }
+
+    // Generate @param size random element in range [1,p[
     public static BigInteger getRandomElement(BigInteger endExclusive, Random random) {
         return getRandomElement(BigInteger.ZERO, endExclusive, random);
     }
@@ -97,8 +106,8 @@ public class UTIL {
         return -1;
     }
 
+    /*
     public static void CompareElGamalGroup(Group a, Group b) {
-
         assert a.getP().compareTo(b.getP()) == 0 : "a.p != b.p";
         assert a.getQ().compareTo(b.getQ()) == 0 : "a.q != a.q";
         assert a.getG().compareTo(b.getG()) == 0 : "a.g != b.g";
@@ -114,7 +123,7 @@ public class UTIL {
         /* EXAMPLE: [find the base-2 logarithm of 256]
             Math.log(256) / Math.log(2)
             => 8.0
-         */
+         /
 
         double log_e_value = Math.log(value.doubleValue());
         double log_e_base = Math.log(base.doubleValue());
@@ -124,6 +133,7 @@ public class UTIL {
 
         return log_e_value / log_e_base;
     }
+    */
 
     public static boolean CompareLists(List<?> l1, List<?> l2) {
         // make a copy of the list so the original list is not changed, and remove() is supported
@@ -135,6 +145,7 @@ public class UTIL {
         }
         return cp.isEmpty();
     }
+
 
     // result = [obj_pi(0), obj_pi(1), ...]
     public static <T> List<T> permute(List<T> objects, List<Integer> permutation) {
@@ -204,5 +215,34 @@ public class UTIL {
         }
 
         return sha3_256;
+    }
+
+    public static BigInteger modPowSum(BigInteger base, List<BigInteger> exponents, BigInteger modolus) {
+        BigInteger sum = BigInteger.ZERO;
+        for (BigInteger exponent : exponents) {
+            sum = sum.add(base.modPow(exponent, modolus));
+            sum = sum.mod(modolus);
+        }
+
+        return sum;
+    }
+
+
+
+    public static BigInteger dotProduct(List<BigInteger> l_vector, List<BigInteger> r_vector) {
+        return hadamardProduct(l_vector, r_vector).stream()
+                .reduce(BigInteger.ZERO, BigInteger::add);
+    }
+
+    public static List<BigInteger> hadamardProduct(List<BigInteger> l_vector, List<BigInteger> r_vector) {
+        assert l_vector.size() == r_vector.size();
+
+        int n = l_vector.size();
+        List<BigInteger> result = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            result.add(l_vector.get(i).multiply(r_vector.get(i)));
+        }
+
+        return result;
     }
 }
