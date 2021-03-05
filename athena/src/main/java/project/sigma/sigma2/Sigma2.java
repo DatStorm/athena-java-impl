@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Sigma2 {
     private final Sigma2EL sigma2EL;
@@ -58,6 +59,8 @@ public class Sigma2 {
 
         BigInteger a = statement.a;
         BigInteger b = statement.b;
+
+
 
 
         /* ********
@@ -160,6 +163,7 @@ public class Sigma2 {
         SQRStatement statementSQR_2 = new SQRStatement(g, h, c_prime_3, group);
         SQRSecret secretSQR_2 = new SQRSecret(m4, r3);
         SQRProof proofSQR_2 = sigma2SQR.prove(statementSQR_2, secretSQR_2);
+        
 
 
         /* ********

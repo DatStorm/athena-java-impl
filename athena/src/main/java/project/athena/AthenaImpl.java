@@ -8,6 +8,7 @@ import project.dao.sigma1.ProveKeyInfo;
 import project.dao.sigma1.PublicInfoSigma1;
 import project.dao.sigma2.Sigma2Proof;
 import project.dao.sigma2.Sigma2Secret;
+import project.dao.sigma2.Sigma2Statement;
 import project.dao.sigma3.Sigma3Proof;
 import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.CipherText;
@@ -139,7 +140,6 @@ public class AthenaImpl implements Athena {
         d_neg = d_neg.mod(q).add(q).mod(q);
 
 
-
         // g^{-d}
         //BigInteger g_neg_d = g.modPow(d_neg, p); // not in Z_q
         BigInteger s = BigInteger.valueOf(this.random.nextLong()); // FIXME: Generate coins s
@@ -152,11 +152,15 @@ public class AthenaImpl implements Athena {
 
 
         // FIXME: Create statement
-        Sigma2Proof sigma_1 = sigma2.proveCiph(null, new Sigma2Secret(d_neg, s));
+//        Sigma2Statement sigma2_statment_1 = new Sigma2Statement(c1, a, b, pk);
+//        Sigma2Proof sigma_1 = sigma2.proveCiph(sigma2_statment_1, new Sigma2Secret(d_neg, s));
+        Sigma2Proof sigma_1 = null;
 
         // FIXME: Create statement
         // simga_2 <- ProveCiph( (pk, c2, {1,...,nc}),  (v, t), m, κ)
-        Sigma2Proof sigma_2 = sigma2.proveCiph(null, new Sigma2Secret(v_big, t)); // TODO: Should this be g^v NOT v.
+//        Sigma2Statement sigma2_statment_2 = new Sigma2Statement(c2, BigInteger.ONE, BigInteger.valueOf(nc), pk);
+//        Sigma2Proof sigma_2 = sigma2.proveCiph(sigma2_statment_2, new Sigma2Secret(v_big, t)); // TODO: Should this be g^v NOT v.
+        Sigma2Proof sigma_2 = null;
 
         return new Ballot(pd, c1, c2, sigma_1, sigma_2, cnt);
     }
@@ -503,6 +507,7 @@ public class AthenaImpl implements Athena {
             CipherText pd = b.pd; // TODO: Verify in L
 
             // VerCiph( (pk, g, c1, M), sigma1, m, kappa)
+//            Sigma2Statement statement = new Sigma2Statement(c, a, b, pk);
             boolean verify_c1 = sigma2.verifyCipher(null, b.sigma_1);
 
             // remove invalid ballots.
