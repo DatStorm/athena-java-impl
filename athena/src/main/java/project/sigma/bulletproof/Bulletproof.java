@@ -215,7 +215,7 @@ public class Bulletproof {
         List<BigInteger> exponentTemp = generateListAddVectors(exponentTempP1, exponentTempP1, q);
 
         // A * S^x * g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}
-        BigInteger commitVectorP_left = PedersenCommitment.commitVector(A_mult_S, x, g_vector, z_vector, h_prime, exponentTemp, p);
+        BigInteger commitVectorP_left = PedersenCommitment.commitVector(A_mult_S, x, g_vector, z_vector, h_prime, exponentTemp, p); // FIXME: maybe error (A*S)^x vs A*S^x
 
         // A * S^x * g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}
         BigInteger P = null; //FIXME: How to compute this? Seems like you need to compute inner product
