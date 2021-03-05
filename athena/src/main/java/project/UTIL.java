@@ -1,5 +1,6 @@
 package project;
 
+import com.google.common.collect.Streams;
 import project.dao.sigma1.CoinFlipInfo;
 import project.elgamal.Group;
 
@@ -57,7 +58,7 @@ public class UTIL {
         boolean gIsInAllowedRange;
         BigInteger g = null;
         do {
-            // Sample random number g between 0 and 2^{numbits} -1
+            // Sample random number g between 0 and 2^{numbits} - 1
             g = new BigInteger(endExclusive.bitLength(), random);
 
             //Check range
@@ -227,7 +228,10 @@ public class UTIL {
         return sum;
     }
 
-
+    // compute a^b for vectors a and b
+    private List<BigInteger> generateListExponentVectors(List<BigInteger> list_a, List<BigInteger> list_b, BigInteger order) {
+        return Streams.zip(list_a.stream(), list_b.stream(), (bigInt_a, bigInt_b) -> bigInt_a.modPow(bigInt_b, order)).collect(Collectors.toList());
+    }
 
     public static BigInteger dotProduct(List<BigInteger> l_vector, List<BigInteger> r_vector) {
         return hadamardProduct(l_vector, r_vector).stream()

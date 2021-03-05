@@ -8,6 +8,9 @@ public class BulletproofProof {
     public final BigInteger s;
     public final BigInteger y;
     public final BigInteger z;
+    public final BigInteger T_1;
+    public final BigInteger T_2;
+    public final BigInteger x;
 
     public final BigInteger tau_x;
     public final BigInteger t_hat;
@@ -15,11 +18,26 @@ public class BulletproofProof {
     public final List<BigInteger> l_vector;
     public final List<BigInteger> r_vector;
 
-    private BulletproofProof(BigInteger a, BigInteger s, BigInteger y, BigInteger z, BigInteger tau_x, BigInteger t_hat, BigInteger mu, List<BigInteger> l_vector, List<BigInteger> r_vector) {
+    // a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector
+    private BulletproofProof(BigInteger a,
+                             BigInteger s,
+                             BigInteger y,
+                             BigInteger z,
+                             BigInteger T_1,
+                             BigInteger T_2,
+                             BigInteger x,
+                             BigInteger tau_x,
+                             BigInteger t_hat,
+                             BigInteger mu,
+                             List<BigInteger> l_vector,
+                             List<BigInteger> r_vector) {
         this.a = a;
         this.s = s;
         this.y = y;
         this.z = z;
+        this.T_1 = T_1;
+        this.T_2 = T_2;
+        this.x = x;
         this.tau_x = tau_x;
         this.t_hat = t_hat;
         this.mu = mu;
@@ -28,16 +46,19 @@ public class BulletproofProof {
     }
 
     public static class Builder {
-        public BigInteger a;
-        public BigInteger s;
-        public BigInteger y;
-        public BigInteger z;
+        private BigInteger a;
+        private BigInteger s;
+        private BigInteger y;
+        private BigInteger z;
+        private BigInteger T_1;
+        private BigInteger T_2;
+        private BigInteger x;
 
-        public BigInteger tau_x;
-        public BigInteger t_hat;
-        public BigInteger mu;
-        public List<BigInteger> l_vector;
-        public List<BigInteger> r_vector;
+        private BigInteger tau_x;
+        private BigInteger t_hat;
+        private BigInteger mu;
+        private List<BigInteger> l_vector;
+        private List<BigInteger> r_vector;
 
         public Builder setAS(BigInteger a, BigInteger s) {
             this.a = a;
@@ -48,6 +69,17 @@ public class BulletproofProof {
         public Builder setYZ(BigInteger y, BigInteger z) {
             this.y = y;
             this.z = z;
+            return this;
+        }
+
+        public Builder setT1_T2(BigInteger T_1, BigInteger T_2) {
+            this.T_1 = T_1;
+            this.T_2 = T_2;
+            return this;
+        }
+
+        public Builder setX(BigInteger x) {
+            this.x = x;
             return this;
         }
 
@@ -78,19 +110,23 @@ public class BulletproofProof {
 
         public BulletproofProof build() {
             if (a == null ||
-                s == null ||
-                y == null ||
-                z == null ||
-                tau_x == null ||
-                t_hat == null ||
-                mu == null ||
-                l_vector == null || 
-                r_vector == null)
-            {
+                    s == null ||
+                    y == null ||
+                    z == null ||
+                    T_1 == null ||
+                    T_2 == null ||
+                    x == null ||
+                    tau_x == null ||
+                    t_hat == null ||
+                    mu == null ||
+                    l_vector == null ||
+                    r_vector == null) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
 
-            return new BulletproofProof(a, s, y, z, tau_x, t_hat, mu, l_vector, r_vector);
+            return new BulletproofProof(a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector);
         }
+
+
     }
 }

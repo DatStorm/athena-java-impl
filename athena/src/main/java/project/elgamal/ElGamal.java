@@ -49,8 +49,9 @@ public class ElGamal {
     }
 
     private static Group generateGroup(int bitLength, Random random) {
-        BigInteger p = BigInteger.probablePrime(bitLength + 1, random);
-        BigInteger q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO);
+        // SECURE == 2048
+        BigInteger p = BigInteger.probablePrime(bitLength + 1, random); // FIXME: why +1 ?? p=2q+1
+        BigInteger q = p.divide(BigInteger.TWO).subtract(BigInteger.ONE); //q= p/2 - 1
 
         BigInteger g = UTIL.getRandomElement(p, random).modPow(BigInteger.TWO, p);
 

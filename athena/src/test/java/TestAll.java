@@ -9,8 +9,8 @@ import org.junit.runner.RunWith;
 @SelectPackages("")
 @IncludeTags({
         "TestElgamal",
-        "TestsSigma1",
-        "TestsSigma2",
+//        "TestsSigma1", // FIXME: add when done!
+        "TestsSigma2BulletProof",
         "TestsSigma3",
         "TestsSigma4",
         "TestsMixnets",
@@ -22,6 +22,6 @@ import org.junit.runner.RunWith;
         "TestsAthenaTally",
         "TestsAthenaVerify",
 })
-//@ExcludeTags({"TestsSigma1"})
+@ExcludeTags({"TestsSigma2"})
 public class TestAll {
 }
