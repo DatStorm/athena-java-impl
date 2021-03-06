@@ -10,7 +10,6 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static project.UTIL.getRandomElement;
 
@@ -43,7 +42,7 @@ public class Bulletproof {
          *********/
 
         //Extract bit representations from m
-        List<BigInteger> a_L = extractBits(m, n, p);
+        List<BigInteger> a_L = extractBits(m, n);
 
         // a_r = a_l - 1 mod q
         List<BigInteger> a_R = a_L.stream()
@@ -117,7 +116,7 @@ public class Bulletproof {
             r_vector.add(a);
         }
 
-        BigInteger t_hat = UTIL.dotProduct(l_vector, r_vector); // <- MARK ;)
+        BigInteger t_hat = UTIL.dotProduct(l_vector, r_vector);
 
         // tau_x = tau_2 * x^2 + tau_1 * x + z^2 * gamma mod q
         BigInteger x_squared = x.pow(2);
@@ -338,10 +337,27 @@ public class Bulletproof {
     }
 
 
-    /******************************************************************************************
-     ********************************  HYYGGGGEEEE MARK ***************************************
-     ******************************************************************************************/
-    private List<BigInteger> extractBits(BigInteger m, int n, BigInteger p) {
+    // Returns a list of the bits
+    private List<BigInteger> extractBits(BigInteger m, int n) {
+        String bitsString = m.toString(2);
+
+        //Extract bits TODO: Test me
+        BitSet bits = new BitSet(n);
+        int i = 0;
+        for (int j = bitsString.length() - 1; j >= 0; j++) {
+            boolean bit = bitsString.charAt(j) == '1';
+            bits.set(i, bit);
+            i++;
+        }
+
+        //Cast to List<BigInteger>
+        return bits.stream()
+                .mapToObj(BigInteger::valueOf)
+                .collect(Collectors.toList());
+
+
+        /*
+
         System.out.println("--> M: " + m);
         System.out.println("--> M: " + m.toString(2)); // get each bit...
         System.out.println("--> n: " + n);
@@ -380,5 +396,7 @@ public class Bulletproof {
 
 
         return a_L;
+     */
     }
+
 }

@@ -109,6 +109,7 @@ public class BulletproofProof {
         }
 
         public BulletproofProof build() {
+            //Check that all fields are set
             if (a == null ||
                     s == null ||
                     y == null ||
@@ -124,6 +125,7 @@ public class BulletproofProof {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
 
+            //Construct Object
             return new BulletproofProof(a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector);
         }
 
