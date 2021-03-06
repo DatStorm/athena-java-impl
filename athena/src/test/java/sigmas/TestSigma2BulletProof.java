@@ -13,6 +13,7 @@ import project.elgamal.ElGamalPK;
 import project.factory.Factory;
 import project.factory.MainFactory;
 import project.sigma.bulletproof.Bulletproof;
+import project.sigma.bulletproof.PedersenCommitment;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 @Tag("TestsSigma2BulletProof")
 @DisplayName("Test Sigma2 BulletProof")
@@ -45,7 +47,41 @@ public class TestSigma2BulletProof {
         p = pk.getGroup().getP();
         q = pk.getGroup().getQ();
         h = pk.getH();
-        sigma2 = new Bulletproof(factory.getHash());
+        sigma2 = new Bulletproof(factory.getHash(), factory.getRandom());
+
+    }
+
+
+    @Test
+    void TestSigma2PedersenCommit() {
+        BigInteger order = BigInteger.valueOf(150);
+
+        BigInteger _g = BigInteger.valueOf(2);
+        BigInteger _m = BigInteger.valueOf(4); // 2^4 = 16
+
+        BigInteger _h = BigInteger.valueOf(3);
+        BigInteger _r = BigInteger.valueOf(2); // 3^2 = 9
+
+
+        BigInteger com = PedersenCommitment.commit(_g,_m,_h,_r, order);
+
+        assertTrue(com.equals(BigInteger.valueOf(144)));
+
+
+        /*
+         * Test mod in commit works.
+         */
+        BigInteger order2 = BigInteger.valueOf(100);
+        BigInteger com2 = PedersenCommitment.commit(_g,_m,_h,_r, order2);
+
+        assertFalse(com2.equals(BigInteger.valueOf(144)));
+        assertTrue(com2.equals(BigInteger.valueOf(44)));
+
+        /*
+         * Test mod works when negative commits.
+         */
+
+
 
     }
 
@@ -57,7 +93,7 @@ public class TestSigma2BulletProof {
 
         // \gamma \in Z_q =[0,q-1]
         BigInteger gamma = UTIL.getRandomElement(q, random);
-        BigInteger V = g.modPow(m, p).multiply(h.modPow(gamma, p)).mod(p);
+        BigInteger V = PedersenCommitment.commit(g,m,h,gamma, p);
         BulletproofStatement stmnt = new BulletproofStatement(n, V, pk);
 
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
@@ -67,11 +103,5 @@ public class TestSigma2BulletProof {
 
         assertTrue("Should return 1", verification);
 
-    }
-
-    @Test
-    void TestExtractBits() {
-        List<BigInteger> rest = sigma2.extractBits(BigInteger.valueOf(5), 10);
-        System.out.println(rest);
     }
 }
