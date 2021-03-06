@@ -233,9 +233,10 @@ public class UTIL {
         return Streams.zip(list_a.stream(), list_b.stream(), (bigInt_a, bigInt_b) -> bigInt_a.modPow(bigInt_b, order)).collect(Collectors.toList());
     }
 
-    public static BigInteger dotProduct(List<BigInteger> l_vector, List<BigInteger> r_vector) {
+    public static BigInteger dotProduct(List<BigInteger> l_vector, List<BigInteger> r_vector, BigInteger order) {
         return hadamardProduct(l_vector, r_vector).stream()
-                .reduce(BigInteger.ZERO, BigInteger::add);
+                .reduce(BigInteger.ZERO, BigInteger::add)
+                .mod(order);
     }
 
     public static List<BigInteger> hadamardProduct(List<BigInteger> l_vector, List<BigInteger> r_vector) {

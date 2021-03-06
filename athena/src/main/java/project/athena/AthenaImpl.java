@@ -38,6 +38,7 @@ public class AthenaImpl implements Athena {
     private int mc;
 
 
+
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.sigma1 = athenaFactory.getSigma1();
         this.sigma2 = athenaFactory.getSigma2();

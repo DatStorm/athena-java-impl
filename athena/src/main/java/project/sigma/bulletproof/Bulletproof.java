@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import static project.UTIL.getRandomElement;
 
 public class Bulletproof {
-
     private MessageDigest hashH;
 
     public Bulletproof(MessageDigest hash) {
@@ -22,7 +21,7 @@ public class Bulletproof {
     }
 
 
-    // Note that when proving range of neg priv cred -d we use range of Z_q = [0,q-1] = [0,2^{10}-1] => n=10
+    // Note that when proving range of neg priv cred -d we use range of Z_q = [0,q-1] = [0,2^{1024}-1] => n=1024 as q is 1024 bits
     // Note that when proving range of vote v we use range of [0,nc-1] = [0,2^{log_2(nc)}-1] => n= log_2(nc)
     public BulletproofProof proveStatement(BulletproofStatement statement, BulletproofSecret secret) {
         BigInteger m = secret.m;
@@ -37,88 +36,101 @@ public class Bulletproof {
 
         Random random = new SecureRandom();
 
+        List<BigInteger> g_vector = generateConstList(g,n); // FIXME: the g element might need to be different to maintain binding, put in statement
+        List<BigInteger> h_vector = generateConstList(h,n); // FIXME: the h element might need to be different to maintain binding, put in statement
+
+
         /* ********
          * Step 1: Create a_L, a_R, A, S
          *********/
-
         //Extract bit representations from m
         List<BigInteger> a_L = extractBits(m, n);
 
         // a_r = a_l - 1 mod q
         List<BigInteger> a_R = a_L.stream()
-                .map(big -> big.subtract(BigInteger.ONE).mod(q))
+                .map(a_L_i -> a_L_i.subtract(BigInteger.ONE).mod(q).add(q).mod(q))
                 .collect(Collectors.toList());
 
 
+        // a_L * 2^n
+        assert UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q).equals(m) : "innerprod(a_L,2^n)!=m";
+        if(! UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q).equals(m)){
+            System.err.println("innerprod(a_L,2^n)!=m");
+        }
+
+
         BigInteger alpha = getRandomElement(q, random);
-        BigInteger A = computeAorS(alpha, g, p, q, h, random, a_L, a_R);
+        BigInteger A = PedersenCommitment.commitVector(h,alpha,g_vector, a_L, h_vector,a_R, p);
 
         List<BigInteger> s_L = UTIL.getRandomElements(q, n, random);
         List<BigInteger> s_R = UTIL.getRandomElements(q, n, random);
         BigInteger rho = getRandomElement(q, random);
-        BigInteger S = computeAorS(rho, g, p, q, h, random, s_L, s_R);
+        BigInteger S = PedersenCommitment.commitVector(h, rho, g_vector, s_L, h_vector, s_R, p);
 
 
         /* ********
          * Step 2: Send A,S => Hash(A,S)
          *********/
-        // Construct challenges y and z. Must be element from group G, i.e. subgroup of Z_p^*.
+        // Construct challenges y and z.
         Random hashRandom = new Random(hash(A, S));
 
 
-
         /* ********
-         * Step 3: Generate y,z \in_R G
+         * Step 3: Generate y,z \in_R G \ 0
          *********/
-        BigInteger y = g.modPow(getRandomElement(q, hashRandom), p);
-        BigInteger z = g.modPow(getRandomElement(q, hashRandom), p);
-
+        BigInteger y = getRandomElement(BigInteger.ONE, q, hashRandom);
+        BigInteger z = getRandomElement(BigInteger.ONE, q, hashRandom);
 
 
         /* ********
          * Step 4: Generate tau1, tau2, t1, t2, T1, T2
          *********/
         // in Z_q
-        BigInteger tau_1 = UTIL.getRandomElement(q, random);
-        BigInteger tau_2 = UTIL.getRandomElement(q, random);
+        BigInteger tau_1 = getRandomElement(q, random);
+        BigInteger tau_2 = getRandomElement(q, random);
 
         // in Z_q
-        BigInteger t1 = UTIL.getRandomElement(q, random);
-        BigInteger t2 = UTIL.getRandomElement(q, random);
-
+        BigInteger t1 = getRandomElement(q, random);
+        BigInteger t2 = getRandomElement(q, random);
 
         // in G, i.e. subgroup of Z_p^*
-        BigInteger T_1 = g.modPow(t1, p).multiply(h.modPow(tau_1, p)).mod(p);
-        BigInteger T_2 = g.modPow(t2, p).multiply(h.modPow(tau_2, p)).mod(p);
+        BigInteger T_1 = PedersenCommitment.commit(g,t1,h,tau_1,p);
+        BigInteger T_2 = PedersenCommitment.commit(g,t2,h,tau_2,p);
 
 
         /* ********
          * Step 5: Send T1,T2 => Hash(A,S,T1,T2) [all communication so far]
          *********/
-        // Construct challenge x. Must be element from group G, i.e. subgroup of Z_p^*.
-        Random hashRandom2 = new Random(hash(A, S, T_1, T_2)); // FIXME: would the prover not be able to cheat? Does the random not return two different values for same input?
-        BigInteger x = g.modPow(getRandomElement(q, hashRandom2), p);
+        // Construct challenge x.
+        Random hashRandom2 = new Random(hash(A, S, T_1, T_2));
+        BigInteger x = getRandomElement(BigInteger.ONE, q, hashRandom2);
 
 
         List<BigInteger> l_vector = new ArrayList<>(n); // l = a_L - z * 1^n + s_L * x
         for (int i = 0; i < n; i++) {
             BigInteger a_L_i = a_L.get(i);
             BigInteger s_L_i = s_L.get(i);
-            BigInteger a = a_L_i.subtract(z).add(s_L_i.multiply(x)).mod(p);
+            BigInteger a = a_L_i.subtract(z).add(s_L_i.multiply(x).mod(q)).mod(q);
             l_vector.add(a);
         }
 
         List<BigInteger> r_vector = new ArrayList<>(n); // r = y^n \circ (a_R + z * 1^n + s_R * x) + z^2 * 2^n
+        List<BigInteger> yn_vector = generateList(y,n,q);
+        List<BigInteger> twon_vector = generateList(BigInteger.TWO,n,q);
         for (int i = 0; i < n; i++) {
-            BigInteger a_R_i = a_L.get(i);
-            BigInteger s_R_i = s_L.get(i);
-            BigInteger a = a_R_i.add(z).add(s_R_i.multiply(x)).add(z.pow(2).multiply(BigInteger.TWO.pow(n))).mod(p);
-            r_vector.add(a);
+            BigInteger a_R_i = a_R.get(i);
+            BigInteger s_R_i = s_R.get(i);
+
+            //Caclulate r
+            BigInteger r;
+            r = a_R_i.add(z).add(s_R_i.multiply(x).mod(q)).mod(q);
+            r = yn_vector.get(i).multiply(r).mod(q);
+            r = r.add( z.pow(2).multiply(twon_vector.get(i)).mod(q)).mod(q);
+            r_vector.add(r);
         }
+        BigInteger t_hat = UTIL.dotProduct(l_vector, r_vector, q);
 
-        BigInteger t_hat = UTIL.dotProduct(l_vector, r_vector);
-
-        // tau_x = tau_2 * x^2 + tau_1 * x + z^2 * gamma mod q
+        // Equation 61: tau_x = tau_2 * x^2 + tau_1 * x + z^2 * gamma mod q
         BigInteger x_squared = x.pow(2);
         BigInteger tau_1_mult_x = tau_1.multiply(x).mod(q);
         BigInteger z_squared_mult_gamma = z.pow(2).multiply(gamma).mod(q);
@@ -127,6 +139,9 @@ public class Bulletproof {
         // mu = alpha + rho * x mod q
         BigInteger rho_mult_x = rho.multiply(x).mod(q);
         BigInteger mu = alpha.add(rho_mult_x).mod(q);
+
+
+        System.out.println("P: -->: V^{z^2}" + V.modPow(z.pow(2), p));
 
         //Build proof
         return new BulletproofProof.Builder()
@@ -139,6 +154,8 @@ public class Bulletproof {
                 .setMu(mu)
                 .setL_vector(l_vector)
                 .setR_vector(r_vector)
+                .setG_vector(g_vector)
+                .setH_vector(h_vector)
                 .build();
     }
 
@@ -165,100 +182,90 @@ public class Bulletproof {
         BigInteger t_hat = proof.t_hat;
         List<BigInteger> l_vector = proof.l_vector;
         List<BigInteger> r_vector = proof.r_vector;
+        List<BigInteger> g_vector = proof.g_vector; // TODO: Is is proof now, but maybe move to statement instead
+        List<BigInteger> h_vector = proof.h_vector; // TODO: Is is proof now, but maybe move to statement instead
 
 
         // First check line (64-65)
         List<BigInteger> h_prime = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-//            BigInteger _y_i_1 = y.pow(-i + 1); // TODO: IS BELOW CORRECT
-            BigInteger val = BigInteger.valueOf(-i + 1);
+            BigInteger val = BigInteger.valueOf(-i);
             BigInteger y_i_1 = y.modPow(val, p);
-            BigInteger hi_prime = h.modPow(y_i_1, p);
+            BigInteger hi_prime = h_vector.get(i).modPow(y_i_1, p);
             h_prime.add(hi_prime);
         }
 
-        // h^tau_x
-        BigInteger h_tau_x = h.modPow(tau_x, p);
-
         // g^{t_hat} h^{tau_x}
-        BigInteger g_t_hat_mult_h_tau_x = g.modPow(t_hat, p).multiply(h_tau_x).mod(p);
+        BigInteger g_t_hat_mult_h_tau_x = PedersenCommitment.commit(g,t_hat,h,tau_x,p);
 
         // \delta(y, z) = (z - z^{2}) * [1^{n}, y^{n}] - z^{3} * [1^{n},2^{n}]
-        BigInteger delta_yz = delta(y, z, n, p);
+        BigInteger delta_yz = delta(y, z, n, q);
 
-        // g^\delta(y,z)
         BigInteger g_delta_yz = g.modPow(delta_yz, p);
         BigInteger T_1_x = T_1.modPow(x, p);
         BigInteger T_2_x_squared = T_1.modPow(x.pow(2), p);
         BigInteger V_z2_g_ = V.modPow(z.pow(2), p).multiply(g_delta_yz).mod(p).multiply(T_1_x).mod(p).multiply(T_2_x_squared).mod(p);
 
-        boolean check1 = g_t_hat_mult_h_tau_x.compareTo(V_z2_g_) == 0;
-        if (!check1) {
+        boolean check1 = g_t_hat_mult_h_tau_x.equals(V_z2_g_);
+        // if (!check1) {
+        if (check1) {
+            System.out.println("V: -->: V^{z^2}" + V.modPow(z.pow(2), p));
             System.err.println("Bulletproof.verifyStatement g^t_hat * h^tau_x != V^{z^2} * g^ delta(y,z) * T1^x T2^{x^2}");
             System.err.println("Bulletproof.verifyStatement g^t_hat * h^tau_x: \t\t\t\t\t\t\t" + g_t_hat_mult_h_tau_x);
             System.err.println("Bulletproof.verifyStatement V^{z^2} * g^ delta(y,z) * T1^x T2^{x^2}: \t" + V_z2_g_);
             return false;
         }
 
-
         // Second check equation (66-67), see line 44 and 47 for the provers role in this
-        List<BigInteger> g_vector = generateConstList(g, n); // FIXME: It this correct?
-        List<BigInteger> z_vector = generateConstList(z.negate(), n); // FIXMe: TODO: This must be a vector according to completeness.
-
-        // A * S
-        BigInteger A_mult_S = A.multiply(S).mod(p);
+        List<BigInteger> z_vector = generateConstList(z,n); // FIXME: TODO: this has to be a vector according to the completeness
 
         // g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}
-        List<BigInteger> exponentTempP1 = generateListMultWithBigInt(generateList(y, n, q), z, q);
-        List<BigInteger> exponentTempP2 = generateListMultWithBigInt(generateList(BigInteger.TWO, n, q), z.pow(2), q);
-        List<BigInteger> exponentTemp = generateListAddVectors(exponentTempP1, exponentTempP1, q);
+        List<BigInteger> exponentTemp_z_mult_Yn = generateListMultWithBigInt(generateList(y, n, q), z, q);
+        List<BigInteger> exponentTemp_zSquared_twoN = generateListMultWithBigInt(generateList(BigInteger.TWO, n, q), z.pow(2), q);
+        List<BigInteger> exponent_hprime = generateListAddVectors(exponentTemp_z_mult_Yn, exponentTemp_zSquared_twoN, q);
 
         // A * S^x * g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}
-        BigInteger commitVectorP_left = PedersenCommitment.commitVector(A_mult_S, x, g_vector, z_vector, h_prime, exponentTemp, p); // FIXME: maybe error (A*S)^x vs A*S^x
-
-        // A * S^x * g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}
-        BigInteger P = null; //FIXME: How to compute this? Seems like you need to compute inner product
+        BigInteger commitVectorP_left = A.multiply(PedersenCommitment.commitVector(S, x, g_vector, z_vector, h_prime, exponent_hprime, p)).mod(p);
 
         // h^µ * g^l * (h^prime)^r
-        List<BigInteger> g_l = generateListExponentVectors(g_vector, l_vector, p);
-        List<BigInteger> hprime_r = generateListExponentVectors(h_prime, r_vector, p);
-        BigInteger g_l_mult_hprime_r = null; //FIXME: How to compute this? Seems like you need to compute inner product
-        BigInteger hmu_mult_gl_vector_mult_hprimer = h.modPow(mu, p).multiply(g_l_mult_hprime_r).mod(p);
+        BigInteger commitVectorP_right = PedersenCommitment.commitVector(h,mu,g_vector,l_vector,h_prime,r_vector, p);
 
-        boolean check2 = P.mod(p).compareTo(hmu_mult_gl_vector_mult_hprimer) == 0; // FIXME: mod p right?
-        if (!check2) {
-            System.err.println("Bulletproof.verifyStatement P != ...");
+        // A * S^x * g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n} == h^µ * g^l * (h^prime)^r
+        boolean check2 = commitVectorP_left.equals(commitVectorP_right);
+        // if (!check2) {
+        if (check2) {
+            System.err.println("Bulletproof.verifyStatement P != h^µ * g^l * (h^prime)^r");
             return false;
         }
 
-
         // Third check line 68
-        BigInteger innerProd_l_and_r = UTIL.dotProduct(l_vector, r_vector);
+        BigInteger innerProd_l_and_r = UTIL.dotProduct(l_vector, r_vector, q);
 
         //t_hat == \langle l, r \rangle
-        boolean check3 = t_hat.compareTo(innerProd_l_and_r.mod(q)) == 0; // FIXME: mod q right?
+        boolean check3 = t_hat.compareTo(innerProd_l_and_r) == 0; // FIXME: mod q right?
         if (!check3) {
             System.err.println("Bulletproof.verifyStatement t_hat != 〈l,r〉");
+            System.err.println("Bulletproof.verifyStatement t_hat " + t_hat);
+            System.err.println("Bulletproof.verifyStatement 〈l,r〉" + innerProd_l_and_r);
+
+            System.err.println("Bulletproof.verifyStatement l= " + l_vector);
+            System.err.println("Bulletproof.verifyStatement r= " + r_vector);
             return false;
         }
 
         return true;
     }
 
-    private BigInteger delta(BigInteger y, BigInteger z, int n, BigInteger p) {
+    private BigInteger delta(BigInteger y, BigInteger z, int n, BigInteger q) {
+        List<BigInteger> _1_vector_n = generateList(BigInteger.valueOf(1), n, q);
+        List<BigInteger> _2_vector_n = generateList(BigInteger.valueOf(2), n, q);
+        List<BigInteger> y_vector_n = generateList(y, n, q);
+        BigInteger innerProd_1n_yn = UTIL.dotProduct(_1_vector_n, y_vector_n,q);
 
-        List<BigInteger> _1_vector_n = generateList(BigInteger.valueOf(1), n, p);
-        List<BigInteger> _2_vector_n = generateList(BigInteger.valueOf(2), n, p);
-        List<BigInteger> y_vector_n = generateList(y, n, p);
-        BigInteger innerProd_1n_yn = UTIL.dotProduct(_1_vector_n, y_vector_n);
-
-        BigInteger innerProd_1n_2n = UTIL.dotProduct(_1_vector_n, _2_vector_n);
-        BigInteger z_3_mult_innerProd_1n_2n = z.pow(3).multiply(innerProd_1n_2n);
-
-        BigInteger z_zSquared = z.subtract(z.pow(2));
-
-        // TODO: Should be in Z_q
-        BigInteger value = z_zSquared.multiply(innerProd_1n_yn).subtract(z_3_mult_innerProd_1n_2n);
+        BigInteger innerProd_1n_2n = UTIL.dotProduct(_1_vector_n, _2_vector_n,q);
+        BigInteger z_3_mult_innerProd_1n_2n = z.pow(3).mod(q).multiply(innerProd_1n_2n).mod(q);
+        BigInteger z_zSquared = z.subtract(z.pow(2).mod(q)).mod(q);
+        BigInteger value = z_zSquared.multiply(innerProd_1n_yn).mod(q).subtract(z_3_mult_innerProd_1n_2n).mod(q);
 
         return value;
     }
@@ -267,7 +274,7 @@ public class Bulletproof {
         return Collections.nCopies(repitions, val);
     }
 
-    // k_vector^n = [k^0, k^1, k^2,..., k^{n-1}]
+    // k_vector^n = [k^0, k^1, k^2,..., k^{n-1}] (mod order)
     private List<BigInteger> generateList(BigInteger val, int repitions, BigInteger order) {
         // TODO: Should work right now
         List<BigInteger> vector = new ArrayList<>();
@@ -278,36 +285,6 @@ public class Bulletproof {
 
         return vector;
     }
-
-    /******************************************************************************************
-     ********************************  HYYGGGGEEEE MARK ***************************************
-     ******************************************************************************************/
-    private BigInteger computeAorS(BigInteger alpha_rho, BigInteger g, BigInteger p, BigInteger q, BigInteger h, Random random, List<BigInteger> a_L_sL, List<BigInteger> a_R_s_R) {
-
-        // OLD COMPUTE A
-//        BigInteger alpha = getRandomElement(q, random);
-//        BigInteger g_a_L = UTIL.modPowSum(g, a_L, p); // FIXME: is this the way to do it? If so how to you know? How to you know the base is fixed?
-//        BigInteger h_a_R = UTIL.modPowSum(h, a_R, p); // FIXME: is this the way to do it? If so how to you know? How to you know the base is fixed?
-//        BigInteger A = h.modPow(alpha, p).multiply(g_a_L).mod(p).multiply(h_a_R).mod(p); // in G, i.e. subgroup of Z_p^*.
-
-        // OLD COMPUTE S
-//        List<BigInteger> s_L = UTIL.getRandomElements(q, n, random);
-//        List<BigInteger> s_R = UTIL.getRandomElements(q, n, random);
-//
-//        BigInteger rho = getRandomElement(q, random);
-//        BigInteger g_sl = UTIL.modPowSum(g, s_L, p); // FIXME: is this the way to do it? If so how to you know? How to you know the base is fixed?
-//        BigInteger h_sr = UTIL.modPowSum(h, s_R, p); // FIXME: is this the way to do it? If so how to you know? How to you know the base is fixed?
-//        BigInteger S = h.modPow(rho, p).multiply(g_sl).mod(p).multiply(h_sr).mod(p);
-
-
-        // TODO: KALD SKIPPER FUNCTION!!!
-        BigInteger g_a_L_g_sl = UTIL.modPowSum(g, a_L_sL, p); // FIXME: is this the way to do it? If so how to you know? How to you know the base is fixed?
-        BigInteger h_a_R_h_sr = UTIL.modPowSum(h, a_R_s_R, p); // FIXME: is this the way to do it? If so how to you know? How to you know the base is fixed?
-        BigInteger A_or_S = h.modPow(alpha_rho, p).multiply(g_a_L_g_sl).mod(p).multiply(h_a_R_h_sr).mod(p); // in G, i.e. subgroup of Z_p^*.
-
-        return A_or_S;
-    }
-
 
     private long hash(BigInteger... values) {
         byte[] concatenated = new byte[]{};
@@ -328,7 +305,9 @@ public class Bulletproof {
 
     // compute x*g for vector g and biginteger x
     private List<BigInteger> generateListMultWithBigInt(List<BigInteger> list, BigInteger val, BigInteger order) {
-        return list.stream().map(element -> val.multiply(element).mod(order)).collect(Collectors.toList());
+        return list.stream()
+                .map(element -> val.multiply(element).mod(order))
+                .collect(Collectors.toList());
     }
 
     // compute a+b for vectors a and b
@@ -338,65 +317,26 @@ public class Bulletproof {
 
 
     // Returns a list of the bits
-    private List<BigInteger> extractBits(BigInteger m, int n) {
+    // m => bit representation of m
+    public List<BigInteger> extractBits(BigInteger m, int n) {
         String bitsString = m.toString(2);
 
-        //Extract bits TODO: Test me
-        BitSet bits = new BitSet(n);
+        //Extract bits
+        List<BigInteger> bits = new ArrayList<>(n);
         int i = 0;
-        for (int j = bitsString.length() - 1; j >= 0; j++) {
-            boolean bit = bitsString.charAt(j) == '1';
-            bits.set(i, bit);
+        for (int j = bitsString.length() - 1; j >= 0; j--) {
+            boolean bit =  bitsString.charAt(j) == '1';
+            bits.add(bit ? BigInteger.ONE : BigInteger.ZERO);
             i++;
         }
 
-        //Cast to List<BigInteger>
-        return bits.stream()
-                .mapToObj(BigInteger::valueOf)
-                .collect(Collectors.toList());
-
-
-        /*
-
-        System.out.println("--> M: " + m);
-        System.out.println("--> M: " + m.toString(2)); // get each bit...
-        System.out.println("--> n: " + n);
-
-
-        // [2^0, 2^1, 2^2,..., 2^{n-1}] = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
-        List<BigInteger> _2_vector_n = generateList(BigInteger.valueOf(2), n, p);
-        System.out.println("--> 2 list: " + _2_vector_n);
-
-
-        // TODO: HACKY AS FUCK!!!!!!!!
-        // a_L = [0,0,1,0,1,1,1,0,0,0,0], |a_L| = n
-//        List<BigInteger> a_L = new ArrayList<>(n);
-        List<BigInteger> a_L = Stream.of(1, 0, 1, 0, 0, 0, 0, 0, 0, 0).map(BigInteger::valueOf).collect(Collectors.toList());
-
-        if ((n % 2) != 0) {
-            System.out.println("n odd does not work at the moment...");
-        }
-
-//        a_L.addAll(Collections.nCopies(n/2, BigInteger.ONE));
-//        a_L.addAll(Collections.nCopies(n/2, BigInteger.ZERO));
-//
-//        Collections.shuffle(a_L);
-
-        System.out.println("--> a_L list: " + a_L);
-
-
-        while (!UTIL.dotProduct(a_L, _2_vector_n).equals(m)) {
-            Collections.shuffle(a_L);
+        //Fill remaining with 0
+        for (; i < n; i++) {
+            bits.add(BigInteger.ZERO);
         }
 
 
-        if (UTIL.dotProduct(a_L, _2_vector_n).equals(m)) {
-            System.out.println("ALLL GOOD!!");
-        }
-
-
-        return a_L;
-     */
+        return bits;
     }
 
 }

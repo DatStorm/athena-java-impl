@@ -17,8 +17,10 @@ public class BulletproofProof {
     public final BigInteger mu;
     public final List<BigInteger> l_vector;
     public final List<BigInteger> r_vector;
+    public final List<BigInteger> g_vector;
+    public final List<BigInteger> h_vector;
 
-    // a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector
+    // a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector, g_vector, h_vector
     private BulletproofProof(BigInteger a,
                              BigInteger s,
                              BigInteger y,
@@ -30,7 +32,9 @@ public class BulletproofProof {
                              BigInteger t_hat,
                              BigInteger mu,
                              List<BigInteger> l_vector,
-                             List<BigInteger> r_vector) {
+                             List<BigInteger> r_vector,
+                             List<BigInteger> g_vector,
+                             List<BigInteger> h_vector) {
         this.a = a;
         this.s = s;
         this.y = y;
@@ -43,6 +47,8 @@ public class BulletproofProof {
         this.mu = mu;
         this.l_vector = l_vector;
         this.r_vector = r_vector;
+        this.g_vector = g_vector;
+        this.h_vector = h_vector;
     }
 
     public static class Builder {
@@ -59,6 +65,8 @@ public class BulletproofProof {
         private BigInteger mu;
         private List<BigInteger> l_vector;
         private List<BigInteger> r_vector;
+        private List<BigInteger> g_vector;
+        private List<BigInteger> h_vector;
 
         public Builder setAS(BigInteger a, BigInteger s) {
             this.a = a;
@@ -108,6 +116,16 @@ public class BulletproofProof {
             return this;
         }
 
+        public Builder setG_vector(List<BigInteger> g_vector) {
+            this.g_vector = g_vector;
+            return this;
+        }
+
+        public Builder setH_vector(List<BigInteger> h_vector) {
+            this.h_vector = h_vector;
+            return this;
+        }
+
         public BulletproofProof build() {
             //Check that all fields are set
             if (a == null ||
@@ -121,14 +139,14 @@ public class BulletproofProof {
                     t_hat == null ||
                     mu == null ||
                     l_vector == null ||
-                    r_vector == null) {
+                    r_vector == null ||
+                    g_vector == null ||
+                    h_vector == null) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
 
             //Construct Object
-            return new BulletproofProof(a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector);
+            return new BulletproofProof(a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector, g_vector, h_vector);
         }
-
-
     }
 }

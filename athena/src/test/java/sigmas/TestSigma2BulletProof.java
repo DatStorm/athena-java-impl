@@ -15,6 +15,8 @@ import project.factory.MainFactory;
 import project.sigma.bulletproof.Bulletproof;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertTrue;
@@ -32,6 +34,7 @@ public class TestSigma2BulletProof {
     private BigInteger q;
     private BigInteger p;
     private BigInteger h;
+
 
     @BeforeEach
     void setUp() {
@@ -64,6 +67,11 @@ public class TestSigma2BulletProof {
 
         assertTrue("Should return 1", verification);
 
+    }
 
+    @Test
+    void TestExtractBits() {
+        List<BigInteger> rest = sigma2.extractBits(BigInteger.valueOf(5), 10);
+        System.out.println(rest);
     }
 }
