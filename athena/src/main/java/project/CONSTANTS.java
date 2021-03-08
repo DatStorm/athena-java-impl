@@ -7,7 +7,8 @@ public class CONSTANTS {
 //    public static final int ELGAMAL_BIT_LENGTH = 2048/4;
 //    public static final int ELGAMAL_BIT_LENGTH = 8;
     public static final int ELGAMAL_BIT_LENGTH = 1024;
-    public static final int KAPPA = ELGAMAL_BIT_LENGTH;
+//    public static final int KAPPA = ELGAMAL_BIT_LENGTH;
+    public static final int KAPPA = 64;
     public static final long RANDOM_SEED = 2;
     public static final String ALGORITHM_SHA3_256 = "SHA3-256";
     public static final int MIXNET_N = 256;

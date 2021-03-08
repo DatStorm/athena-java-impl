@@ -49,6 +49,8 @@ public class TestSigma2BulletProof {
         h = pk.getH();
         sigma2 = new Bulletproof(factory.getHash(), factory.getRandom());
 
+
+
     }
 
 
@@ -80,10 +82,10 @@ public class TestSigma2BulletProof {
         /*
          * Test mod works when negative commits.
          */
-
-
-
     }
+
+
+
 
 
     @Test

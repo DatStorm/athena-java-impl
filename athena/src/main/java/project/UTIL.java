@@ -227,6 +227,17 @@ public class UTIL {
 
         return sum;
     }
+    
+    public static List<BigInteger> addLists(List<BigInteger> a, List<BigInteger> b, BigInteger order) {
+        return Streams.zip(a.stream(), b.stream(), (_a, _b) -> _a.add(_b).mod(order))
+        .collect(Collectors.toList());
+    }
+
+    public static List<BigInteger> subtractLists(List<BigInteger> a, List<BigInteger> b, BigInteger order) {
+        return Streams.zip(a.stream(), b.stream(), (_a, _b) -> _a.subtract(_b).mod(order).add(order).mod(order))
+        .collect(Collectors.toList());
+    }
+
 
     // compute a^b for vectors a and b
     private List<BigInteger> generateListExponentVectors(List<BigInteger> list_a, List<BigInteger> list_b, BigInteger order) {
@@ -234,20 +245,22 @@ public class UTIL {
     }
 
     public static BigInteger dotProduct(List<BigInteger> l_vector, List<BigInteger> r_vector, BigInteger order) {
-        return hadamardProduct(l_vector, r_vector).stream()
+        return hadamardProduct(l_vector, r_vector,order).stream()
                 .reduce(BigInteger.ZERO, BigInteger::add)
                 .mod(order);
     }
 
-    public static List<BigInteger> hadamardProduct(List<BigInteger> l_vector, List<BigInteger> r_vector) {
+    public static List<BigInteger> hadamardProduct(List<BigInteger> l_vector, List<BigInteger> r_vector, BigInteger order) {
         assert l_vector.size() == r_vector.size();
 
         int n = l_vector.size();
         List<BigInteger> result = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            result.add(l_vector.get(i).multiply(r_vector.get(i)));
+            result.add(l_vector.get(i).multiply(r_vector.get(i)).mod(order));
         }
 
         return result;
     }
+
+
 }

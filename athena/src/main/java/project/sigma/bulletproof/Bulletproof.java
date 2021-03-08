@@ -16,6 +16,9 @@ import static project.UTIL.getRandomElement;
 public class Bulletproof {
     private MessageDigest hashH;
     private Random random;
+    BigInteger t1 = new BigInteger("11");
+    BigInteger t2 = new BigInteger("22");
+
 
     public Bulletproof(MessageDigest hash, Random random) {
         this.hashH = hash;
@@ -27,6 +30,7 @@ public class Bulletproof {
     // Note that when proving range of vote v we use range of [0,nc-1] = [0,2^{log_2(nc)}-1] => n= log_2(nc)
     public BulletproofProof proveStatement(BulletproofStatement statement, BulletproofSecret secret) {
         BigInteger m = secret.m;
+        System.out.println("Prover secret: " + m);
         BigInteger gamma = secret.gamma;
         BigInteger V = statement.V;
         int n = statement.n;
@@ -36,8 +40,8 @@ public class Bulletproof {
         BigInteger g = statement.pk.getGroup().g;
         BigInteger h = statement.pk.getH();
 
-        List<BigInteger> g_vector = generateConstList(g,n); // FIXME: the g element might need to be different to maintain binding, put in statement
-        List<BigInteger> h_vector = generateConstList(h,n); // FIXME: the h element might need to be different to maintain binding, put in statement
+        List<BigInteger> g_vector = generateConstList(g, n); // FIXME: the g element might need to be different to maintain binding, put in statement
+        List<BigInteger> h_vector = generateConstList(h, n); // FIXME: the h element might need to be different to maintain binding, put in statement
 
 
         /* ********
@@ -47,20 +51,38 @@ public class Bulletproof {
         List<BigInteger> a_L = extractBits(m, n);
 
         // a_r = a_l - 1 mod q
-        List<BigInteger> a_R = a_L.stream()
-                .map(a_L_i -> a_L_i.subtract(BigInteger.ONE).mod(q).add(q).mod(q))
-                .collect(Collectors.toList());
+        List<BigInteger> list_1n = generateList(BigInteger.ONE, n, q);
+        List<BigInteger> a_R = UTIL.subtractLists(a_L, list_1n, q);
+//         assert UTIL.dotProduct(a_L, UTIL.generateList(2, n)).equals(m);
 
 
         // a_L * 2^n = m
-        assert UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q).equals(m) : "innerprod(a_L,2^n)!=m";
-        if(! UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q).equals(m)){
-            System.err.println("innerprod(a_L,2^n)!=m");
+
+        List<BigInteger> a_L_circ_a_R = UTIL.hadamardProduct(a_L, a_R, q);
+        for (BigInteger value : a_L_circ_a_R) {
+            assert value.equals(BigInteger.ZERO) : "hadamard(a_L, a_R)[i] != 0";
         }
 
 
+//        System.out.println("Q: " + q );
+//        System.out.println("Q-1: " + q.subtract(BigInteger.ONE).mod(q));
+//        System.out.println("Q+1: " + q.add(BigInteger.ONE).mod(q));
+//
+//        for (int i = 0; i < n; i++) {
+//            BigInteger a_L_i = a_L.get(i);
+//            BigInteger _1_n_i = list_1n.get(i);
+//            System.out.println(i + " CALCULATE: ");
+//
+//            System.out.println(i + " a_L_i    " + a_L_i);
+//            System.out.println(i + " _1_n_i   " + _1_n_i);
+//            System.out.println(i + "          =");
+//            System.out.println(i + " a_R       " + a_R.get(i));
+//            System.out.println("--------------");
+//        }
+
+
         BigInteger alpha = getRandomElement(q, random);
-        BigInteger A = PedersenCommitment.commitVector(h,alpha,g_vector, a_L, h_vector,a_R, p);
+        BigInteger A = PedersenCommitment.commitVector(h, alpha, g_vector, a_L, h_vector, a_R, p);
 
         List<BigInteger> s_L = UTIL.getRandomElements(q, n, random);
         List<BigInteger> s_R = UTIL.getRandomElements(q, n, random);
@@ -90,12 +112,16 @@ public class Bulletproof {
         BigInteger tau_2 = getRandomElement(q, random);
 
         // t1, t2 \in Z_q
-        BigInteger t1 = getRandomElement(q, random);
-        BigInteger t2 = getRandomElement(q, random);
+//        BigInteger t1 = getRandomElement(q, random);
+
+//        BigInteger t2 = getRandomElement(q, random);
+
+//        System.out.println("t1: "+ t1);
+//        System.out.println("t2: "+ t2);
 
         // in G, i.e. subgroup of Z_p^*
-        BigInteger T_1 = PedersenCommitment.commit(g,t1,h,tau_1,p);
-        BigInteger T_2 = PedersenCommitment.commit(g,t2,h,tau_2,p);
+        BigInteger T_1 = PedersenCommitment.commit(g, t1, h, tau_1, p);
+        BigInteger T_2 = PedersenCommitment.commit(g, t2, h, tau_2, p);
 
 
         /* ********
@@ -110,25 +136,28 @@ public class Bulletproof {
         for (int i = 0; i < n; i++) {
             BigInteger a_L_i = a_L.get(i);
             BigInteger s_L_i = s_L.get(i);
-            BigInteger a = a_L_i.subtract(z).add(s_L_i.multiply(x).mod(q)).mod(q);
+            BigInteger a = a_L_i.subtract(z).add(s_L_i.multiply(x).mod(q)).mod(q).add(q).mod(q);
             l_vector.add(a);
         }
 
         List<BigInteger> r_vector = new ArrayList<>(n); // r = y^n \circ (a_R + z * 1^n + s_R * x) + z^2 * 2^n
-        List<BigInteger> yn_vector = generateList(y,n,q);
-        List<BigInteger> twon_vector = generateList(BigInteger.TWO,n,q);
+        List<BigInteger> yn_vector = generateList(y, n, q);
+        List<BigInteger> twon_vector = generateList(BigInteger.TWO, n, q);
         for (int i = 0; i < n; i++) {
             BigInteger a_R_i = a_R.get(i);
             BigInteger s_R_i = s_R.get(i);
 
             //Caclulate r
             BigInteger r;
-            r = a_R_i.add(z).add(s_R_i.multiply(x).mod(q)).mod(q);
+            r = a_R_i.add(z).mod(q).add(s_R_i.multiply(x).mod(q)).mod(q);
             r = yn_vector.get(i).multiply(r).mod(q);
-            r = r.add( z.pow(2).multiply(twon_vector.get(i)).mod(q)).mod(q);
+            r = r.add(z.pow(2).multiply(twon_vector.get(i)).mod(q)).mod(q);
             r_vector.add(r);
         }
         BigInteger t_hat = UTIL.dotProduct(l_vector, r_vector, q);
+
+        System.out.println("P: t_hat = innerprod(l(x), r(x)) =\t\t" + t_hat);
+
 
         // Equation 61: tau_x = tau_2 * x^2 + tau_1 * x + z^2 * gamma mod q
         BigInteger x_squared = x.pow(2);
@@ -140,8 +169,45 @@ public class Bulletproof {
         BigInteger rho_mult_x = rho.multiply(x).mod(q);
         BigInteger mu = alpha.add(rho_mult_x).mod(q);
 
+        assert UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q).equals(m) : "dot(a_L, 2^n) = " + UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q) + "!= m=" + m;
+        assert UTIL.dotProduct(a_L, UTIL.hadamardProduct(a_R, yn_vector, q), q).equals(BigInteger.ZERO) : "dot(a_L, a_R circ y^n) = " + UTIL.dotProduct(a_L, UTIL.hadamardProduct(a_R, yn_vector, q), q) + "!= 0";
 
-        // System.out.println("P: -->: V^{z^2}" + V.modPow(z.pow(2), p));
+        List<BigInteger> right1 = UTIL.subtractLists(a_L, list_1n, q);
+        List<BigInteger> right2 = UTIL.subtractLists(right1, a_R, q);
+        BigInteger prod = UTIL.dotProduct(right2, yn_vector, q);
+        assert prod.equals(BigInteger.ZERO) : "dot(a_L - 1^n - a_R, y^n) = " + prod + "!= 0";
+
+        //(39)
+        //Without S
+        List<BigInteger> zList = Collections.nCopies(n, z);
+        List<BigInteger> LLL = UTIL.subtractLists(a_L, zList, q);
+
+        List<BigInteger> yExpList = generateList(y, n, q);
+        List<BigInteger> twoExpList = generateList(BigInteger.TWO, n, q);
+
+        List<BigInteger> ar_plus_z = UTIL.addLists(a_R, zList, q );
+        List<BigInteger> RRR = UTIL.addLists(UTIL.hadamardProduct(yExpList, ar_plus_z, q), generateListMultWithBigInt(twoExpList, z.pow(2), q),q);
+
+        BigInteger res = z.pow(2).multiply(m).add(delta(y,z,n,q)).mod(q);
+        assert UTIL.dotProduct(LLL, RRR, q).equals(res) : " a != b ";
+
+/*
+        //With S
+        List<BigInteger> LLL_withS = UTIL.addLists(
+            UTIL.subtractLists(a_L, zList, q),
+            generateListMultWithBigInt(s_L, x, q)
+            , q);
+        List<BigInteger> ar_plus_z_withS = UTIL.addLists(
+            UTIL.addLists(a_R, zList, q ),
+            generateListMultWithBigInt(s_R, x, q),
+            q);
+        List<BigInteger> RRR_withS = UTIL.addLists(UTIL.hadamardProduct(yExpList, ar_plus_z_withS, q), generateListMultWithBigInt(twoExpList, z.pow(2), q),q);
+*/
+        BigInteger res_withS = z.pow(2).multiply(m).add(delta(y,z,n,q)).mod(q);
+
+        assert UTIL.dotProduct(l_vector, r_vector, q).equals(res_withS) : UTIL.dotProduct(l_vector, r_vector, q) + " =a != res= " +  res_withS;
+
+
 
         //Build proof
         return new BulletproofProof.Builder()
@@ -189,36 +255,48 @@ public class Bulletproof {
         // First check line (64-65)
         List<BigInteger> h_prime = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            BigInteger val = BigInteger.valueOf(-i);
-            BigInteger y_i_1 = y.modPow(val, p);
+            BigInteger val = BigInteger.valueOf(-i).mod(q).add(q).mod(q);
+            BigInteger y_i_1 = y.modPow(val, q);
             BigInteger hi_prime = h_vector.get(i).modPow(y_i_1, p);
             h_prime.add(hi_prime);
         }
 
         // g^{t_hat} h^{tau_x}
-        BigInteger g_t_hat_mult_h_tau_x = PedersenCommitment.commit(g,t_hat,h,tau_x,p);
+        BigInteger g_t_hat_mult_h_tau_x = PedersenCommitment.commit(g, t_hat, h, tau_x, p);
 
         // \delta(y, z) = (z - z^{2}) * [1^{n}, y^{n}] - z^{3} * [1^{n},2^{n}]
         BigInteger delta_yz = delta(y, z, n, q);
 
         BigInteger g_delta_yz = g.modPow(delta_yz, p);
         BigInteger T_1_x = T_1.modPow(x, p);
-        BigInteger T_2_x_squared = T_1.modPow(x.pow(2), p);
+        BigInteger T_2_x_squared = T_2.modPow(x.pow(2), p);
         BigInteger V_z2_g_ = V.modPow(z.pow(2), p).multiply(g_delta_yz).mod(p).multiply(T_1_x).mod(p).multiply(T_2_x_squared).mod(p);
 
+        //(65)
         boolean check1 = g_t_hat_mult_h_tau_x.equals(V_z2_g_);
-        // if (!check1) {
-        if (check1) {
-            // System.out.println("V: -->: V^{z^2}" + V.modPow(z.pow(2), p));
-            System.err.println("Bulletproof.verifyStatement g^t_hat * h^tau_x != V^{z^2} * g^ delta(y,z) * T1^x T2^{x^2}");
-            System.err.println("Bulletproof.verifyStatement g^t_hat * h^tau_x: \t\t\t\t\t\t\t" + g_t_hat_mult_h_tau_x);
-            System.err.println("Bulletproof.verifyStatement V^{z^2} * g^ delta(y,z) * T1^x T2^{x^2}: \t" + V_z2_g_);
+        if (!check1) {
+//        if (check1) {
+
+            // m = 5.....
+            BigInteger m_z2 = BigInteger.valueOf(5).multiply(z.pow(2)).mod(q);
+            BigInteger t1x = t1.multiply(x).mod(q);
+            BigInteger t2x2 = t2.multiply(x.pow(2)).mod(q);
+            BigInteger t0 = m_z2.add(delta(y, z, n, q)).mod(q);
+            BigInteger verifier_t_hat = t0.add(t1x).mod(q).add(t2x2).mod(q);
+            System.out.println("V: t0 + t1x + t2 x^2: \t\t\t\t\t" + verifier_t_hat);
+
+
+            System.out.println("V: -->: V^{z^2}" + V.modPow(z.pow(2), p));
+            System.err.println("Bulletproof.verifyStatement CHECK 1 FAILED ->  g^t_hat * h^tau_x != V^{z^2} * g^ delta(y,z) * T1^x T2^{x^2}");
+            System.err.println("Bulletproof.verifyStatement g^t_hat * h^tau_x:                                                             " + g_t_hat_mult_h_tau_x);
+            System.err.println("Bulletproof.verifyStatement V^{z^2} * g^ delta(y,z) * T1^x T2^{x^2}:                                       " + V_z2_g_);
             return false;
         }
 
+
         // Second check equation (66-67), see line 44 and 47 for the provers role in this
         // FIXME: TODO: this has to be a vector according to the completeness
-        List<BigInteger> z_vector_negated = generateConstList(z.negate(), n); // DO WE NEED TODO THE MARK .add.mod trick as it is negative.
+        List<BigInteger> z_vector_negated = generateConstList(z.negate().mod(q).add(q).mod(q), n); // DO WE NEED TODO: THE MARK .add.mod trick as it is negative.
 
         // g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}
         List<BigInteger> exponentTemp_z_mult_Yn = generateListMultWithBigInt(generateList(y, n, q), z, q);
@@ -229,18 +307,19 @@ public class Bulletproof {
         BigInteger commitVectorP_left = A.multiply(PedersenCommitment.commitVector(S, x, g_vector, z_vector_negated, h_prime, exponent_hprime, p)).mod(p);
 
         // h^µ * g^l * (h^prime)^r
-        BigInteger commitVectorP_right = PedersenCommitment.commitVector(h,mu,g_vector,l_vector,h_prime,r_vector, p);
+        BigInteger commitVectorP_right = PedersenCommitment.commitVector(h, mu, g_vector, l_vector, h_prime, r_vector, p);
 
         // A * S^x * g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n} == h^µ * g^l * (h^prime)^r
         boolean check2 = commitVectorP_left.equals(commitVectorP_right);
         if (!check2) {
-        // if (check2) {
-            System.err.println("Bulletproof.verifyStatement P != h^µ * g^l * (h^prime)^r");
-            System.err.println("Bulletproof.verifyStatement P: \t\t\t\t" + commitVectorP_left);
-            System.err.println("Bulletproof.verifyStatement h^µ * g^l * (h^prime)^r: \t" + commitVectorP_right);
+//         if (check2) {
+
+
+            System.err.println("Bulletproof.verifyStatement CHECK 2 FAILED -> A * S^x * g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n} != h^µ * g^l * (h^prime)^r");
+            System.err.println("Bulletproof.verifyStatement P = A * S^x * g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}: \t\t\t\t\t\t\t" + commitVectorP_left);
+            System.err.println("Bulletproof.verifyStatement P' = h^µ * g^l * (h^prime)^r: \t" + commitVectorP_right);
             System.err.println("Bulletproof.verifyStatement |P|: \t" + commitVectorP_left.bitLength());
             System.err.println("Bulletproof.verifyStatement |P'|: \t" + commitVectorP_right.bitLength());
-
             return false;
         }
 
@@ -267,8 +346,8 @@ public class Bulletproof {
         List<BigInteger> _2_vector_n = generateList(BigInteger.TWO, n, q);
         List<BigInteger> y_vector_n = generateList(y, n, q);
 
-        BigInteger innerProd_1n_2n = UTIL.dotProduct(_1_vector_n, _2_vector_n,q);
-        BigInteger innerProd_1n_yn = UTIL.dotProduct(_1_vector_n, y_vector_n,q);
+        BigInteger innerProd_1n_2n = UTIL.dotProduct(_1_vector_n, _2_vector_n, q);
+        BigInteger innerProd_1n_yn = UTIL.dotProduct(_1_vector_n, y_vector_n, q);
 
         BigInteger z_zSquared = z.subtract(z.pow(2).mod(q)).mod(q).add(q).mod(q); // (z-z^2)
         BigInteger z_3_mult_innerProd_1n_2n = z.pow(3).mod(q).multiply(innerProd_1n_2n).mod(q);
@@ -283,11 +362,11 @@ public class Bulletproof {
     }
 
     // k_vector^n = [k^0, k^1, k^2,..., k^{n-1}] (mod order)
-    private List<BigInteger> generateList(BigInteger val, int repitions, BigInteger order) {
+    private List<BigInteger> generateList(BigInteger val, int n, BigInteger order) {
         // TODO: Should work right now
         List<BigInteger> vector = new ArrayList<>();
 
-        for (int i = 0; i < repitions; i++) {
+        for (int i = 0; i < n; i++) {
             vector.add(val.pow(i).mod(order));
         }
 
@@ -308,6 +387,7 @@ public class Bulletproof {
 
 
     // compute g^x for vector g and biginteger x
+    //IterativlyExponentiate
     private List<BigInteger> generateExponentList(List<BigInteger> list, BigInteger val, BigInteger order) {
         return list.stream().map(element -> element.modPow(val, order)).collect(Collectors.toList());
     }
@@ -334,7 +414,7 @@ public class Bulletproof {
         List<BigInteger> bits = new ArrayList<>(n);
         int i = 0;
         for (int j = bitsString.length() - 1; j >= 0; j--) {
-            boolean bit =  bitsString.charAt(j) == '1';
+            boolean bit = bitsString.charAt(j) == '1';
             bits.add(bit ? BigInteger.ONE : BigInteger.ZERO);
             i++;
         }
