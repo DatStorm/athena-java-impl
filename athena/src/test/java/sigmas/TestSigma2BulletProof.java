@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
+import static project.UTIL.getRandomElement;
 
 @Tag("TestsSigma2BulletProof")
 @DisplayName("Test Sigma2 BulletProof")
@@ -85,6 +85,66 @@ public class TestSigma2BulletProof {
     }
 
 
+    @Test
+    void TestSigma2BulletProofInnerPrd_l_r() {
+        BigInteger m = BigInteger.valueOf(5);
+        int n = 10;
+        BigInteger q = BigInteger.valueOf(155L);
+
+        /*
+         * Challenge 1
+         */
+        BigInteger z = BigInteger.valueOf(136L);
+        BigInteger y = BigInteger.valueOf(47L);
+
+        /*
+         * Response 1
+         */
+        BigInteger t1 =  BigInteger.valueOf(128L);
+        BigInteger t2 =  BigInteger.valueOf(82L);
+
+        /*
+         * Challenge 2 V -> P [x]
+         */
+        BigInteger x = BigInteger.valueOf(47L);
+
+
+        /*
+         * Response 2: P -> V [tau_x, mu, t_hat, l, r]
+         */
+        // [1, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+        List<BigInteger> a_L = sigma2.extractBits(m, n);
+        List<BigInteger> list_1n = sigma2.generateList(BigInteger.ONE, n, q);
+
+        // [0, 154, 0, 154, 154, 154, 154, 154, 154, 154]
+        List<BigInteger> a_R = UTIL.subtractLists(a_L, list_1n, q);
+
+        
+        List<BigInteger> yn_vector = sigma2.generateList(y, n, q);
+        System.out.println("Y: " + y);
+        System.out.println("Yn: " + yn_vector);
+
+
+        List<BigInteger> s_L = UTIL.getRandomElements(q, n, random);
+        List<BigInteger> l_vector = sigma2.compute_l_vector(n,q,a_L,s_L,z,x);
+
+        List<BigInteger> s_R = UTIL.getRandomElements(q, n, random);
+        List<BigInteger> r_vector = sigma2.compute_r_vector(n,q,a_R,s_R,z,x,yn_vector);
+        BigInteger t_hat = UTIL.dotProduct(l_vector,r_vector,q);
+
+
+        BigInteger m_z2 = m.multiply(z.pow(2)).mod(q);
+
+        BigInteger t1x = t1.multiply(x).mod(q);
+        BigInteger t2x2 = t2.multiply(x.pow(2)).mod(q);
+        BigInteger t0 = m_z2.add(sigma2.delta(y, z, n, q)).mod(q);
+        BigInteger t_polynomial = t0.add(t1x).mod(q).add(t2x2).mod(q);
+
+        assertEquals("Should be the same", t_hat,t_polynomial);
+
+    }
+
+
 
 
 
@@ -106,4 +166,8 @@ public class TestSigma2BulletProof {
         assertTrue("Should return 1", verification);
 
     }
+
+
+
+
 }
