@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static project.UTIL.getRandomElement;
+import static project.UTIL.subtractLists;
 
 public class Bulletproof {
     private MessageDigest hashH;
@@ -28,6 +29,7 @@ public class Bulletproof {
     // Note that when proving range of neg priv cred -d we use range of Z_q = [0,q-1] = [0,2^{1024}-1] => n=1024 as q is 1024 bits
     // Note that when proving range of vote v we use range of [0,nc-1] = [0,2^{log_2(nc)}-1] => n= log_2(nc)
     public BulletproofProof proveStatement(BulletproofStatement statement, BulletproofSecret secret) {
+
         BigInteger m = secret.m;
         System.out.println("Prover secret: " + m);
         BigInteger gamma = secret.gamma;
@@ -41,6 +43,8 @@ public class Bulletproof {
 
         List<BigInteger> g_vector = generateConstList(g, n); // FIXME: the g element might need to be different to maintain binding, put in statement
         List<BigInteger> h_vector = generateConstList(h, n); // FIXME: the h element might need to be different to maintain binding, put in statement
+        List<BigInteger> _1n_vector = generateList(BigInteger.ONE, n, q);
+        List<BigInteger> _2n_vector = generateList(BigInteger.TWO, n, q);
 
 
         /* ********
@@ -48,21 +52,25 @@ public class Bulletproof {
          *********/
         //Extract bit representations from m, s.t. <a_L, 2^n> = m
         List<BigInteger> a_L = extractBits(m, n);
-
-        // Equation (38) -> <a_L, 2^n> = m
-        assert UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q).equals(m) : "dot(a_L, 2^n) = " + UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q) + "!= m=" + m;
-
-
+        assert a_L.size() == n : "|a_L| != n";
         // a_R = a_L - 1 mod q
-        List<BigInteger> list_1n = generateList(BigInteger.ONE, n, q);
-        List<BigInteger> a_R = UTIL.subtractLists(a_L, list_1n, q);
-        assert UTIL.dotProduct(a_L, generateList(BigInteger.TWO, n, q), q).equals(m);
+        List<BigInteger> a_R = UTIL.subtractLists(a_L, _1n_vector, q);
+        assert a_R.size() == n : "|a_L| != n";
 
 
-//         // a_L * 2^n = m THIS IS DONE ABOVE
+
+        /* ********
+         * EQ 37 asserts: <a_L, 2^n> = m , a_L circ a_R = 0^n, a_R = a_L - 1^n
+         *********/
+        // Equation (37) -> <a_L, 2^n> = m
+        assert UTIL.dotProduct(a_L, _2n_vector, q).equals(m) : "EQ 37: dot(a_L, 2^n) = " + UTIL.dotProduct(a_L, _2n_vector, q) + "!= m=" + m;
+
+        // Equation (37) ->  a_L circ a_R = 0^n
         for (BigInteger value : UTIL.hadamardProduct(a_L, a_R, q)) {
-            assert value.equals(BigInteger.ZERO) : "hadamard(a_L, a_R)[i] != 0";
+            assert value.equals(BigInteger.ZERO) : "EQ 37: hadamard(a_L, a_R)[i] != 0";
         }
+        // Equation (37) ->  a_R = a_L - 1^n
+        assert Arrays.deepEquals(a_R.toArray(), subtractLists(a_L, _1n_vector, q).toArray()) : "EQ 37: a_R != a_L - 1^n";
 
 
         BigInteger alpha = getRandomElement(q, random);
@@ -93,10 +101,41 @@ public class Bulletproof {
         BigInteger tau_1 = getRandomElement(q, random);
         BigInteger tau_2 = getRandomElement(q, random);
 
-        // t1, t2 \in Z_q
-        t1 = getRandomElement(q, random);
+        // Generate y^n
+        List<BigInteger> yn_vector = generateList(y, n, q);
 
-        t2 = getRandomElement(q, random);
+        // t1, t2 \in Z_q
+        BigInteger t0 = BigInteger.ZERO;
+        BigInteger their_t1 = BigInteger.ZERO;
+        t1 = BigInteger.ZERO;
+        t2 = BigInteger.ZERO;
+        for (int i = 0; i < n; i++) {
+            BigInteger aLi = a_L.get(i);
+            BigInteger aRi = a_R.get(i);
+            BigInteger sLi = s_L.get(i);
+            BigInteger sRi = s_R.get(i);
+
+            BigInteger tmp = aLi.subtract(z).multiply(sRi).mod(q).add(aRi.add(z).multiply(sLi).mod(q)).mod(q); //(aLi-z)sRi + (aRi+z)sLi
+            t1 = t1.add(yn_vector.get(i).multiply(tmp));
+            t1 = t1.add(sLi.multiply(z.pow(2)).multiply(_2n_vector.get(i)));   // sLi * z^2 * 2^i
+            t2 = t2.add(yn_vector.get(i).multiply(sLi).multiply(sRi).mod(q)); // y^i * sLi * sRi
+
+            // to = y^i * (aLi * aRi + aLi * z - z * aRi - z^2) + aLi * z^2 * 2^i - z^3 * 2^i
+//            t0 = t0.add(yn_vector.get(i).multiply(aLi.multiply(aRi.add(z)).subtract(z.multiply(aRi)).subtract(z.pow(2)))
+//                    .add(_2n_vector.get(i).multiply(aLi.multiply(z.pow(2)).subtract(z.pow(3))).mod(q));
+            their_t1 = their_t1.add(sLi.multiply(yn_vector.get(i).multiply(aRi.add(z)).add(_2n_vector.get(i).multiply(z.pow(2)))).mod(q));
+            their_t1 = their_t1.add(aLi.subtract(z).multiply(sRi.multiply(yn_vector.get(i))).mod(q));
+
+            t0 = t0.subtract(z.subtract(aLi).multiply(aRi.multiply(y).mod(q).add(z.multiply(_2n_vector.get(i).multiply(z).add(y)).mod(q))).mod(q));
+            t0 = t0.mod(q).add(q).mod(q);
+
+        }
+
+        /////// THEIR DEFINITIONS ///////
+        // t1 = <sL, y^n o (aR + z) + 2^n * z^2> + <aL - z, sR o y^n>
+        // t2 = <sL, sR o y^n>
+        ////////////////////////////////
+        t1 = their_t1;
 
 
         // in G, i.e. subgroup of Z_p^*
@@ -105,18 +144,20 @@ public class Bulletproof {
 
 
         /* ********
-         * Step 5: Send T1,T2 => Hash(A,S,T1,T2) [all communication so far]
+         * Step 5: Send T1,T2 => x = Hash(A,S,T1,T2)  [all communication so far]
          *********/
         // Construct challenge x.
         Random hashRandom2 = new Random(hash(A, S, T_1, T_2));
         BigInteger x = getRandomElement(BigInteger.ONE, q, hashRandom2);
 
 
-        List<BigInteger> yn_vector = generateList(y, n, q);
-
         // l = a_L - z * 1^n + s_L * x
         List<BigInteger> l_vector = compute_l_vector(n, q, a_L, s_L, z, x);
-        List<BigInteger> r_vector = compute_r_vector(n, q, a_R, s_R, z, x, yn_vector);
+        List<BigInteger> r_vector = compute_r_vector(n, q, a_R, s_R, z, x, yn_vector, _2n_vector);
+        // Their computation of l and r vectors
+        // l = (aL - z ) + (sL * x)
+        // r = (y^n o (aR + z) + 2^n * z^2) + (sR o y^n * x)
+        ///////////////
 
         BigInteger t_hat = UTIL.dotProduct(l_vector, r_vector, q);
 
@@ -134,46 +175,43 @@ public class Bulletproof {
         BigInteger mu = alpha.add(rho_mult_x).mod(q);
 
 
-/////////////////////////////////////////////////////////////////////////////////////// BEGIN TEST STUFF //////////////////////////////////////////////////
-        // Equation (38)
-        assert UTIL.dotProduct(a_L, UTIL.hadamardProduct(a_R, yn_vector, q), q).equals(BigInteger.ZERO) : "dot(a_L, a_R circ y^n) = " + UTIL.dotProduct(a_L, UTIL.hadamardProduct(a_R, yn_vector, q), q) + "!= 0";
+        /* ********
+         * EQ 38 asserts: <a_L, a_R o y^n> = 0 , <a_L - 1^n - a_R, y^n> = 0
+         *********/
+        // Equation (38) -> <a_L, a_R o y^n> = 0
+        assert UTIL.dotProduct(a_L, UTIL.hadamardProduct(a_R, yn_vector, q), q).equals(BigInteger.ZERO) : "EQ 38: dot(a_L, a_R circ y^n) != 0";
 
-        List<BigInteger> right1 = UTIL.subtractLists(a_L, list_1n, q);
-        List<BigInteger> right2 = UTIL.subtractLists(right1, a_R, q);
-        BigInteger prod = UTIL.dotProduct(right2, yn_vector, q);
-        // Equation (38)
-        assert prod.equals(BigInteger.ZERO) : "dot(a_L - 1^n - a_R, y^n) = " + prod + "!= 0";
+        // Equation (38) -> <a_L - 1^n - a_R, y^n> = 0
+        List<BigInteger> a_L_1n_a_R = UTIL.subtractLists(UTIL.subtractLists(a_L, _1n_vector, q), a_R, q);
+        assert UTIL.dotProduct(a_L_1n_a_R, yn_vector, q).equals(BigInteger.ZERO) : "EQ 38:  dot(a_L - 1^n - a_R, y^n) != 0";
 
-        //(39)
-        //Without S
+
+        /* ********
+         * EQ 39 asserts: <a_L - z * 1^n, y^n o ( a_R + z * 1^n) + z^2 * 2^n> = z^2 * m + delta(y,z)
+         *********/
+        // Equation (39) -> LLL = a_L - z * 1^n
         List<BigInteger> zList = Collections.nCopies(n, z);
         List<BigInteger> LLL = UTIL.subtractLists(a_L, zList, q);
 
-        List<BigInteger> yExpList = generateList(y, n, q);
-        List<BigInteger> twoExpList = generateList(BigInteger.TWO, n, q);
-
+        // Equation (39) -> RRR = y^n o ( a_R +z * 1^n) + z^2 * 2^n
         List<BigInteger> ar_plus_z = UTIL.addLists(a_R, zList, q);
-        List<BigInteger> RRR = UTIL.addLists(UTIL.hadamardProduct(yExpList, ar_plus_z, q), generateListMultWithBigInt(twoExpList, z.pow(2), q), q);
+        List<BigInteger> y_n_circ_a_R_z1n = UTIL.hadamardProduct(yn_vector, ar_plus_z, q);
+        List<BigInteger> z2_mult_2n = generateListMultWithBigInt(_2n_vector, z.pow(2).mod(q), q);
+        List<BigInteger> RRR = UTIL.addLists(y_n_circ_a_R_z1n, z2_mult_2n, q);
 
-        BigInteger res = z.pow(2).multiply(m).add(delta(y, z, n, q)).mod(q);
-        assert UTIL.dotProduct(LLL, RRR, q).equals(res) : " a != b ";
+        BigInteger _t0 = z.pow(2).mod(q).multiply(m).add(delta(y, z, n, q)).mod(q);
+        System.out.println("MARK    t0: " + t0);
+        System.out.println("OLD     t0: " + _t0);
+        assert UTIL.dotProduct(LLL, RRR, q).equals(t0) : "EQ 39: <a_L - z * 1^n, y^n o ( a_R + z* 1^n) + z^2 * 2^n> != z^2 * m + delta(y,z)";
 
-/*
-        //With S
-        List<BigInteger> LLL_withS = UTIL.addLists(
-            UTIL.subtractLists(a_L, zList, q),
-            generateListMultWithBigInt(s_L, x, q)
-            , q);
-        List<BigInteger> ar_plus_z_withS = UTIL.addLists(
-            UTIL.addLists(a_R, zList, q ),
-            generateListMultWithBigInt(s_R, x, q),
-            q);
-        List<BigInteger> RRR_withS = UTIL.addLists(UTIL.hadamardProduct(yExpList, ar_plus_z_withS, q), generateListMultWithBigInt(twoExpList, z.pow(2), q),q);
-*/
-        BigInteger res_withS = z.pow(2).multiply(m).add(delta(y, z, n, q)).mod(q);
+        /* ********
+         * EQ ?? assert: <l(x), r(x)> =  t0 +  t_1 * X +  t_2 * X2
+         *********/
+        BigInteger tx = t0.add(t1.multiply(x).mod(q)).add(t2.multiply(x.pow(2).mod(q)).mod(q)).mod(q);
+        System.out.println("<l(x), r(x)> " + UTIL.dotProduct(l_vector, r_vector, q));
+        System.out.println("tx           " + tx);
 
-        assert UTIL.dotProduct(l_vector, r_vector, q).equals(res_withS) : UTIL.dotProduct(l_vector, r_vector, q) + " =a != res= " + res_withS;
-/////////////////////////////////////////////////////////////////////////////////////// END TEST STUFF //////////////////////////////////////////////////
+        assert t_hat.equals(tx) : "EQ ??: t_hat=<l(x), r(x)> !=  t0 +  t_1 * X +  t_2 * X2";
 
 
         //Build proof
@@ -192,20 +230,23 @@ public class Bulletproof {
                 .build();
     }
 
-    public List<BigInteger> compute_r_vector(int n, BigInteger q, List<BigInteger> a_R, List<BigInteger> s_R, BigInteger z, BigInteger x, List<BigInteger> yn_vector) {
+
+    public List<BigInteger> compute_r_vector(int n, BigInteger q, List<BigInteger> a_R, List<BigInteger> s_R, BigInteger z, BigInteger x, List<BigInteger> yn_vector, List<BigInteger> twon_vector) {
         // r = y^n \circ (a_R + z * 1^n + s_R * x) + z^2 * 2^n
         List<BigInteger> r_vector = new ArrayList<>(n);
-        List<BigInteger> twon_vector = generateList(BigInteger.TWO, n, q);
         for (int i = 0; i < n; i++) {
             BigInteger a_R_i = a_R.get(i);
             BigInteger s_R_i = s_R.get(i);
 
             //Caclulate r
-            BigInteger r;
-            r = a_R_i.add(z).mod(q).add(s_R_i.multiply(x).mod(q)).mod(q);
-            r = yn_vector.get(i).multiply(r).mod(q);
-            r = r.add(z.pow(2).multiply(twon_vector.get(i)).mod(q)).mod(q);
-            r_vector.add(r);
+//             BigInteger r;
+//             r = a_R_i.add(z).add(s_R_i.multiply(x).mod(q)).mod(q);
+//             r = yn_vector.get(i).multiply(r).mod(q);
+//             r = r.add(z.pow(2).multiply(twon_vector.get(i)).mod(q)).mod(q);
+//             r_vector.add(r);
+
+            // Their definition r = (y^n o (aR + z) + 2^n * z^2) + (sR o y^n * x)
+            r_vector.add(yn_vector.get(i).multiply(a_R_i.add(x)).add(twon_vector.get(i).multiply(z.pow(2))).add(s_R_i.multiply(yn_vector.get(i)).multiply(x)).mod(q));
         }
         return r_vector;
     }
@@ -273,18 +314,6 @@ public class Bulletproof {
         if (!check1) {
 //        if (check1) {
 
-            // m = 5.....
-            BigInteger m_z2 = BigInteger.valueOf(5).multiply(z.pow(2)).mod(q);
-            BigInteger t1x = t1.multiply(x).mod(q);
-            BigInteger t2x2 = t2.multiply(x.pow(2)).mod(q);
-            BigInteger t0 = m_z2.add(delta(y, z, n, q)).mod(q);
-            BigInteger verifier_t_hat = t0.add(t1x).mod(q).add(t2x2).mod(q);
-            System.out.println("V: t0 + t1x + t2 x^2: \t\t\t\t\t" + verifier_t_hat);
-
-            assert t_hat.equals(verifier_t_hat) : "NOT FUCKING EQUAL";
-
-
-            System.out.println("V: -->: V^{z^2}" + V.modPow(z.pow(2), p));
             System.err.println("Bulletproof.verifyStatement CHECK 1 FAILED ->  g^t_hat * h^tau_x != V^{z^2} * g^ delta(y,z) * T1^x T2^{x^2}");
             System.err.println("Bulletproof.verifyStatement g^t_hat * h^tau_x:                                                             " + g_t_hat_mult_h_tau_x);
             System.err.println("Bulletproof.verifyStatement V^{z^2} * g^ delta(y,z) * T1^x T2^{x^2}:                                       " + V_z2_g_);
@@ -352,7 +381,7 @@ public class Bulletproof {
 
         return z_zSquared
                 .multiply(innerProd_1n_yn).mod(q)
-                .subtract(z_3_mult_innerProd_1n_2n).mod(q);
+                .subtract(z_3_mult_innerProd_1n_2n).mod(q).add(q).mod(q);
     }
 
     private List<BigInteger> generateConstList(BigInteger val, int repitions) {
@@ -361,7 +390,6 @@ public class Bulletproof {
 
     // k_vector^n = [k^0, k^1, k^2,..., k^{n-1}] (mod order)
     public List<BigInteger> generateList(BigInteger val, int n, BigInteger order) {
-        // TODO: Should work right now
         List<BigInteger> vector = new ArrayList<>();
 
         for (int i = 0; i < n; i++) {

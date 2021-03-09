@@ -89,14 +89,19 @@ public class AthenaImpl implements Athena {
         }
 
 
-        int d = 100; // TODO: Generate nonce d.
+        int d = gernerateNonce();
         BigInteger g = elgamal.getDescription().getG(); // TODO: Correct g ?????
-        BigInteger q = elgamal.getDescription().getQ(); // TODO: COORECT??
+        BigInteger q = elgamal.getDescription().getQ(); // TODO: COORECT ??
         BigInteger g_d = g.pow(d).mod(q);
         CipherText pd = elgamal.encrypt(g_d, pkv.pk);
 
         D_Vector d_vector = new D_Vector(pd, d);
         return new RegisterStruct(pd, d_vector);
+    }
+
+    private int gernerateNonce() {
+        // TODO: Generate nonce d.
+        return 100;
     }
 
     @Override
