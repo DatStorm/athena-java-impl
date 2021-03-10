@@ -2,6 +2,9 @@ package project.athena;
 
 import project.dao.Randomness;
 import project.dao.athena.*;
+import project.dao.bulletproof.BulletproofProof;
+import project.dao.bulletproof.BulletproofSecret;
+import project.dao.bulletproof.BulletproofStatement;
 import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixStruct;
 import project.dao.sigma1.ProveKeyInfo;
@@ -20,6 +23,7 @@ import project.mixnet.Mixnet;
 import project.sigma.Sigma1;
 import project.sigma.Sigma3;
 import project.sigma.Sigma4;
+import project.sigma.bulletproof.Bulletproof;
 import project.sigma.sigma2.Sigma2;
 
 import java.io.IOException;
@@ -29,7 +33,9 @@ import java.util.*;
 public class AthenaImpl implements Athena {
     private final Sigma1 sigma1;
     private final Random random;
-    private final Sigma2 sigma2;
+    //    private final Sigma2 sigma2;
+    private final Bulletproof bulletProof;
+
     private final Sigma3 sigma3;
     private final Sigma4 sigma4;
     private final Mixnet mixnet;
@@ -38,10 +44,10 @@ public class AthenaImpl implements Athena {
     private int mc;
 
 
-
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.sigma1 = athenaFactory.getSigma1();
-        this.sigma2 = athenaFactory.getSigma2();
+//        this.sigma2 = athenaFactory.getSigma2();
+        bulletProof = athenaFactory.getBulletProof();
         this.sigma3 = athenaFactory.getSigma3();
         this.sigma4 = athenaFactory.getSigma4();
         this.mixnet = athenaFactory.getMixnet();
@@ -160,15 +166,22 @@ public class AthenaImpl implements Athena {
         // FIXME: Create statement
 //        Sigma2Statement sigma2_statment_1 = new Sigma2Statement(c1, a, b, pk);
 //        Sigma2Proof sigma_1 = sigma2.proveCiph(sigma2_statment_1, new Sigma2Secret(d_neg, s));
-        Sigma2Proof sigma_1 = null;
+
+        BulletproofStatement stmnt_1 = null;
+//        BulletproofStatement stmnt_1 = new BulletproofStatement(m,c1,pk);
+        BulletproofSecret secret_1 = new BulletproofSecret(d_neg, s);
+        BulletproofProof sigma_1_bulletProof = bulletProof.proveStatement(stmnt_1, secret_1);
 
         // FIXME: Create statement
         // simga_2 <- ProveCiph( (pk, c2, {1,...,nc}),  (v, t), m, κ)
 //        Sigma2Statement sigma2_statment_2 = new Sigma2Statement(c2, BigInteger.ONE, BigInteger.valueOf(nc), pk);
 //        Sigma2Proof sigma_2 = sigma2.proveCiph(sigma2_statment_2, new Sigma2Secret(v_big, t)); // TODO: Should this be g^v NOT v.
-        Sigma2Proof sigma_2 = null;
 
-        return new Ballot(pd, c1, c2, sigma_1, sigma_2, cnt);
+        BulletproofStatement stmnt_2 = null;
+        BulletproofSecret secret_2 = new BulletproofSecret(v_big, t);
+        BulletproofProof sigma_2_bulletProof = bulletProof.proveStatement(stmnt_2, secret_2);
+
+        return new Ballot(pd, c1, c2, sigma_1_bulletProof, sigma_2_bulletProof, cnt);
     }
 
     @Override
@@ -514,7 +527,9 @@ public class AthenaImpl implements Athena {
 
             // VerCiph( (pk, g, c1, M), sigma1, m, kappa)
 //            Sigma2Statement statement = new Sigma2Statement(c, a, b, pk);
-            boolean verify_c1 = sigma2.verifyCipher(null, b.sigma_1);
+//            boolean verify_c1 = sigma2.verifyCipher(null, b.sigma_1);
+            BulletproofStatement stmnt_1 = null;
+            boolean verify_c1 = bulletProof.verifyStatement(stmnt_1, b.sigma_1);
 
             // remove invalid ballots.
             if (!verify_c1) {
@@ -523,7 +538,9 @@ public class AthenaImpl implements Athena {
 
 
             // VerCiph( (pk, c2, {1,...,nc}), sigma2, m, kappa)
-            boolean verify_c2 = sigma2.verifyCipher(null, b.sigma_2);
+//            boolean verify_c2 = sigma2.verifyCipher(null, b.sigma_2);
+            BulletproofStatement stmnt_2 = null;
+            boolean verify_c2 = bulletProof.verifyStatement(stmnt_2, b.sigma_2);
 
             // remove invalid ballots.
             if (!verify_c2) {

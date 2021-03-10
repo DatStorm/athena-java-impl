@@ -32,7 +32,6 @@ public class TestAthenaRegister {
 
     @Test
     void TestAthenaRegister() throws IOException {
-
         AthenaImpl athena = new AthenaImpl(msFactory);
         SetupStruct setup = athena.Setup(kappa);
 

@@ -18,20 +18,20 @@ import static org.junit.Assert.*;
 @Tag("TestsAthenaSetup")
 @DisplayName("Test Athena Setup")
 public class TestAthenaSetup {
-    MainAthenaFactory msFactory;
+    MainAthenaFactory maFactory;
     private final int kappa = CONSTANTS.KAPPA;
 
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory();
+        maFactory = new MainAthenaFactory();
     }
 
 
     @Test
     void TestAthenaSetup() throws IOException {
 
-        AthenaImpl athena = new AthenaImpl(msFactory);
+        AthenaImpl athena = new AthenaImpl(maFactory);
         SetupStruct setup = athena.Setup(kappa);
 
         assertNotEquals("Should not be 0", 0, setup.mb);

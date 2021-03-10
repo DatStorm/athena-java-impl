@@ -1,5 +1,6 @@
 package project.dao.athena;
 
+import project.dao.bulletproof.BulletproofProof;
 import project.dao.sigma2.Sigma2Proof;
 import project.elgamal.CipherText;
 
@@ -7,11 +8,11 @@ public class Ballot {
     public final CipherText pd;
     public final CipherText c1;
     public final CipherText c2;
-    public final Sigma2Proof sigma_1;
-    public final Sigma2Proof sigma_2;
+    public final BulletproofProof sigma_1;
+    public final BulletproofProof sigma_2;
     public final int cnt;
 
-    public Ballot(CipherText pd, CipherText c1, CipherText c2, Sigma2Proof sigma_1, Sigma2Proof sigma_2, int cnt) {
+    public Ballot(CipherText pd, CipherText c1, CipherText c2, BulletproofProof sigma_1, BulletproofProof sigma_2, int cnt) {
         this.pd = pd;
         this.c1 = c1;
         this.c2 = c2;

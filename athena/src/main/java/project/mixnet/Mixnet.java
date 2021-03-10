@@ -31,6 +31,17 @@ public class Mixnet {
         this.q = this.pk.getGroup().getQ();
     }
 
+    public Mixnet(MessageDigest hash, Random random) {
+        this.hashH = hash;
+        this.random = random;
+
+        System.out.println("Mixnet.Mixnet constructor:: Elgamal missing....");
+        this.elgamal = null;
+        this.pk = null;
+        this.p = null;
+        this.q = null;
+    }
+
     //Reencrypts and permutes the ballots. Returns the mixed ballots and secret(permutation and reencryption randomness).
     public MixStruct mix(List<MixBallot> ballots) {
         int ell = ballots.size();

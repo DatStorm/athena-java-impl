@@ -84,9 +84,9 @@ public class Bulletproof {
         // Step 3: Generate y,z \in_R Z_q \ 0
         Random hashRandom = new Random(hash(A, S));
 
-
         BigInteger y = generateChallenge(q, hashRandom);
-        BigInteger z = generateChallenge(q, hashRandom);
+        Random hashRandom2 = new Random(hash(A, S, y));
+        BigInteger z = generateChallenge(q, hashRandom2);
 
 
         /* ********
@@ -116,12 +116,13 @@ public class Bulletproof {
          * Step 5: Send T1,T2 => x = Hash(A,S,T1,T2)  [all communication so far]
          *********/
         // Construct challenge x.
-        Random hashRandom2 = new Random(hash(A, S, T_1, T_2));
-        BigInteger x = generateChallenge(q, hashRandom2);
+        Random hashRandom3 = new Random(hash(A, S, T_1, T_2));
+        BigInteger x = generateChallenge(q, hashRandom3);
 
 
         // l = a_L - z * 1^n + s_L * x
         List<BigInteger> l_vector = compute_l_vector(n, q, a_L, s_L, z, x);
+
         // r = (y^n o (aR + z) + 2^n * z^2) + (sR o y^n * x)
         List<BigInteger> r_vector = compute_r_vector(n, q, a_R, s_R, z, x, yn_vector, _2n_vector);
 
