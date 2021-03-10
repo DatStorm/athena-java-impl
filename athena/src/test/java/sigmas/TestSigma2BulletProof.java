@@ -1,17 +1,13 @@
 package sigmas;
 
 
-import org.apache.commons.lang3.stream.Streams;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import project.UTIL;
 import project.dao.bulletproof.BulletproofProof;
 import project.dao.bulletproof.BulletproofSecret;
 import project.dao.bulletproof.BulletproofStatement;
+import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
-import project.elgamal.Group;
 import project.factory.Factory;
 import project.factory.MainFactory;
 import project.sigma.bulletproof.Bulletproof;
@@ -19,7 +15,6 @@ import project.sigma.bulletproof.PedersenCommitment;
 
 import java.math.BigInteger;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
@@ -59,6 +54,15 @@ public class TestSigma2BulletProof {
         // gcd(y, q) = 1
         assertEquals(BigInteger.ONE, y.gcd(q));
 
+    }
+
+//    @Test
+    @RepeatedTest(100)
+    void TestSigma2GenerateGVector() {
+        int n = 10;
+        List<BigInteger> g_vector = ElGamal.generateNewG_H(n, g, q, p, random);
+        boolean isUnique = g_vector.stream().distinct().count() == g_vector.size();
+        assertTrue(isUnique);
     }
 
 
@@ -115,7 +119,12 @@ public class TestSigma2BulletProof {
         // \gamma \in Z_q =[0,q-1]
         BigInteger gamma = UTIL.getRandomElement(q, random);
         BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
-        BulletproofStatement stmnt = new BulletproofStatement(n, V, pk);
+
+        List<BigInteger> g_vector = ElGamal.generateNewG_H(n, g, q, p, random);
+        List<BigInteger> h_vector = ElGamal.generateNewG_H(n, g, q, p, random);
+
+
+        BulletproofStatement stmnt = new BulletproofStatement(n, V, pk, g_vector, h_vector);
 
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         BulletproofProof proof = sigma2.proveStatement(stmnt, secret);
@@ -132,7 +141,11 @@ public class TestSigma2BulletProof {
         // \gamma \in Z_q =[0,q-1]
         BigInteger gamma = UTIL.getRandomElement(q, random);
         BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
-        BulletproofStatement stmnt = new BulletproofStatement(n, V, pk);
+
+        List<BigInteger> g_vector = ElGamal.generateNewG_H(n, g, q, p, random);
+        List<BigInteger> h_vector = ElGamal.generateNewG_H(n, g, q, p, random);
+        
+        BulletproofStatement stmnt = new BulletproofStatement(n, V, pk, g_vector, h_vector);
 
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         BulletproofProof proof = sigma2.proveStatement(stmnt, secret);

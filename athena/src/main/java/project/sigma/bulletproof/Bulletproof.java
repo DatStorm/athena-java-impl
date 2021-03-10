@@ -38,8 +38,9 @@ public class Bulletproof {
         BigInteger g = statement.pk.getGroup().g;
         BigInteger h = statement.pk.getH();
 
-        List<BigInteger> g_vector = generateConstList(g, n); // FIXME: the g element might need to be different to maintain binding, put in statement
-        List<BigInteger> h_vector = generateConstList(h, n); // FIXME: the h element might need to be different to maintain binding, put in statement
+        List<BigInteger> g_vector = statement.g_vector; // generateConstList(g
+        // , n); // FIXME: the g element might need to be different to maintain binding, put in statement
+        List<BigInteger> h_vector = statement.h_vector; // generateConstList(h, n); // FIXME: the h element might need to be different to maintain binding, put in statement
         List<BigInteger> _1n_vector = generateList(BigInteger.ONE, n, q);
         List<BigInteger> _2n_vector = generateList(BigInteger.TWO, n, q);
 
@@ -162,8 +163,6 @@ public class Bulletproof {
                 .setMu(mu)
                 .setL_vector(l_vector)
                 .setR_vector(r_vector)
-                .setG_vector(g_vector)
-                .setH_vector(h_vector)
                 .build();
     }
 
@@ -230,6 +229,8 @@ public class Bulletproof {
         BigInteger q = statement.pk.getGroup().q;
         BigInteger g = statement.pk.getGroup().g;
         BigInteger h = statement.pk.getH();
+        List<BigInteger> g_vector = statement.g_vector;
+        List<BigInteger> h_vector = statement.h_vector;
 
         // Get the proof info
         BigInteger A = proof.a;
@@ -244,8 +245,6 @@ public class Bulletproof {
         BigInteger t_hat = proof.t_hat;
         List<BigInteger> l_vector = proof.l_vector;
         List<BigInteger> r_vector = proof.r_vector;
-        List<BigInteger> g_vector = proof.g_vector; // TODO: Is is proof now, but maybe move to statement instead
-        List<BigInteger> h_vector = proof.h_vector; // TODO: Is is proof now, but maybe move to statement instead
 
         List<BigInteger> yn_vector = generateList(y, n, q);
 

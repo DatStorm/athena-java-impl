@@ -6,9 +6,7 @@ import project.UTIL;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.Map;
+import java.util.*;
 
 public class ElGamal {
     //    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -54,7 +52,7 @@ public class ElGamal {
         BigInteger q = CONSTANTS.ELGAMAL_Q; //TODO: maybe don't use fixed
         BigInteger g = CONSTANTS.ELGAMAL_G; //TODO: maybe don't use fixed
 
-        
+
         // SECURE == 2048
 //        BigInteger p, q, g;
 //        do {
@@ -63,9 +61,11 @@ public class ElGamal {
 //
 //            // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
 //        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
+//
 //        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
+//        g = generateNewG(p,random); // FIXME: Replace above
 
-        
+
         if (p.bitLength() <= bitLength) {
             throw new RuntimeException("P, with bitLength " + p.bitLength() + ", is too small to encrypt numbers with bitlength " + bitLength);
         }
@@ -73,6 +73,19 @@ public class ElGamal {
         assert g.modPow(q, p).equals(BigInteger.ONE) : "ElGamal group defined wrong, i.e. q definition is no good";
 
         return new Group(g, p, q);
+    }
+
+    public static List<BigInteger> generateNewG_H(int n, BigInteger g, BigInteger q, BigInteger p, Random rnd) {
+
+        // TODO: VIRKER IKKE 100p
+        List<BigInteger> res = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            BigInteger _g = UTIL.getRandomElement(BigInteger.TWO, p, rnd).modPow(BigInteger.TWO, p);
+
+            BigInteger _g2 = g.modPow(BigInteger.valueOf(i), p);
+            res.add(_g2);
+        }
+        return res;
     }
 
     public Group getDescription() {
