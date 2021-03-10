@@ -50,17 +50,25 @@ public class ElGamal {
 
     private static Group generateGroup(int bitLength, Random random) {
         // SECURE == 2048
-        BigInteger p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
-        BigInteger q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
+//        BigInteger p, q, g;
+//        do {
+//            p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
+//            q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
+//
+//            // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
+//        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
 
-        BigInteger g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
+        BigInteger p = new BigInteger("203563861925565177933951527681865992552429014002237425191410266898486184182026619996987894353762119957056230747716582757205994486135986076638697536841048852140992609316787978027688024528962704074922913310302293967528294897853920568227642592344438342607588008139227413464161980201861673136375912646999611663087");
+        BigInteger q = new BigInteger("101781930962782588966975763840932996276214507001118712595705133449243092091013309998493947176881059978528115373858291378602997243067993038319348768420524426070496304658393989013844012264481352037461456655151146983764147448926960284113821296172219171303794004069613706732080990100930836568187956323499805831543");
+        BigInteger g;
+
+        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
 
         if (p.bitLength() <= bitLength) {
             throw new RuntimeException("P, with bitLength " + p.bitLength() + ", is too small to encrypt numbers with bitlength " + bitLength);
         }
 
-        assert g.modPow(q,p).equals(BigInteger.ONE) : "MARK <-- RETTELSE ALLAH FUCKED UP IN THE GROUP!!!";
-
+        assert g.modPow(q, p).equals(BigInteger.ONE) : "Inshallah";
 
         return new Group(g, p, q);
     }

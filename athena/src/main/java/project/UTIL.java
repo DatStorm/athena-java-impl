@@ -258,7 +258,7 @@ public class UTIL {
     }
 
     public static BigInteger dotProduct(List<BigInteger> l_vector, List<BigInteger> r_vector, BigInteger order) {
-        assert l_vector.size() == r_vector.size() : l_vector.size() + " != " + r_vector.size();
+        assert l_vector.size() == r_vector.size() : "UTIL.dotProduct() => " + l_vector.size() + " != " + r_vector.size();
         
         return hadamardProduct(l_vector, r_vector, order).stream()
                 .reduce(BigInteger.ZERO, BigInteger::add)

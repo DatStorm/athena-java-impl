@@ -33,8 +33,8 @@ public class TestElgamal {
 
     }
 
-    @RepeatedTest(100)
-//    @Test
+//    @RepeatedTest(100)
+    @Test
     void TestGroup() {
         BigInteger g = pk.getGroup().getG();
         BigInteger p = pk.getGroup().getP();
