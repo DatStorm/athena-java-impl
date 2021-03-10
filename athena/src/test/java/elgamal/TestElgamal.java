@@ -17,6 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestElgamal {
     private Random random;
     private ElGamal elGamal;
+    private ElGamalSK sk;
+    private ElGamalPK pk;
+
     private int nbits;
 
 
@@ -24,7 +27,20 @@ public class TestElgamal {
     void setUp() {
         nbits = 32 * Byte.SIZE;
         random = new SecureRandom();
-        elGamal = new ElGamal(nbits);
+        elGamal = new ElGamal(nbits, random);
+        sk = elGamal.generateSK();
+        pk = elGamal.generatePk(sk);
+
+    }
+
+    @RepeatedTest(100)
+//    @Test
+    void TestGroup() {
+        BigInteger g = pk.getGroup().getG();
+        BigInteger p = pk.getGroup().getP();
+        BigInteger q = pk.getGroup().getQ();
+
+        assertEquals(BigInteger.ONE, g.modPow(q, p));
     }
 
 //    @RepeatedTest(100)

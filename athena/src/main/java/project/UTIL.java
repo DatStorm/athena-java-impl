@@ -227,7 +227,20 @@ public class UTIL {
 
         return sum;
     }
-    
+
+    // compute a^b for vectors a and b
+    public static BigInteger exponentProductSequence(
+            List<BigInteger> list_a,
+            List<BigInteger> list_b,
+            BigInteger order) {
+
+        return Streams.zip(list_a.stream(), list_b.stream(),
+                (bigInt_a, bigInt_b) -> bigInt_a.modPow(bigInt_b, order)
+        )
+                .reduce(BigInteger.ONE, BigInteger::multiply);
+    }
+
+
     public static List<BigInteger> addLists(List<BigInteger> a, List<BigInteger> b, BigInteger order) {
         return Streams.zip(a.stream(), b.stream(), (_a, _b) -> _a.add(_b).mod(order))
         .collect(Collectors.toList());
@@ -240,7 +253,7 @@ public class UTIL {
 
 
     // compute a^b for vectors a and b
-    private List<BigInteger> generateListExponentVectors(List<BigInteger> list_a, List<BigInteger> list_b, BigInteger order) {
+    public static List<BigInteger> generateListExponentVectors(List<BigInteger> list_a, List<BigInteger> list_b, BigInteger order) {
         return Streams.zip(list_a.stream(), list_b.stream(), (bigInt_a, bigInt_b) -> bigInt_a.modPow(bigInt_b, order)).collect(Collectors.toList());
     }
 

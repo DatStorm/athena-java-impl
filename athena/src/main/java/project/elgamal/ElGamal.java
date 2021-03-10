@@ -50,14 +50,17 @@ public class ElGamal {
 
     private static Group generateGroup(int bitLength, Random random) {
         // SECURE == 2048
-        BigInteger p = BigInteger.probablePrime(bitLength + 1, random); // FIXME: why +1 ?? p=2q+1
-        BigInteger q = p.divide(BigInteger.TWO).subtract(BigInteger.ONE); //q= p/2 - 1
+        BigInteger p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
+        BigInteger q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
 
-        BigInteger g = UTIL.getRandomElement(p, random).modPow(BigInteger.TWO, p);
+        BigInteger g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
 
         if (p.bitLength() <= bitLength) {
             throw new RuntimeException("P, with bitLength " + p.bitLength() + ", is too small to encrypt numbers with bitlength " + bitLength);
         }
+
+        assert g.modPow(q,p).equals(BigInteger.ONE) : "MARK <-- RETTELSE ALLAH FUCKED UP IN THE GROUP!!!";
+
 
         return new Group(g, p, q);
     }

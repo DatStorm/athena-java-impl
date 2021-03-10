@@ -8,7 +8,7 @@ public class Group {
     public final BigInteger q;
     public final BigInteger p;
 
-    Group(BigInteger g, BigInteger p, BigInteger q) {
+    public Group(BigInteger g, BigInteger p, BigInteger q) {
         this.g = g;
         this.q = q;
         this.p = p;

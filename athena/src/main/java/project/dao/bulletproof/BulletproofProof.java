@@ -21,7 +21,7 @@ public class BulletproofProof {
     public final List<BigInteger> h_vector;
 
     // a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector, g_vector, h_vector
-    private BulletproofProof(BigInteger a,
+    public BulletproofProof(BigInteger a,
                              BigInteger s,
                              BigInteger y,
                              BigInteger z,
