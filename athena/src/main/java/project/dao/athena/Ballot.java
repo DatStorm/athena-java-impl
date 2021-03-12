@@ -5,35 +5,50 @@ import project.dao.sigma2.Sigma2Proof;
 import project.elgamal.CipherText;
 
 public class Ballot {
-    public final CipherText pd;
-    public final CipherText c1;
-    public final CipherText c2;
-    public final BulletproofProof sigma_1;
-    public final BulletproofProof sigma_2;
-    public final int cnt;
+    public final CipherText publicCredential;
+    public final CipherText encryptedNegatedPrivateCredential;
+    public final CipherText encryptedVote;
+    public final BulletproofProof proofVote;
+    public final BulletproofProof proofNegatedPrivateCredential;
+    public final int counter;
 
-    public Ballot(CipherText pd, CipherText c1, CipherText c2, BulletproofProof sigma_1, BulletproofProof sigma_2, int cnt) {
-        this.pd = pd;
-        this.c1 = c1;
-        this.c2 = c2;
-        this.sigma_1 = sigma_1;
-        this.sigma_2 = sigma_2;
-        this.cnt = cnt;
+    public Ballot(CipherText publicCredential, CipherText encryptedVote, CipherText encryptedNegatedPrivateCredential, BulletproofProof proofVote, BulletproofProof proofNegatedPrivateCredential, int counter) {
+        this.publicCredential = publicCredential;
+        this.encryptedNegatedPrivateCredential = encryptedNegatedPrivateCredential;
+        this.encryptedVote = encryptedVote;
+        this.proofNegatedPrivateCredential = proofNegatedPrivateCredential;
+        this.proofVote = proofVote;
+        this.counter = counter;
+    }
+    
+    // b[1]
+
+    public CipherText getPublicCredential() {
+        return publicCredential;
     }
 
-    public CipherText get1() {
-        return pd;
+    // b[2]
+    public CipherText getEncryptedNegatedPrivateCredential() {
+        return encryptedNegatedPrivateCredential;
     }
 
-    public CipherText get2() {
-        return c1;
+    // b[3]
+    public CipherText getEncryptedVote() {
+        return encryptedVote;
     }
 
-    public CipherText get3() {
-        return c2;
+    // b[4]
+    public BulletproofProof getProofNegatedPrivateCredential() {
+        return proofNegatedPrivateCredential;
     }
 
-    public int get6() {
-        return cnt;
+    // b[5]
+    public BulletproofProof getProofVote() {
+        return proofVote;
+    }
+
+    // b[6]
+    public int getCounter() {
+        return counter;
     }
 }

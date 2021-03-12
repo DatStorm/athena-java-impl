@@ -7,23 +7,23 @@ import project.elgamal.CipherText;
 import java.math.BigInteger;
 
 public class PFRStruct {
-    public final CipherText ci_prime;
-    public final BigInteger n;
-    public final Sigma3Proof sigma;
-    public final Sigma4Proof omega;
+    public final CipherText ciphertextCombination;
+    public final BigInteger plaintext_N;
+    public final Sigma3Proof proofDecryption;
+    public final Sigma4Proof proofCombination;
 
-    public PFRStruct(CipherText ci_prime, BigInteger N, Sigma3Proof sigma) {
-        this.ci_prime = ci_prime;
-        this.n = N;
-        this.sigma = sigma;
-        this.omega = null;
+    public PFRStruct(CipherText ciphertextCombination, BigInteger plaintext_N, Sigma3Proof proofDecryption) {
+        this.ciphertextCombination = ciphertextCombination;
+        this.plaintext_N = plaintext_N;
+        this.proofDecryption = proofDecryption;
+        this.proofCombination = null;
     }
 
-    public PFRStruct(CipherText ci_prime, BigInteger N, Sigma3Proof sigma, Sigma4Proof omega) {
+    public PFRStruct(CipherText ciphertextCombination, BigInteger plaintext_N, Sigma3Proof proofDecryption, Sigma4Proof proofCombination) {
 
-        this.ci_prime = ci_prime;
-        this.n = N;
-        this.sigma = sigma;
-        this.omega = omega;
+        this.ciphertextCombination = ciphertextCombination;
+        this.plaintext_N = plaintext_N;
+        this.proofDecryption = proofDecryption;
+        this.proofCombination = proofCombination;
     }
 }

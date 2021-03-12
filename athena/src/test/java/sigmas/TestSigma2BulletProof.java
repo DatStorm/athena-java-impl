@@ -8,6 +8,7 @@ import project.dao.bulletproof.BulletproofSecret;
 import project.dao.bulletproof.BulletproofStatement;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
+import project.elgamal.Group;
 import project.factory.Factory;
 import project.factory.MainFactory;
 import project.sigma.bulletproof.Bulletproof;
@@ -29,6 +30,7 @@ public class TestSigma2BulletProof {
     private Bulletproof sigma2;
     private Random random;
 
+    private Group group;
     private BigInteger g;
     private BigInteger q;
     private BigInteger p;
@@ -40,6 +42,8 @@ public class TestSigma2BulletProof {
         Factory factory = new MainFactory();
         random = factory.getRandom();
         pk = factory.getPK();
+        group = pk.group;
+
         g = pk.getGroup().getG();
         p = pk.getGroup().getP();
         q = pk.getGroup().getQ();
@@ -60,7 +64,7 @@ public class TestSigma2BulletProof {
     @RepeatedTest(100)
     void TestSigma2GenerateGVector() {
         int n = 10;
-        List<BigInteger> g_vector = ElGamal.generateNewG_H(n, g, q, p, random);
+        List<BigInteger> g_vector = group.newGenerators(n, random);
         boolean isUnique = g_vector.stream().distinct().count() == g_vector.size();
         assertTrue(isUnique);
     }

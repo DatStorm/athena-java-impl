@@ -108,6 +108,7 @@ public class Bulletproof {
         BigInteger t2 = compute_ts.get(2);
 
 
+
         // in G, i.e. subgroup of Z_p^*
         BigInteger T_1 = PedersenCommitment.commit(g, t1, h, tau_1, p);
         BigInteger T_2 = PedersenCommitment.commit(g, t2, h, tau_2, p);
@@ -247,6 +248,8 @@ public class Bulletproof {
         List<BigInteger> r_vector = proof.r_vector;
 
         List<BigInteger> yn_vector = generateList(y, n, q);
+
+        
 
         // k^{-n}= (k^{-1})^{n}= [k^0, k^{-1}, k^{-2},..., k^{-n+1}]
         BigInteger y_inv = y.modInverse(q);

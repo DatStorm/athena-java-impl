@@ -4,10 +4,10 @@ import project.dao.athena.Ballot;
 
 import java.util.List;
 
-public class BullitinBoard {
+public class BulletinBoard {
     private List<Ballot> ballots;
 
-    public BullitinBoard(List<Ballot> ballots) {
+    public BulletinBoard(List<Ballot> ballots) {
         this.ballots = ballots;
     }
 

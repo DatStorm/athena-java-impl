@@ -7,25 +7,26 @@ import project.elgamal.CipherText;
 import java.math.BigInteger;
 
 public class PFDStruct {
-    public final CipherText c_prime;
-    public final BigInteger mv;
-    public final Sigma4Proof omega;
-    public final Sigma3Proof sigma_1;
-    public final Sigma3Proof sigma_2;
+    public final CipherText ciphertextCombination;
+    public final BigInteger plaintext;
+    public final Sigma4Proof proofCombination;
+    public final Sigma3Proof proofDecryptionOfCombination;
+    public final Sigma3Proof proofDecryptionVote;
 
-    public PFDStruct(CipherText c_prime, BigInteger mv, Sigma4Proof omega, Sigma3Proof sigma_1, Sigma3Proof sigma_2) {
-        this.c_prime = c_prime;
-        this.mv = mv;
-        this.omega = omega;
-        this.sigma_1 = sigma_1;
-        this.sigma_2 = sigma_2;
-    }
 
-    public PFDStruct(CipherText c_prime, BigInteger mv, Sigma4Proof omega, Sigma3Proof sigma_1) {
-        this.c_prime = c_prime;
-        this.mv = mv;
-        this.omega = omega;
-        this.sigma_1 = sigma_1;
-        this.sigma_2 = null;
+    public PFDStruct(CipherText ciphertextCombination, BigInteger plaintext, Sigma4Proof proofCombination, Sigma3Proof proofDecryptionOfCombination, Sigma3Proof proofDecryptionVote) {
+        this.ciphertextCombination = ciphertextCombination;
+        this.plaintext = plaintext; // In this case this is the vote
+        this.proofCombination = proofCombination;
+        this.proofDecryptionOfCombination = proofDecryptionOfCombination;
+        this.proofDecryptionVote = proofDecryptionVote;
     }
+    
+        public PFDStruct(CipherText ciphertextCombination, BigInteger plaintext, Sigma4Proof proofCombination, Sigma3Proof proofDecryptionOfCombination) {
+            this.ciphertextCombination = ciphertextCombination;
+            this.plaintext = plaintext; // In this case this is m
+            this.proofCombination = proofCombination;
+            this.proofDecryptionOfCombination = proofDecryptionOfCombination;
+            this.proofDecryptionVote = null; //FIXME: handle this better
+        }
 }

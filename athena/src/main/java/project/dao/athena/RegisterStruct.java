@@ -4,9 +4,9 @@ import project.elgamal.CipherText;
 
 public class RegisterStruct {
     public final CipherText pd;
-    public final D_Vector d;
+    public final CredentialTuple d;
 
-    public RegisterStruct(CipherText pd, D_Vector d) {
+    public RegisterStruct(CipherText pd, CredentialTuple d) {
         this.pd = pd;
         this.d = d;
     }

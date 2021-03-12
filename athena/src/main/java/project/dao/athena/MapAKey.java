@@ -5,12 +5,12 @@ import project.elgamal.CipherText;
 import java.math.BigInteger;
 
 public class MapAKey {
-    public final CipherText bi1;
-    public final BigInteger n;
+    public final CipherText counterBallot;
+    public final BigInteger noncedNegatedPrivateCredential;
 
-    public MapAKey(CipherText bi1, BigInteger N) {
+    public MapAKey(CipherText counterBallot, BigInteger noncedNegatedPrivateCredential) {
 
-        this.bi1 = bi1;
-        n = N;
+        this.counterBallot = counterBallot; // TODO: rename to counterBallot
+        this.noncedNegatedPrivateCredential = noncedNegatedPrivateCredential; // TODO: rename to decryptedCombinationEncryptedPrivateCredential
     }
 }

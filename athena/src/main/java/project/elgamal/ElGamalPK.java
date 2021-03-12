@@ -3,8 +3,8 @@ package project.elgamal;
 import java.math.BigInteger;
 
 public class ElGamalPK {
-    private Group group;
-    private BigInteger h; //g^sk
+    public final Group group;
+    public final BigInteger h; //g^sk
 
     public ElGamalPK(Group group, BigInteger h) {
         this.group = group;

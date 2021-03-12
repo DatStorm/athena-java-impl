@@ -29,6 +29,11 @@ public class Sigma3 {
         return proveLogEquality(createStatement(sk.getPK(),ciphertext,plaintext), sk.toBigInteger(), kappa);
     }
 
+ public Sigma3Proof proveDecryption(Sigma3Statement statement, BigInteger secret, int kappa) {
+        return proveLogEquality(statement,secret, kappa);
+    }
+
+
 
     public boolean verifyDecryption(CipherText ciphertext, BigInteger plaintext, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
         return verifyLogEquality(createStatement(pk,ciphertext,plaintext), decProof, kappa);
@@ -114,7 +119,7 @@ public class Sigma3 {
      * @param plain
      * @return
      */
-    public Sigma3Statement createStatement(ElGamalPK pk, CipherText cipher, BigInteger plain) {
+    public static Sigma3Statement createStatement(ElGamalPK pk, CipherText cipher, BigInteger plain) {
         BigInteger p = pk.getGroup().getP();
         BigInteger g = pk.getGroup().getG();
 

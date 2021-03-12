@@ -1,25 +1,22 @@
 package project.elgamal;
 
+import project.UTIL;
+
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 // Used for sending the ElGamal description over network
 public class Group {
-    public final BigInteger g;
     public final BigInteger q;
     public final BigInteger p;
+    public final BigInteger g;
 
-    public Group(BigInteger g, BigInteger p, BigInteger q) {
+    public Group(BigInteger p, BigInteger q, BigInteger g) {
         this.g = g;
         this.q = q;
         this.p = p;
-    }
-
-
-    public BigInteger getG() {
-        if (g == null){
-            throw new RuntimeException("g has not been initialised");
-        }
-        return g;
     }
 
     public BigInteger getQ() {
@@ -35,6 +32,33 @@ public class Group {
         }
         return p;
     }
+
+    public BigInteger getG() {
+        if (g == null){
+            throw new RuntimeException("g has not been initialised");
+        }
+        return g;
+    }
+
+    public BigInteger newGenerator(Random random) {
+        BigInteger i = UTIL.getRandomElement(q, random);
+        BigInteger generator = g.modPow(i, p);
+
+        assert generator.modPow(q, p).equals(BigInteger.ONE);
+
+        return generator;
+    }
+
+    public List<BigInteger> newGenerators(int n, Random random) {
+        ArrayList<BigInteger> generators = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            generators.add(newGenerator(random));
+        }
+        
+        return generators;
+    }
+
+
 
     @Override
     public String toString() {

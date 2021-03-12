@@ -7,16 +7,14 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.athena.AthenaImpl;
-import project.athena.BullitinBoard;
+import project.athena.BulletinBoard;
 import project.dao.athena.*;
-import project.dao.mixnet.MixBallot;
 import project.elgamal.ElGamalSK;
 import project.factory.MainAthenaFactory;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
@@ -28,7 +26,7 @@ public class TestAthenaVerify {
 
     MainAthenaFactory msFactory;
     private final int kappa = CONSTANTS.KAPPA;
-    private D_Vector dv;
+    private CredentialTuple dv;
     private PK_Vector pkv;
     private ElGamalSK sk;
 
@@ -60,7 +58,7 @@ public class TestAthenaVerify {
         int cnt2_1 = 0;
         Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
 
-        BullitinBoard bb = new BullitinBoard(Arrays.asList(ballot_1, ballot_2));
+        BulletinBoard bb = new BulletinBoard(Arrays.asList(ballot_1, ballot_2));
         ElectoralRoll L = new ElectoralRoll();
         TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), bb, nc, L, kappa);
 

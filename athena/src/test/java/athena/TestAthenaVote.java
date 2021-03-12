@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.athena.AthenaImpl;
 import project.dao.athena.*;
-import project.elgamal.CipherText;
 import project.factory.MainAthenaFactory;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class TestAthenaVote {
 
     MainAthenaFactory msFactory;
     private final int kappa = CONSTANTS.KAPPA;
-    private D_Vector dv;
+    private CredentialTuple dv;
     private PK_Vector pkv;
 
     private AthenaImpl athena;

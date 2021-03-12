@@ -4,7 +4,7 @@ package athena;
 import org.junit.jupiter.api.*;
 import project.CONSTANTS;
 import project.athena.AthenaImpl;
-import project.athena.BullitinBoard;
+import project.athena.BulletinBoard;
 import project.dao.athena.*;
 import project.elgamal.ElGamalSK;
 import project.factory.MainAthenaFactory;
@@ -21,7 +21,7 @@ public class TestAthenaTally {
 
     MainAthenaFactory msFactory;
     private final int kappa = CONSTANTS.KAPPA;
-    private D_Vector dv;
+    private CredentialTuple dv;
     private PK_Vector pkv;
     private ElGamalSK sk;
 
@@ -54,9 +54,9 @@ public class TestAthenaTally {
         int cnt2_1 = 0;
         Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
 
-        BullitinBoard bb = new BullitinBoard(Arrays.asList(ballot_1, ballot_2));
+        BulletinBoard bb = new BulletinBoard(Arrays.asList(ballot_1, ballot_2));
         TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), bb, nc, new ElectoralRoll(), kappa);
-        assertNotNull("Should not be null", tallyStruct.pf.b);
+        assertNotNull("Should not be null", tallyStruct.pf.mixBallotList);
         assertNotNull("Should not be null", tallyStruct.pf.pfd);
         assertNotNull("Should not be null", tallyStruct.pf.pfr);
         assertNotNull("Should not be null", tallyStruct.votes_b);

@@ -72,22 +72,9 @@ public class ElGamal {
 
         assert g.modPow(q, p).equals(BigInteger.ONE) : "ElGamal group defined wrong, i.e. q definition is no good";
 
-        return new Group(g, p, q);
+        return new Group(p, q, g);
     }
-
-    public static List<BigInteger> generateNewG_H(int n, BigInteger g, BigInteger q, BigInteger p, Random rnd) {
-
-        // TODO: VIRKER IKKE 100p
-        List<BigInteger> res = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) {
-            BigInteger _g = UTIL.getRandomElement(BigInteger.TWO, p, rnd).modPow(BigInteger.TWO, p);
-
-            BigInteger _g2 = g.modPow(BigInteger.valueOf(i), p);
-            res.add(_g2);
-        }
-        return res;
-    }
-
+    
     public Group getDescription() {
         return group;
     }
@@ -104,8 +91,8 @@ public class ElGamal {
 
     // Exponential ElGamal
     public CipherText encrypt(BigInteger msg, ElGamalPK pk, BigInteger r) {
-        BigInteger p = pk.getGroup().getP();
-        BigInteger q = pk.getGroup().getQ();
+        BigInteger p = pk.group.p;
+        BigInteger q = pk.group.q;
         r = r.mod(q).add(q).mod(q);
 
         msg = msg.mod(q).add(q).mod(q);
@@ -119,8 +106,8 @@ public class ElGamal {
         // Check for 0 invalid
 
         // Extract public key
-        BigInteger g = pk.getGroup().getG();
-        BigInteger h = pk.getH();
+        BigInteger g = pk.group.g;
+        BigInteger h = pk.h;
 
         // C = (g^r, g^m·h^r)
         BigInteger expMsg = g.modPow(msg, p);
