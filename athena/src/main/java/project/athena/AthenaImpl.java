@@ -39,6 +39,8 @@ public class AthenaImpl implements Athena {
     private boolean initialised;
     private ElGamal elgamal;
     private int mc;
+    private List<BigInteger> g_vector;
+    private List<BigInteger> h_vector;
 
 
     public AthenaImpl(AthenaFactory athenaFactory) {
@@ -66,10 +68,12 @@ public class AthenaImpl implements Athena {
         Randomness randR = new Randomness(this.random.nextLong());
         ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
 
-        int mb = 100; // TODO:
-        this.mc = 100; // TODO:
+        int n = 100;    // TODO: FIX THESE VALUES
+        int mb = 100;   // TODO: FIX THESE VALUES
+        this.mc = 100;  // TODO: FIX THESE VALUES
 
-        //TODO generate g' hand h'. See: group.newGenerators(n, random)
+        this.g_vector = group.newGenerators(n, random);
+        this.h_vector = group.newGenerators(n, random);
 
         this.initialised = true;
         return new SetupStruct(new PK_Vector(pk, rho), sk, mb, mc);
@@ -101,6 +105,7 @@ public class AthenaImpl implements Athena {
         BigInteger privateCredential = UTIL.getRandomElement(BigInteger.ONE, q, random);
         CipherText publicCredential = elgamal.encrypt(privateCredential, pkv.pk);
 
+        // bold{d} = (pd, d) = (Enc_pk(g^d), d)
         CredentialTuple credentialTuple = new CredentialTuple(publicCredential, privateCredential);
         return new RegisterStruct(publicCredential, credentialTuple);
     }
@@ -175,6 +180,7 @@ public class AthenaImpl implements Athena {
 
         ElGamalSK sk = skv.sk;
         ElGamalPK pk = sk.pk;
+        BigInteger p = pk.getGroup().p;
 
         /* ********
          * Step 1: Remove invalid ballots
@@ -186,8 +192,12 @@ public class AthenaImpl implements Athena {
         /* ********
          * Step 2: Mix final votes
          *********/
-        Object obj = tallyStepTwo();
+        // TODO: Code a pretty version of this.....
+        Object[] objects = tallyStepTwo(finalBallots,sk,kappa);
+        List<PFRStruct> pfr = (List<PFRStruct>) objects[0];
+        Map<MapAKey, MapAValue> A = (Map<MapAKey, MapAValue>) objects[1];
 
+        List<MixBallot> B = pairwiseMixnet(A);
 
 
 
@@ -199,13 +209,14 @@ public class AthenaImpl implements Athena {
 
         List<PFDStruct> pfd = new ArrayList<>();
         List<Integer> nonces_n1_nB = generateNonces(B.size()); // n_1, ... , n_{|B|}
+
         for (MixBallot mixedBallot : B) {
             CipherText homoCombPublicCredentialNegatedPrivatedCredential = mixedBallot.getC1();
             CipherText encryptedVote = mixedBallot.getC2();
 
             // n[ |pdf| + 1 ] => n_1, ... , n_{|B|}
             Integer noncePfd = nonces_n1_nB.get(pfd.size());
-            CipherText c_prime = homoCombination(noncePfd, homoCombPublicCredentialNegatedPrivatedCredential, p);
+            CipherText c_prime = homoCombination(BigInteger.valueOf(noncePfd), homoCombPublicCredentialNegatedPrivatedCredential, p);
             BigInteger m = elgamal.decrypt(c_prime, sk);
 
             // Prove that c' is a homomorphic combination of homoCombPublicCredentialNegatedPrivatedCredential
@@ -243,15 +254,15 @@ public class AthenaImpl implements Athena {
             }
         }
 
-        return new TallyStruct(ballotVotes, new PFStruct(pfr, B, pfd));
+        return new TallyStruct(tallyOfVotes, new PFStruct(pfr, B, pfd));
     }
 
     //Working title
-    private Object tallyStepTwo(List<Ballot> finalBallots, ElGamalSK sk) {
+    private Object[] tallyStepTwo(List<Ballot> finalBallots, ElGamalSK sk, int kappa) {
         List<PFRStruct> pfr = new ArrayList<>();
         Map<MapAKey, MapAValue> A = new HashMap<>();
 
-        int nonce_n = 100; // TODO: generate nonce n.
+        BigInteger nonce_n = UTIL.getRandomElement(sk.pk.group.q, random);
 
 
         // RUN loop for each ballot on the bulletinboard and
@@ -285,6 +296,8 @@ public class AthenaImpl implements Athena {
                 A.replace(key, nullEntry);
             }
 
+            A = updateMap(A, key, newValue)
+
             // Prove decryption
             Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
 
@@ -293,8 +306,7 @@ public class AthenaImpl implements Athena {
             if (pfr.size() > 0) {
                 // Prove c0 i−1 and c0 i are derived by iterative
                 // homomorphic combination wrt nonce n
-                CipherText ci_1_prime = null;
-                List<CipherText> listCombined = Arrays.asList(ci_1_prime, ci_prime);
+                List<CipherText> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
                 List<CipherText> listCipherTexts = Arrays.asList(finalBallots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
                 Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCipherTexts, nonce_n, kappa);
                 pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredential, decryptionProof, omega));
@@ -311,9 +323,9 @@ public class AthenaImpl implements Athena {
             ci_prime_previous = ci_prime;
         }
 
-        List<MixBallot> B = pairwiseMixnet(A);
 
-        return (pfr, B);
+
+        return new Object[]{pfr, A};
     }
 
 
@@ -452,78 +464,63 @@ public class AthenaImpl implements Athena {
             // should exist in map
             BigInteger vAsBigInteger = BigInteger.valueOf(v);
 
-            // [
-            if (tallyOfVotes.containsKey(vAsBigInteger)) {
-                validBallotsIndices.add(v);
-            } else {
-                invalidBallotsIndices.add(v);
+//             // [
+//             if (tallyOfVotes.containsKey(vAsBigInteger)) {
+//                 validBallotsIndices.add(v);
+//             } else {
+//                 invalidBallotsIndices.add(v);
+//             }
+
+
+            /* What we need to show:
+                - for each candidate cand \in [0,...,nc-1]:
+                    * find number for votes numVotes for cand, i.e. numVotes = b[cand]
+                    * find numVotes indices i \in [0,...., |B|-1], i.e. ballots which vote for candidate cand.
+                      Find these indices i by performing the verification checks as specified in Verify step3.
+                    * Remove the indices i found.
+
+                - for the remaining indices j \in [0,...., |B|-1], i.e. ballots not tallied by the tallier.
+                    * Check that the tallier correctly disregard these ballots. Do this by performing the checks in the "else-case" in Verify step3.
+            */
+
+            for (int i =0 ; i< B.size(); i++ ) {
+                MixBallot mixBallot = B.get(i);
+                CipherText homoCombPublicCredentialNegatedPrivatedCredential = mixBallot.getC1();
+                CipherText encryptedVote = mixBallot.getC2();
+
+                PFDStruct pfd_data = pfd.get(i);
+                CipherText c_prime = pfd_data.ciphertextCombination;
+                Sigma4Proof proofCombination = pfd_data.proofCombination;
+
+                boolean veri_comb = sigma4.verifyCombination(pk, Collections.singletonList(c_prime), Collections.singletonList(homoCombPublicCredentialNegatedPrivatedCredential), proofCombination, kappa);
+                if (!veri_comb) {
+                    System.err.println("AthenaImpl.Verify => ERROR: Sigma4.verifyCombination(c', c1)");
+                    return false;
+                }
+                Sigma3Proof proofDecryptionOfCombination = pfd_data.proofDecryptionOfCombination;
+                boolean veri_dec_1 = sigma3.verifyDecryption(c_prime, BigInteger.ONE, pk, proofDecryptionOfCombination, kappa);
+                if (!veri_dec_1) {
+                    System.err.println("AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption(c', 1)");
+                    return false;
+                }
+
+                BigInteger vote = pfd_data.plaintext;
+                Sigma3Proof proofDecryptionVote = pfd_data.proofDecryptionVote;
+                boolean veri_dec_v = sigma3.verifyDecryption(encryptedVote, vote, pk, proofDecryptionVote, kappa);
+                if (!veri_dec_v) {
+                    System.err.println("AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption(encryptedVote, vote)");
+                    return false;
+                }
+
             }
         }
 
 
-        for ([1, .. nc]){
 
-            for(int i = 1 ; i < |B|; i++){
-                B[i];
-
-                invalidIndices.add(i);
-            }
-
-
-        }
-
-        for( int i : invalidIndices){
-            // "else case" in the verification step 3
-
-
-        }
-
-
-
-
-        // [1, 4, 5, 7, 9]
-        // [0,.... nc-1]
-        // [0, ...., |B|-1]
-        // for (Integer i : validBallotsIndices) { // TODO: Hacky does this really work!!
-       for (int i = 0; i < B.size(); i++) {
-
-            if (!validBallotsIndices.contains(i)){
-                continue;
-            }
-
-
-            MixBallot mixBallot = B.get(i);
-            CipherText homoCombPublicCredentialNegatedPrivatedCredential = mixBallot.getC1();
-            CipherText encryptedVote = mixBallot.getC2();
-
-            PFDStruct pfd_data = pfd.get(i);
-            CipherText c_prime = pfd_data.ciphertextCombination;
-            Sigma4Proof proofCombination = pfd_data.proofCombination;
-
-            boolean veri_comb = sigma4.verifyCombination(pk, Collections.singletonList(c_prime), Collections.singletonList(homoCombPublicCredentialNegatedPrivatedCredential), proofCombination, kappa);
-            if (!veri_comb) {
-                System.err.println("AthenaImpl.Verify => ERROR: Sigma4.verifyCombination(c', c1)");
-                return false;
-            }
-            Sigma3Proof proofDecryptionOfCombination = pfd_data.proofDecryptionOfCombination;
-            boolean veri_dec_1 = sigma3.verifyDecryption(c_prime, BigInteger.ONE, pk, proofDecryptionOfCombination, kappa);
-            if (!veri_dec_1) {
-                System.err.println("AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption(c', 1)");
-                return false;
-            }
-
-            BigInteger vote = pfd_data.plaintext;
-            Sigma3Proof proofDecryptionVote = pfd_data.proofDecryptionVote;
-            boolean veri_dec_v = sigma3.verifyDecryption(encryptedVote, vote, pk, proofDecryptionVote, kappa);
-            if (!veri_dec_v) {
-                System.err.println("AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption(encryptedVote, vote)");
-                return false;
-            }
-        }
 
         // and for each remaining integer i \in {1,..., |B|}
-        for (Integer i : invalidBallotsIndices) { // TODO: Hacky does this really work!! NO
-//        for (int i = 0; i < B.size(); i++) {
+        for( int i : invalidBallotsIndices){
+            // "else case" in the verification step 3
             MixBallot mixBallot = B.get(i);
             CipherText homoCombPublicCredentialNegatedPrivatedCredential = mixBallot.getC1();
 
@@ -550,6 +547,9 @@ public class AthenaImpl implements Athena {
                 return false;
             }
         }
+
+
+
 
 
         return true;
@@ -645,14 +645,7 @@ public class AthenaImpl implements Athena {
         return mixedBallots;
     }
 
-    private CipherText homoCombination(int numberOfCombinations, CipherText cipherText, BigInteger p) {
-        CipherText res = cipherText;
-
-        for (int i = 0; i < numberOfCombinations; i++){
-            res = res.multiply(cipherText, p); // TODO: Takes mod p of each element.
-        }
-
-        return res;
-        // return c1; // TODO: Hacky....
+    private CipherText homoCombination(BigInteger n, CipherText cipherText, BigInteger p) {
+        return cipherText.modPow(n, p);
     }
 }

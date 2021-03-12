@@ -54,11 +54,12 @@ public class TestSigma4 {
 //        int nonce_n = new Random(CONSTANTS.RANDOM_SEED).nextInt();
         int nonce_n = 4;
         CipherText origin = new CipherText(c1, c2);
-        CipherText combination = origin.modPow(BigInteger.valueOf(nonce_n), p); // modpow(n,p)
+        BigInteger nonce_n_asBigInteger = BigInteger.valueOf(nonce_n);
+        CipherText combination = origin.modPow(nonce_n_asBigInteger, p); // modpow(n,p)
 
         List<CipherText> origin_list = Arrays.asList(origin);
         List<CipherText> combination_list = Arrays.asList(combination);
-        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n, kappa);
+        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n_asBigInteger, kappa);
         boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
         assertTrue("VerComb(...)=1", verification);
     }
@@ -80,9 +81,11 @@ public class TestSigma4 {
         CipherText origin = new CipherText(c1, c2);
         CipherText combination = origin.modPow(BigInteger.valueOf(numberComb), p); // modpow(n,p)
 
+        BigInteger nonce_n_asBigInteger = BigInteger.valueOf(nonce_n);
+
         List<CipherText> origin_list = Arrays.asList(origin);
         List<CipherText> combination_list = Arrays.asList(combination);
-        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n, kappa);
+        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n_asBigInteger, kappa);
         boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
         assertFalse("VerComb(...)=0", verification);
     }
@@ -111,9 +114,12 @@ public class TestSigma4 {
         CipherText origin_extra = new CipherText(c1_extra, c2_extra);
         CipherText combination_extra = origin_extra.modPow(BigInteger.valueOf(nonce_n), p); // modpow(n,p)
 
+        BigInteger nonce_n_asBigInteger = BigInteger.valueOf(nonce_n);
+
+
         List<CipherText> origin_list = Arrays.asList(origin, origin_extra);
         List<CipherText> combination_list = Arrays.asList(combination, combination_extra);
-        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n, kappa);
+        Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n_asBigInteger, kappa);
         boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
         assertTrue("VerComb(...)=1", verification);
     }
@@ -141,9 +147,12 @@ public class TestSigma4 {
             CipherText origin_extra = new CipherText(c1_extra, c2_extra);
             CipherText combination_extra = origin_extra.modPow(BigInteger.valueOf(nonce_n_alt), p); // modpow(n,p)
 
+            BigInteger nonce_n_asBigInteger = BigInteger.valueOf(nonce_n);
+
+
             List<CipherText> origin_list = Arrays.asList(origin, origin_extra);
             List<CipherText> combination_list = Arrays.asList(combination, combination_extra);
-            Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n, kappa);
+            Sigma4Proof omega = sigma4.proveCombination(sk, combination_list, origin_list, nonce_n_asBigInteger, kappa);
             boolean verification = sigma4.verifyCombination(pk, combination_list, origin_list, omega, kappa);
             assertFalse("VerComb(...)=0", verification);
         }

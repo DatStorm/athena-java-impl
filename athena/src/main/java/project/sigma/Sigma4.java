@@ -28,7 +28,7 @@ public class Sigma4 {
     */
     // (c1',c2') = (c1,c2)^n
     //combinedCiphertextList, //originCiphertextList
-    public Sigma4Proof proveCombination(ElGamalSK sk, List<CipherText> listOfcombinedCiphertext, List<CipherText> listOfCiphertexts, int nonce_n, int kappa) {
+    public Sigma4Proof proveCombination(ElGamalSK sk, List<CipherText> listOfcombinedCiphertext, List<CipherText> listOfCiphertexts, BigInteger nonce_n, int kappa) {
         ArrayList<Sigma3Proof> alpha_beta_omegaProofs = new ArrayList<>();
         ArrayList<Sigma3Proof> alpha_alpha_omegaProofs = new ArrayList<>();
 
@@ -50,7 +50,7 @@ public class Sigma4 {
             Sigma3Statement statement = new Sigma3Statement(group, c.c1, c.c2, b.c1, b.c2);
 //            System.out.println("Sigma4.proveCombination: " + statement);
             //Sigma3Statement statement = createSigma3Statement(group, c, b);
-            Sigma3Proof omega_proof1 = sigma3.proveLogEquality(statement, BigInteger.valueOf(nonce_n), kappa);
+            Sigma3Proof omega_proof1 = sigma3.proveLogEquality(statement, nonce_n, kappa);
             alpha_beta_omegaProofs.add(omega_proof1);
         }
 
@@ -65,7 +65,7 @@ public class Sigma4 {
             // Proove log equality
             Sigma3Statement statement = new Sigma3Statement(group, c_previous.c1, c.c1, b_previous.c1, b.c1);
             //Sigma3Statement statement = createSigma3Statement(group, c_previous, c);
-            Sigma3Proof omega_proof2 = sigma3.proveLogEquality(statement, BigInteger.valueOf(nonce_n), kappa);
+            Sigma3Proof omega_proof2 = sigma3.proveLogEquality(statement, nonce_n, kappa);
             alpha_alpha_omegaProofs.add(omega_proof2);
         }
 

@@ -124,8 +124,8 @@ public class TestSigma2BulletProof {
         BigInteger gamma = UTIL.getRandomElement(q, random);
         BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
 
-        List<BigInteger> g_vector = ElGamal.generateNewG_H(n, g, q, p, random);
-        List<BigInteger> h_vector = ElGamal.generateNewG_H(n, g, q, p, random);
+        List<BigInteger> g_vector = group.newGenerators(n,  random);
+        List<BigInteger> h_vector = group.newGenerators(n, random);
 
 
         BulletproofStatement stmnt = new BulletproofStatement(n, V, pk, g_vector, h_vector);
@@ -146,8 +146,8 @@ public class TestSigma2BulletProof {
         BigInteger gamma = UTIL.getRandomElement(q, random);
         BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
 
-        List<BigInteger> g_vector = ElGamal.generateNewG_H(n, g, q, p, random);
-        List<BigInteger> h_vector = ElGamal.generateNewG_H(n, g, q, p, random);
+        List<BigInteger> g_vector = group.newGenerators(n, random);
+        List<BigInteger> h_vector = group.newGenerators(n, random);
         
         BulletproofStatement stmnt = new BulletproofStatement(n, V, pk, g_vector, h_vector);
 
