@@ -26,11 +26,11 @@ public class Sigma3 {
 
     // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
     public Sigma3Proof proveDecryption(CipherText ciphertext, BigInteger plaintext, ElGamalSK sk, int kappa) {
-        return proveLogEquality(createStatement(sk.getPK(),ciphertext,plaintext), sk.toBigInteger(), kappa);
+        return proveLogEquality(createStatement(sk.pk, ciphertext, plaintext), sk.toBigInteger(), kappa);
     }
 
- public Sigma3Proof proveDecryption(Sigma3Statement statement, BigInteger secret, int kappa) {
-        return proveLogEquality(statement,secret, kappa);
+    public Sigma3Proof proveDecryption(Sigma3Statement statement, BigInteger secret, int kappa) {
+        return proveLogEquality(statement, secret, kappa);
     }
 
 

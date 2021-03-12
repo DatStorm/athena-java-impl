@@ -107,7 +107,7 @@ public class AthenaImpl implements Athena {
 
 
     @Override
-    public Ballot Vote(CredentialTuple dv, PK_Vector pkv, int vote, int cnt, int nc, int kappa) {
+    public Ballot Vote(CredentialTuple credentialTuple, PK_Vector pkv, int vote, int cnt, int nc, int kappa) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Vote => ERROR: System not initialised call .Setup before hand");
             return null;
@@ -133,7 +133,7 @@ public class AthenaImpl implements Athena {
 
 
         // dv = vector of (pd, d)
-        CipherText pd = dv.publicCredential; // TODO: renane dv to credentialTuple
+        CipherText publicCredential = credentialTuple.publicCredential;
 
         ElGamalPK pk = pkv.pk;
         BigInteger p = pk.group.p;
@@ -141,7 +141,7 @@ public class AthenaImpl implements Athena {
         BigInteger g = pk.group.g;
 
         // Make negated private credential
-        BigInteger negatedPrivateCredential = dv.privateCredential.negate();
+        BigInteger negatedPrivateCredential = credentialTuple.privateCredential.negate();
         negatedPrivateCredential = negatedPrivateCredential.mod(q).add(q).mod(q);
 
         // Create encryption of negated private credential, i.e. g^{-d}
@@ -153,7 +153,6 @@ public class AthenaImpl implements Athena {
         BigInteger randomness_t = BigInteger.valueOf(this.random.nextLong()); // FIXME: Generate coins t
         CipherText encryptedVote = elgamal.encrypt(voteAsBigInteger, pk, randomness_t);
 
-
         // Prove that negated private credential -d resides in Z_q (this is defined using n)
         BulletproofStatement stmnt_1 = new BulletproofStatement(n, encryptedNegatedPrivateCredential, pk, g_vector, h_vector); // TODO: CHANGE n.
         BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential, randomness_s);
@@ -164,7 +163,7 @@ public class AthenaImpl implements Athena {
         BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
         BulletproofProof proofRangeOfVote = bulletProof.proveStatement(stmnt_2, secret_2);
 
-        return new Ballot(pd, encryptedNegatedPrivateCredential, encryptedVote, proofRangeOfNegatedPrivateCredential, proofRangeOfVote, cnt);
+        return new Ballot(publicCredential, encryptedNegatedPrivateCredential, encryptedVote, proofRangeOfNegatedPrivateCredential, proofRangeOfVote, cnt);
     }
 
     @Override
@@ -196,7 +195,7 @@ public class AthenaImpl implements Athena {
          * Step 3: Reveal eligible votes
          *********/
         // initialise b as a zero filled vector of length nc
-        Map<BigInteger, Integer> ballotVotes = new HashMap<>(nc);
+        Map<BigInteger, Integer> tallyOfVotes = new HashMap<>(nc);
 
         List<PFDStruct> pfd = new ArrayList<>();
         List<Integer> nonces_n1_nB = generateNonces(B.size()); // n_1, ... , n_{|B|}
@@ -220,11 +219,11 @@ public class AthenaImpl implements Athena {
                 BigInteger vote = elgamal.decrypt(encryptedVote, sk);
 
                 // Tally the vote
-                if (ballotVotes.containsKey(vote)) { // Check that map already has some votes for that candidate.
-                    Integer totalVotes = ballotVotes.get(vote);
-                    ballotVotes.put(vote, totalVotes + 1);
+                if (tallyOfVotes.containsKey(vote)) { // Check that map already has some votes for that candidate.
+                    Integer totalVotes = tallyOfVotes.get(vote);
+                    tallyOfVotes.put(vote, totalVotes + 1);
                 } else { // First vote for the given candidate
-                    ballotVotes.put(vote, 1);
+                    tallyOfVotes.put(vote, 1);
                 }
 
                 // Prove correct decryption of vote
@@ -258,19 +257,18 @@ public class AthenaImpl implements Athena {
         // RUN loop for each ballot on the bulletinboard and
         // check if we should count it as a final valid ballot.
         int ell = finalBallots.size();
+        CipherText ci_prime_previous = null;
         for (int i = 0; i < ell; i++) {
-
-            // get the current ballot.
             Ballot ballot = finalBallots.get(i);
 
             // Homomorpically reencrypt(by raising to power n) ballot and decrypt
             CipherText ci_prime = homoCombination(nonce_n, ballot.getEncryptedNegatedPrivateCredential(), sk.pk.group.p);
-            BigInteger N = elgamal.decrypt(ci_prime, sk);
+            BigInteger noncedNegatedPrivateCredential = elgamal.decrypt(ci_prime, sk);
 
-            // Only keep the ballots with the highest counter.
-            MapAKey key = new MapAKey(ballot.getPublicCredential(), N);
+            // For each key. Only keep the ballots with the highest counter.
+            MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredential);
 
-            // Update the existingValue if the counter is less, or equal
+            // Update the map entry if the old counter is less. Nullify if equal
             MapAValue existingValue = A.get(key);
             int counter = ballot.getCounter();
             if (existingValue == null || existingValue.getCounter() < counter) {
@@ -287,10 +285,8 @@ public class AthenaImpl implements Athena {
                 A.replace(key, nullEntry);
             }
 
-            // varsimga <- ProveDec(pk, c'[i], N, sk, kappa);
-            Sigma3Statement stmnt = Sigma3.createStatement(pk, ci_prime, N);
-
-           Sigma3Proof proofDecryption_N = sigma3.proveDecryption(stmnt, secret, kappa); // TODO: HER!!
+            // Prove decryption
+            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
 
             // in the first round this is not bigger then zero
             // so we go to the else case
@@ -301,16 +297,18 @@ public class AthenaImpl implements Athena {
                 List<CipherText> listCombined = Arrays.asList(ci_1_prime, ci_prime);
                 List<CipherText> listCipherTexts = Arrays.asList(finalBallots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
                 Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCipherTexts, nonce_n, kappa);
-                pfr.add(new PFRStruct(ci_prime, N, proofDecryption_N, omega));
+                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredential, decryptionProof, omega));
             } else {
 
                 // The else case does not create the ProveComb since
                 // this else case is only used in the first iteration
                 // of the loop true case is used the remaining time.
                 // TODO: Omega set to null.... <- in method....
-                pfr.add(new PFRStruct(ci_prime, N, proofDecryption_N));
+                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredential, decryptionProof, null));
 
             }
+
+            ci_prime_previous = ci_prime;
         }
 
         List<MixBallot> B = pairwiseMixnet(A);
@@ -320,7 +318,7 @@ public class AthenaImpl implements Athena {
 
 
     @Override
-    public boolean Verify(PK_Vector pkv, BulletinBoard bulletinBoard, int nc, ElectoralRoll electoralRoll, Map<BigInteger, Integer> b, PFStruct pf, int kappa) {
+    public boolean Verify(PK_Vector pkv, BulletinBoard bulletinBoard, int nc, ElectoralRoll electoralRoll, Map<BigInteger, Integer> tallyOfVotes, PFStruct pf, int kappa) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Verify => ERROR: System not initialised call .Setup before hand");
             return false;
@@ -333,7 +331,7 @@ public class AthenaImpl implements Athena {
         }
         ElGamalPK pk = pkv.pk;
 
-        if (b.size() != nc) {
+        if (tallyOfVotes.size() != nc) {
             System.err.println("AthenaImpl.Verify => ERROR: b.size() != nc");
             return false;
         }
@@ -448,11 +446,14 @@ public class AthenaImpl implements Athena {
 
         List<Integer> validBallotsIndices = new ArrayList<>();
         List<Integer> invalidBallotsIndices = new ArrayList<>();
-        for (int v = 1; v <= nc; v++) {
+        // [0, 1, 2,3, ... , nc-1] = [1,
+        for (int v = 0; v < nc; v++) {
 
             // should exist in map
-            BigInteger bigV = BigInteger.valueOf(v);
-            if (b.containsKey(bigV)) {
+            BigInteger vAsBigInteger = BigInteger.valueOf(v);
+
+            // [
+            if (tallyOfVotes.containsKey(vAsBigInteger)) {
                 validBallotsIndices.add(v);
             } else {
                 invalidBallotsIndices.add(v);
@@ -460,8 +461,37 @@ public class AthenaImpl implements Athena {
         }
 
 
-        for (Integer i : validBallotsIndices) { // TODO: Hacky does this really work!!
-//        for (int i = 0; i < B.size(); i++) {
+        for ([1, .. nc]){
+
+            for(int i = 1 ; i < |B|; i++){
+                B[i];
+
+                invalidIndices.add(i);
+            }
+
+
+        }
+
+        for( int i : invalidIndices){
+            // "else case" in the verification step 3
+
+
+        }
+
+
+
+
+        // [1, 4, 5, 7, 9]
+        // [0,.... nc-1]
+        // [0, ...., |B|-1]
+        // for (Integer i : validBallotsIndices) { // TODO: Hacky does this really work!!
+       for (int i = 0; i < B.size(); i++) {
+
+            if (!validBallotsIndices.contains(i)){
+                continue;
+            }
+
+
             MixBallot mixBallot = B.get(i);
             CipherText homoCombPublicCredentialNegatedPrivatedCredential = mixBallot.getC1();
             CipherText encryptedVote = mixBallot.getC2();
@@ -470,7 +500,7 @@ public class AthenaImpl implements Athena {
             CipherText c_prime = pfd_data.ciphertextCombination;
             Sigma4Proof proofCombination = pfd_data.proofCombination;
 
-            boolean veri_comb = sigma4.verifyCombination(pk, Collections.singletonList(c_prime), Collections.singletonList(c1), proofCombination, kappa);
+            boolean veri_comb = sigma4.verifyCombination(pk, Collections.singletonList(c_prime), Collections.singletonList(homoCombPublicCredentialNegatedPrivatedCredential), proofCombination, kappa);
             if (!veri_comb) {
                 System.err.println("AthenaImpl.Verify => ERROR: Sigma4.verifyCombination(c', c1)");
                 return false;
@@ -492,7 +522,7 @@ public class AthenaImpl implements Athena {
         }
 
         // and for each remaining integer i \in {1,..., |B|}
-        for (Integer i : invalidBallotsIndices) { // TODO: Hacky does this really work!!
+        for (Integer i : invalidBallotsIndices) { // TODO: Hacky does this really work!! NO
 //        for (int i = 0; i < B.size(); i++) {
             MixBallot mixBallot = B.get(i);
             CipherText homoCombPublicCredentialNegatedPrivatedCredential = mixBallot.getC1();
@@ -501,7 +531,7 @@ public class AthenaImpl implements Athena {
             CipherText c_prime = pfd_data.ciphertextCombination;
             Sigma4Proof proofCombination = pfd_data.proofCombination;
 
-            boolean veri_comb = sigma4.verifyCombination(pk, Collections.singletonList(c_prime), Collections.singletonList(c1), proofCombination, kappa);
+            boolean veri_comb = sigma4.verifyCombination(pk, Collections.singletonList(c_prime), Collections.singletonList(homoCombPublicCredentialNegatedPrivatedCredential), proofCombination, kappa);
             if (!veri_comb) {
                 System.err.println("AthenaImpl.Verify => ERROR: Sigma4.verifyCombination(c', c1)");
                 return false;
