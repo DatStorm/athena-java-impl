@@ -25,9 +25,9 @@ public class BulletinBoard {
 
     // static method to create instance of Singleton class
     public static BulletinBoard getInstance() {
-        if (single_instance == null)
+        if (single_instance == null) {
             single_instance = new BulletinBoard();
-
+        }
         return single_instance;
     }
 
@@ -48,19 +48,19 @@ public class BulletinBoard {
         printUpdate();
         this.ballots.addAll(toAddBallots);
     }
-
-
-    public List<PFRStruct> getPfrList() {
-        return PfrList;
-    }
+    
 
 
     /*
      * Publish values
      */
     public void publishPfr(List<PFRStruct> pfr) { this.setPfrList(pfr); }
+    public void publishPfd(List<PFDStruct> pfd) { this.setPfdList(pfd); }
     public void publishBallot(Ballot ballot) { this.addBallot(ballot); }
+    public void publishMixBallots(List<MixBallot> mixBallots) { this.setMixBallots(mixBallots); }
+    public List<Ballot> retrievePublicBallots() { return this.getBallots(); }
 
+    
 
     /*
      * Private add methods
@@ -68,6 +68,10 @@ public class BulletinBoard {
     private void addBallot(Ballot toAddBallot) {
         printUpdate();
         this.ballots.add(toAddBallot);
+    }
+    private void addMixBallot(MixBallot toAddMixBallot) {
+        printUpdate();
+        this.mixBallots.add(toAddMixBallot);
     }
 
     private void setPfrList(List<PFRStruct> pfrList) {
@@ -103,6 +107,7 @@ public class BulletinBoard {
     private List<MixBallot> getMixBallots() { return mixBallots; }
     private ElectoralRoll getElectoralRoll() { return electoralRoll; }
     private List<Ballot> getBallots() { return ballots; }
+    private List<PFRStruct> getPfrList() { return PfrList; }
 
 
     private void printUpdate() {

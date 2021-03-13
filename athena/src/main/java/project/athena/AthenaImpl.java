@@ -228,9 +228,9 @@ public class AthenaImpl implements Athena {
         Object[] objects = tallyStepTwo(finalBallots, sk, kappa);
         List<PFRStruct> pfr = (List<PFRStruct>) objects[0];
         Map<MapAKey, MapAValue> A = (Map<MapAKey, MapAValue>) objects[1];
-
         List<MixBallot> B = pairwiseMixnet(A);
 
+        //
 
 
         /* ********
@@ -297,6 +297,8 @@ public class AthenaImpl implements Athena {
         return new TallyStruct(tallyOfVotes, new PFStruct(pfr, B, pfd));
     }
 
+
+
     //FIXME: Working title
     private Object[] tallyStepTwo(List<Ballot> finalBallots, ElGamalSK sk, int kappa) {
         List<PFRStruct> pfr = new ArrayList<>();
@@ -325,28 +327,20 @@ public class AthenaImpl implements Athena {
             // Prove decryption
             Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
 
-            // in the first round this is not bigger then zero
-            // so we go to the else case
+            // in the first round this is not bigger then zero so we go to the else case
             if (pfr.size() > 0) {
-                // Prove c0 i−1 and c0 i are derived by iterative
-                // homomorphic combination wrt nonce n
+                // Prove c0 i−1 and c0 i are derived by iterative homomorphic combination wrt nonce n
                 List<CipherText> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
                 List<CipherText> listCipherTexts = Arrays.asList(finalBallots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
                 Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCipherTexts, nonce_n, kappa);
                 pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredential, decryptionProof, omega));
             } else {
-
-                // The else case does not create the ProveComb since
-                // this else case is only used in the first iteration
+                // The else case does not create the ProveComb since this else case is only used in the first iteration
                 // of the loop true case is used the remaining time.
-                // TODO: Omega set to null.... <- in method....
-                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredential, decryptionProof, null));
-
+                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredential, decryptionProof, null)); // FIXME: Omega set to null.... <- in method....
             }
-
             ci_prime_previous = ci_prime;
         }
-
 
         return new Object[]{pfr, A};
     }
@@ -356,17 +350,18 @@ public class AthenaImpl implements Athena {
         // Update the map entry if the old counter is less. Nullify if equal
         MapAValue existingValue = A.get(key);
         int counter = ballot.getCounter();
-        if (existingValue == null || existingValue.getCounter() < counter) {
-            // Update the map if A[(bi[1]; N)] is empty
-            // or contains a lower counter
+        if (existingValue == null || existingValue.getCounter() < counter) { // Update the map if A[(bi[1]; N)] is empty or contains a lower counter
             CipherText combinedCredential = ballot.getPublicCredential().combine(ballot.getEncryptedNegatedPrivateCredential());
             CipherText encryptedVote = ballot.getEncryptedVote();
             MapAValue updatedValue = new MapAValue(counter, combinedCredential, encryptedVote);
+
+            // A[publicCredential, N] <- (counter, publicCredential * encryptedNegatedPrivateCredential, encyptedVote)
             A.replace(key, updatedValue);
 
-        } else if (existingValue.getCounter() == counter) {
-            // Disregard duplicate counters
+        } else if (existingValue.getCounter() == counter) { // Disregard duplicate counters
             MapAValue nullEntry = new MapAValue(counter, null, null);
+
+            // A[publicCredential, N] <- (counter, null, null)
             A.replace(key, nullEntry);
         }
         return A;
@@ -602,8 +597,8 @@ public class AthenaImpl implements Athena {
 
     // Step 1 of Tally
     private List<Ballot> removeInvalidBallots(BulletinBoard bulletinBoard,  ElGamalPK pk) {
-        List<Ballot> finalBallots = new ArrayList<>(bulletinBoard.getBallots());
-        for (Ballot ballot : bulletinBoard.getBallots()) {
+        List<Ballot> finalBallots = new ArrayList<>(bulletinBoard.retrievePublicBallots());
+        for (Ballot ballot : bulletinBoard.retrievePublicBallots()) {
             CipherText publicCredential = ballot.getPublicCredential();
 
             boolean isPublicCredentialInL = this.L.contains(publicCredential);
