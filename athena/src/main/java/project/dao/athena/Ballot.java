@@ -57,8 +57,8 @@ public class Ballot {
                 "pd=" + publicCredential.toShortString() +
                 ", c1=" + encryptedNegatedPrivateCredential.toShortString() +
                 ", c2=" + encryptedVote.toShortString() +
-                ", sigma1=" + proofVote.toNameString() +
-                ", sigma2=" + proofNegatedPrivateCredential.toNameString() +
+//                ", sigma1=" + proofVote.toNameString() +
+//                ", sigma2=" + proofNegatedPrivateCredential.toNameString() +
                 ", cnt=" + counter +
                 '}';
     }

@@ -57,10 +57,6 @@ public class CipherText {
         return Objects.hash(c1, c2);
     }
 
-    public CipherText combine(CipherText c) {
-        throw new UnsupportedOperationException("TODO: IMPLEMENT ME!!!!");
-//        return null;
-    }
 
     public String toShortString() {
         return "C={'c1': " + this.c1.toString().substring(0,5) + ", 'c2':" + this.c2.toString().substring(0,5) + "}";

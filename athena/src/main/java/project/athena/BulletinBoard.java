@@ -121,8 +121,7 @@ public class BulletinBoard {
 
 
     private void printUpdate() {
-        System.out.println("-----------------------------");
-        System.out.println("BulletinBoard  -- UPDATE --  ");
+
 
         StringBuilder b_res = new StringBuilder();
         b_res.append("[");
@@ -139,13 +138,16 @@ public class BulletinBoard {
         }
         b_res.append("                             ").append("]");
 
-        System.out.println("ballots=                     " + b_res.toString());
-        System.out.println("PfrList=                     " + PfrList);
-        System.out.println("PfdList=                     " + PfdList);
-        System.out.println("mixProof=                    " + mixProof);
-        System.out.println("electoralRoll=              L" + electoralRoll);
-        System.out.println("mixBallots=                  " + mixBallots);
-        System.out.println("-----------------------------");
+
+//        System.out.println("-----------------------------");
+//        System.out.println("BulletinBoard  -- UPDATE --  ");
+//        System.out.println("ballots=                     " + b_res.toString());
+//        System.out.println("PfrList=                     " + PfrList);
+//        System.out.println("PfdList=                     " + PfdList);
+//        System.out.println("mixProof=                    " + mixProof);
+//        System.out.println("electoralRoll=              L" + electoralRoll);
+//        System.out.println("mixBallots=                  " + mixBallots);
+//        System.out.println("-----------------------------");
     }
 
 

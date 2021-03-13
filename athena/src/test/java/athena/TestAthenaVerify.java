@@ -41,7 +41,7 @@ public class TestAthenaVerify {
 
         sk = setup.sk;
         pkv = setup.pkv;
-        
+
         bb = msFactory.getBulletinBoard();
 
 
@@ -49,7 +49,7 @@ public class TestAthenaVerify {
 
     @Test
     void TestAthenaVerify() {
-        int nc = 10;
+        int nc = 7;
 
         RegisterStruct register1 = athena.Register(pkv, kappa);
         CredentialTuple dv1  = register1.d;
@@ -68,14 +68,14 @@ public class TestAthenaVerify {
         System.out.println("--> Voter 2 done ");
 
         System.out.println("--> Tally: ");
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), bb, nc, kappa);
+        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc, kappa);
         System.out.println("--> Tally done ");
 
         Map<BigInteger, Integer> b = tallyStruct.votes_b;
         PFStruct pf = tallyStruct.pf;
 
         System.out.println("--> Verify: ");
-        boolean verify = athena.Verify(pkv, bb, nc, b, pf, kappa);
+        boolean verify = athena.Verify(pkv, nc, b, pf, kappa);
         System.out.println("--> Verify done ");
         assertTrue("should return 1", verify);
 

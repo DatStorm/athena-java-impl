@@ -1,12 +1,9 @@
 package project.athena;
 
-import org.apache.commons.lang3.stream.Streams;
 import project.UTIL;
 import project.dao.Randomness;
 import project.dao.athena.*;
 import project.dao.bulletproof.BulletproofProof;
-import project.dao.bulletproof.BulletproofSecret;
-import project.dao.bulletproof.BulletproofStatement;
 import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixProof;
 import project.dao.mixnet.MixStatement;
@@ -81,10 +78,10 @@ public class AthenaImpl implements Athena {
         Randomness randR = new Randomness(this.random.nextLong());
         ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
 
-        this.n_vote = group.q.bitLength();                          // TODO: FIX THESE VALUES
-        this.n_negatedPrivateCredential = group.q.bitLength();      // TODO: FIX THESE VALUES
-        int mb = 100;   // TODO: FIX THESE VALUES
-        this.mc = 100;  // TODO: FIX THESE VALUES
+        this.n_vote = 3;                          // TODO: FIX THESE VALUES
+        this.n_negatedPrivateCredential = 3;      // TODO: FIX THESE VALUES
+        int mb = 100;                             // TODO: FIX THESE VALUES
+        this.mc = 100;                            // TODO: FIX THESE VALUES
 
         this.g_vector_vote = group.newGenerators(n_vote, random);
         this.h_vector_vote = group.newGenerators(n_vote, random);
@@ -175,24 +172,26 @@ public class AthenaImpl implements Athena {
         CipherText encryptedVote = elgamal.encrypt(voteAsBigInteger, pk, randomness_t);
 
         // Prove that negated private credential -d resides in Z_q (this is defined using n)
-        BulletproofStatement stmnt_1 = new BulletproofStatement(
-                this.n_negatedPrivateCredential,
-                encryptedNegatedPrivateCredential.c2,
-                pk,
-                g_vector_negatedPrivateCredential,
-                h_vector_negatedPrivateCredential);
-        BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential, randomness_s);
-        BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
+//        BulletproofStatement stmnt_1 = new BulletproofStatement(
+//                this.n_negatedPrivateCredential,
+//                encryptedNegatedPrivateCredential.c2,
+//                pk,
+//                g_vector_negatedPrivateCredential,
+//                h_vector_negatedPrivateCredential);
+//        BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential, randomness_s);
+//        BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
+        BulletproofProof proofRangeOfNegatedPrivateCredential = null;
 
-        // Prove that vote v resides in [0,nc-1] (this is defined using n)
-        BulletproofStatement stmnt_2 = new BulletproofStatement(
-                this.n_vote,
-                encryptedVote.c2,
-                pk,
-                g_vector_vote,
-                h_vector_vote);
-        BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
-        BulletproofProof proofRangeOfVote = bulletProof.proveStatement(stmnt_2, secret_2);
+//        // Prove that vote v resides in [0,nc-1] (this is defined using n)
+//        BulletproofStatement stmnt_2 = new BulletproofStatement(
+//                this.n_vote,
+//                encryptedVote.c2,
+//                pk,
+//                g_vector_vote,
+//                h_vector_vote);
+//        BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
+//        BulletproofProof proofRangeOfVote = bulletProof.proveStatement(stmnt_2, secret_2);
+        BulletproofProof proofRangeOfVote = null;
 
         Ballot ballot = new Ballot(publicCredential, encryptedNegatedPrivateCredential, encryptedVote, proofRangeOfNegatedPrivateCredential, proofRangeOfVote, cnt);
         bb.publishBallot(ballot);
@@ -201,7 +200,7 @@ public class AthenaImpl implements Athena {
 
 
     @Override
-    public TallyStruct Tally(SK_Vector skv, BulletinBoard bulletinBoard, int nc, int kappa) {
+    public TallyStruct Tally(SK_Vector skv, int nc, int kappa) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Tally => ERROR: System not initialised call .Setup before hand");
             return null;
@@ -214,7 +213,7 @@ public class AthenaImpl implements Athena {
         /* ********
          * Step 1: Remove invalid ballots
          *********/
-        List<Ballot> finalBallots = removeInvalidBallots(bulletinBoard, pk);
+        List<Ballot> finalBallots = removeInvalidBallots( pk);
         if (finalBallots.isEmpty()){
             System.err.println("AthenaImpl.Tally =>  Step 1 yielded no valid ballots on bulletinboard.");
             return null;
@@ -228,7 +227,9 @@ public class AthenaImpl implements Athena {
         Object[] objects = tallyStepTwo(finalBallots, sk, kappa);
         List<PFRStruct> pfr = (List<PFRStruct>) objects[0];
         Map<MapAKey, MapAValue> A = (Map<MapAKey, MapAValue>) objects[1];
-        List<MixBallot> B = pairwiseMixnet(A, bulletinBoard);
+        List<MixBallot> B = pairwiseMixnet(A);
+
+        System.out.println("---> "+ B.size());
 
         // Post pfr and B to the bulletin board
         bb.publishPfr(pfr);
@@ -268,6 +269,8 @@ public class AthenaImpl implements Athena {
 
 
             if (m.equals(BigInteger.ONE)) { // Dec(c_prime) == g^0
+                System.out.println("--> M=1");
+
                 BigInteger vote = elgamal.decrypt(encryptedVote, sk);
 
                 // Tally the vote
@@ -288,6 +291,7 @@ public class AthenaImpl implements Athena {
                 }
 
             } else { // m != 1
+                System.out.println("--> M!=1");
                 PFDStruct value = new PFDStruct(c_prime, m, proofCombinationCprime, proofDecryptionCprime); // FIXME: proofDecryptionVote sat to null in Object....
                 if (!pfd.contains(value)) {
                     pfd.add(value);
@@ -298,7 +302,7 @@ public class AthenaImpl implements Athena {
         // post pfd to bulletin board
         bb.publishPfd(pfd);
         bb.publishTallyOfVotes(tallyOfVotes);
-         return new TallyStruct(tallyOfVotes, new PFStruct(pfr, B, pfd));
+        return new TallyStruct(tallyOfVotes, new PFStruct(pfr, B, pfd));
     }
 
 
@@ -326,7 +330,7 @@ public class AthenaImpl implements Athena {
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredential);
 
             // Update the map entry if the old counter is less. Nullify if equal
-            A = updateMap(ballot, A, key);
+            updateMap(ballot, A, key, sk.pk.group.p);
 
             // Prove decryption
             Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
@@ -350,30 +354,32 @@ public class AthenaImpl implements Athena {
     }
 
     // This method pupdates the map A according to step 2 of Tally
-    private Map<MapAKey, MapAValue> updateMap(Ballot ballot, Map<MapAKey, MapAValue> A, MapAKey key) {
+    private Map<MapAKey, MapAValue> updateMap(Ballot ballot, Map<MapAKey, MapAValue> A, MapAKey key, BigInteger p) {
         // Update the map entry if the old counter is less. Nullify if equal
         MapAValue existingValue = A.get(key);
         int counter = ballot.getCounter();
         if (existingValue == null || existingValue.getCounter() < counter) { // Update the map if A[(bi[1]; N)] is empty or contains a lower counter
-            CipherText combinedCredential = ballot.getPublicCredential().combine(ballot.getEncryptedNegatedPrivateCredential());
+            CipherText combinedCredential = ballot.getPublicCredential().multiply(ballot.getEncryptedNegatedPrivateCredential(),p);
             CipherText encryptedVote = ballot.getEncryptedVote();
             MapAValue updatedValue = new MapAValue(counter, combinedCredential, encryptedVote);
 
+            // FIXME: Changed from .replace() since it did nothing
             // A[publicCredential, N] <- (counter, publicCredential * encryptedNegatedPrivateCredential, encyptedVote)
-            A.replace(key, updatedValue);
+            A.put(key, updatedValue);
 
         } else if (existingValue.getCounter() == counter) { // Disregard duplicate counters
             MapAValue nullEntry = new MapAValue(counter, null, null);
 
+            // FIXME: Changed from .replace() since it did nothing
             // A[publicCredential, N] <- (counter, null, null)
-            A.replace(key, nullEntry);
+            A.put(key, nullEntry);
         }
         return A;
     }
 
 
     @Override
-    public boolean Verify(PK_Vector pkv, BulletinBoard bulletinBoard, int nc, Map<BigInteger, Integer> tallyOfVotes, PFStruct pf, int kappa) {
+    public boolean Verify(PK_Vector pkv, int nc, Map<BigInteger, Integer> tallyOfVotes, PFStruct pf, int kappa) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Verify => ERROR: System not initialised call .Setup before hand");
             return false;
@@ -387,7 +393,7 @@ public class AthenaImpl implements Athena {
 
         // tallyVotes length should contain at most nc elements
         if (tallyOfVotes.keySet().size() != nc) {
-            System.err.println("AthenaImpl.Verify => ERROR: tallyOfVotes.keySet().size() != nc");
+            System.err.println("AthenaImpl.Verify => ERROR: tallyOfVotes.keySet().size()=" + tallyOfVotes.keySet().size()+ " != nc=" + nc);
             return false;
         }
 
@@ -408,7 +414,7 @@ public class AthenaImpl implements Athena {
          * Check 1: Check ballot removal
          *********/
         // check {b_1,...,b_\ell} = Ø implies b is a zero-filled vector.
-        List<Ballot> finalBallots = removeInvalidBallots(bulletinBoard, pk);
+        List<Ballot> finalBallots = removeInvalidBallots( pk);
         if (finalBallots.isEmpty() && !valuesAreAllX(tallyOfVotes, 0)){
             System.err.println("AthenaImpl.Verify => Check 1 failed.");
             return false;
@@ -454,7 +460,7 @@ public class AthenaImpl implements Athena {
             Ballot previousBallot = finalBallots.get(i - 1); // the previous ballot!
             List<CipherText> combinedList = Arrays.asList(ci_1_prime, ci_prime);
             List<CipherText> listOfEncryptedNegatedPrivateCredential = Arrays.asList(previousBallot.getEncryptedNegatedPrivateCredential(), currentBallot.getEncryptedNegatedPrivateCredential());
-            
+
             boolean veri_comb = sigma4.verifyCombination(pk, combinedList, listOfEncryptedNegatedPrivateCredential, proofCombination, kappa);
             if (!veri_comb) {
                 System.err.println("AthenaImpl.Verify => ERROR: Sigma4.verifyCombination([c'_i-1, c'_i], [b_i-1, b_i])");
@@ -471,21 +477,29 @@ public class AthenaImpl implements Athena {
             MapAKey key = new MapAKey(ballot.getPublicCredential(), N);
             // Update the map with pallots. ballots t <- A.get(key_i)
             // Update the map entry if the old counter is less. Nullify if equal
-            A = updateMap(ballot, A, key);
+            A = updateMap(ballot, A, key, pk.getGroup().p);
         }
 
 
         // check B was output by the mix applied in Step 2 of algorithm
         // Tally on input of the pairs of ciphertexts in A
-        List<MixBallot> B = pairwiseMixnet(A, bulletinBoard);
-        if (!Arrays.deepEquals(B.toArray(), pf.mixBallotList.toArray())) { // TODO: change this to use the mixBallots posted on bulletin board
-            System.err.println("AthenaImpl.Verify => ERROR: Mixnet(A) => B not mixed in valid format");
-            return false;
-        }
+        //List<MixBallot> B = pairwiseMixnet(A);
+        //if (!Arrays.deepEquals(B.toArray(), pf.mixBallotList.toArray())) { // TODO: change this to use the mixBallots posted on bulletin board
+        //    System.err.println("AthenaImpl.Verify => ERROR: Mixnet(A) => B not mixed in valid format");
+        //    return false;
+        //}
 
-        // Check our proof of mix. FIXME: are we not doing the same thing twice?
-        MixProof mixProof = bulletinBoard.retrieveMixProof();
+        // TODO: For each public credential, remove all but the highest counter
+        // Like we did in tally
 
+        // Check our proof of mix (Benaloh sigma protocol, see report). FIXME: are we not proving that B is mixed twice if we show the proof aswell?
+
+        MixProof mixProof = this.bb.retrieveMixProof();
+//        mixnet.verify(mixStatement, mixProof);
+
+
+        // FAKE IT TILL YOU MAKE IT!!! = remove
+        List<MixBallot> B = pairwiseMixnet(A);
 
 
         /* ********
@@ -608,38 +622,39 @@ public class AthenaImpl implements Athena {
     }
 
     // Step 1 of Tally
-    private List<Ballot> removeInvalidBallots(BulletinBoard bulletinBoard,  ElGamalPK pk) {
-        List<Ballot> finalBallots = new ArrayList<>(bulletinBoard.retrievePublicBallots());
-        for (Ballot ballot : bulletinBoard.retrievePublicBallots()) {
+    private List<Ballot> removeInvalidBallots( ElGamalPK pk) {
+        List<Ballot> finalBallots = new ArrayList<>(bb.retrievePublicBallots());
+        for (Ballot ballot : bb.retrievePublicBallots()) {
             CipherText publicCredential = ballot.getPublicCredential();
 
-            boolean isPublicCredentialInL = bulletinBoard.electoralRollContains(publicCredential);
+            boolean isPublicCredentialInL = bb.electoralRollContains(publicCredential);
             if (!isPublicCredentialInL) {
                 System.err.println("AthenaImpl.removeInvalidBallot => ballot posted with invalid public credential");
                 finalBallots.remove(ballot);
             }
 
-            // Verify that the negated private credential is in the valid range
-            // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersens' commitment of (-d) using randomness s
-            CipherText encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
-            BulletproofStatement stmnt_1 = new BulletproofStatement(n_vote, encryptedNegatedPrivateCredential.c2, pk, g_vector_negatedPrivateCredential, h_vector_negatedPrivateCredential);
-            boolean verify_encryptedNegatedPrivateCredential = bulletProof.verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
-
-            // remove invalid ballots.
-            if (!verify_encryptedNegatedPrivateCredential) {
-                finalBallots.remove(ballot);
-            }
-
-            // Verify that the vote is in the valid range
-            // ElGamal ciphertext (c1,c2) => use c2=g^(v) h^t as Pedersens' commitment of vote v using randomness t
-            CipherText encryptedVote = ballot.getEncryptedVote();
-            BulletproofStatement stmnt_2 = new BulletproofStatement(n_negatedPrivateCredential, encryptedVote.c2, pk, g_vector_vote, h_vector_vote);
-            boolean verify_encryptedVote = bulletProof.verifyStatement(stmnt_2, ballot.getProofVote());
-
-            // remove invalid ballots.
-            if (!verify_encryptedVote) {
-                finalBallots.remove(ballot);
-            }
+//            // Verify that the negated private credential is in the valid range
+//            // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersens' commitment of (-d) using randomness s
+//            CipherText encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
+//            BulletproofStatement stmnt_1 = new BulletproofStatement(n_vote, encryptedNegatedPrivateCredential.c2, pk, g_vector_negatedPrivateCredential, h_vector_negatedPrivateCredential);
+//            boolean verify_encryptedNegatedPrivateCredential = bulletProof.verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
+//
+//
+//            // remove invalid ballots.
+//            if (!verify_encryptedNegatedPrivateCredential) {
+//                finalBallots.remove(ballot);
+//            }
+//
+//            // Verify that the vote is in the valid range
+//            // ElGamal ciphertext (c1,c2) => use c2=g^(v) h^t as Pedersens' commitment of vote v using randomness t
+//            CipherText encryptedVote = ballot.getEncryptedVote();
+//            BulletproofStatement stmnt_2 = new BulletproofStatement(n_negatedPrivateCredential, encryptedVote.c2, pk, g_vector_vote, h_vector_vote);
+//            boolean verify_encryptedVote = bulletProof.verifyStatement(stmnt_2, ballot.getProofVote());
+//
+//            // remove invalid ballots.
+//            if (!verify_encryptedVote) {
+//                finalBallots.remove(ballot);
+//            }
         }
         return finalBallots;
     }
@@ -667,7 +682,7 @@ public class AthenaImpl implements Athena {
         return nonces_n1_nB;
     }
 
-    private List<MixBallot> pairwiseMixnet(Map<MapAKey, MapAValue> A, BulletinBoard bulletinBoard) {
+    private List<MixBallot> pairwiseMixnet(Map<MapAKey, MapAValue> A) {
         List<MixBallot> ballots = new ArrayList<>();
         for (MapAValue val : A.values()) {
             ballots.add(val.toMixBallot());
@@ -676,21 +691,12 @@ public class AthenaImpl implements Athena {
         MixStruct mixStruct = this.mixnet.mix(ballots);
         List<MixBallot> mixedBallots = mixStruct.mixedBallots;
 
-        // TODO: WHAT ABOUT PROOF AND STATEMENT
         MixStatement statement = new MixStatement(ballots, mixedBallots);
         MixProof proofMix = mixnet.proveMix(statement, mixStruct.secret);
         boolean verification = mixnet.verify(statement, proofMix);
 
         // Post the mix proof
-        bulletinBoard.publishMixProof(proofMix);
-
-
-        if (verification) {
-            System.err.println("----------------- WHAT DO WE DO HERE------------------------");
-        } else {
-            System.err.println("----------------- WHAT DO WE DO HERE------------------------");
-        }
-
+        bb.publishMixProof(proofMix); // TODO: should we also post the statement?
         return mixedBallots;
     }
 
