@@ -22,7 +22,7 @@ public class Mixnet {
     private final BigInteger p;
     private final BigInteger q;
 
-    public Mixnet(MessageDigest hashH,Random random, ElGamal elgamal,ElGamalPK pk ) {
+    public Mixnet(MessageDigest hashH, Random random, ElGamal elgamal, ElGamalPK pk ) {
         this.hashH = hashH;
         this.elgamal = elgamal;
         this.random = random;

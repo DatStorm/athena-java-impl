@@ -1,5 +1,6 @@
 package project.factory;
 
+import project.athena.BulletinBoard;
 import project.mixnet.Mixnet;
 import project.sigma.Sigma1;
 import project.sigma.Sigma3;
@@ -22,4 +23,5 @@ public interface AthenaFactory {
     Random getRandom();
 
     MessageDigest getHash();
+    BulletinBoard getBulletinBoard();
 }

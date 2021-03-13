@@ -17,7 +17,7 @@ public class CipherText {
         BigInteger c2 = this.c2.modPow(x, p);
         return new CipherText(c1, c2);
     }
-
+    
     @Override
     public String toString() {
         return "\n\tCiphertext={'c1': " + this.c1 + ", 'c2':" + this.c2 + "}\n";

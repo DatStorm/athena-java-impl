@@ -26,6 +26,7 @@ public class TestAthenaTally {
     private ElGamalSK sk;
 
     private AthenaImpl athena;
+    private BulletinBoard bb;
 
 
     @BeforeEach
@@ -38,6 +39,8 @@ public class TestAthenaTally {
         pkv = setup.pkv;
         RegisterStruct register = athena.Register(pkv, kappa);
         dv = register.d;
+        bb = msFactory.getBulletinBoard();
+
 
     }
 
@@ -53,9 +56,10 @@ public class TestAthenaTally {
         int vote2_1 = 2;
         int cnt2_1 = 0;
         Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
+        
+        bb.addAllBallots(Arrays.asList(ballot_1, ballot_2));
 
-        BulletinBoard bb = new BulletinBoard(Arrays.asList(ballot_1, ballot_2));
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), bb, nc, new ElectoralRoll(), kappa);
+        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), bb, nc,  kappa);
         assertNotNull("Should not be null", tallyStruct.pf.mixBallotList);
         assertNotNull("Should not be null", tallyStruct.pf.pfd);
         assertNotNull("Should not be null", tallyStruct.pf.pfr);

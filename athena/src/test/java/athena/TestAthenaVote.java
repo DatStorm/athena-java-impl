@@ -33,7 +33,6 @@ public class TestAthenaVote {
         athena = new AthenaImpl(msFactory);
         SetupStruct setup = athena.Setup(kappa);
 
-
         pkv = setup.pkv;
         RegisterStruct register = athena.Register(pkv, kappa);
         dv = register.d;
@@ -47,11 +46,11 @@ public class TestAthenaVote {
         int cnt = 0;
         int nc = 10;
         Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc, kappa);
-        assertNotNull("Should not be null", ballot.pd);
-        assertNotNull("Should not be null", ballot.c1);
-        assertNotNull("Should not be null", ballot.c2);
-        assertNotNull("Should not be null", ballot.sigma_1);
-        assertNotNull("Should not be null", ballot.sigma_2);
-        assertNotEquals("Should not be 0",0, ballot.cnt);
+        assertNotNull("Should not be null", ballot.getPublicCredential());
+        assertNotNull("Should not be null", ballot.getEncryptedNegatedPrivateCredential());
+        assertNotNull("Should not be null", ballot.getEncryptedVote());
+        assertNotNull("Should not be null", ballot.getProofNegatedPrivateCredential());
+        assertNotNull("Should not be null", ballot.getProofVote());
+        assertNotEquals("Should not be 0",0, ballot.getCounter());
     }
 }

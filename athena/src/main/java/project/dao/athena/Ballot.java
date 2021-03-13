@@ -21,34 +21,45 @@ public class Ballot {
         this.counter = counter;
     }
     
-    // b[1]
-
+    // b[1] = pd
     public CipherText getPublicCredential() {
         return publicCredential;
     }
 
-    // b[2]
+    // b[2] = c1
     public CipherText getEncryptedNegatedPrivateCredential() {
         return encryptedNegatedPrivateCredential;
     }
 
-    // b[3]
+    // b[3] = c2
     public CipherText getEncryptedVote() {
         return encryptedVote;
     }
 
-    // b[4]
+    // b[4] = simga_1
     public BulletproofProof getProofNegatedPrivateCredential() {
         return proofNegatedPrivateCredential;
     }
 
-    // b[5]
+    // b[5] = sigma_2
     public BulletproofProof getProofVote() {
         return proofVote;
     }
 
-    // b[6]
+    // b[6] = counter
     public int getCounter() {
         return counter;
+    }
+
+    @Override
+    public String toString() {
+        return "Ballot{" +
+                "publicCredential=" + publicCredential +
+                ", encryptedNegatedPrivateCredential=" + encryptedNegatedPrivateCredential +
+                ", encryptedVote=" + encryptedVote +
+                ", proofVote=" + proofVote +
+                ", proofNegatedPrivateCredential=" + proofNegatedPrivateCredential +
+                ", counter=" + counter +
+                '}';
     }
 }

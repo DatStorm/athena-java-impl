@@ -2,6 +2,7 @@ package project.factory;
 
 import project.CONSTANTS;
 import project.UTIL;
+import project.athena.BulletinBoard;
 import project.mixnet.Mixnet;
 import project.sigma.Sigma1;
 import project.sigma.Sigma3;
@@ -21,6 +22,7 @@ public class MainAthenaFactory implements AthenaFactory {
     private final Mixnet mixnet;
     private final MessageDigest hash;
     private final Random random;
+    private BulletinBoard bulletinBoard;
 
 
     public MainAthenaFactory() {
@@ -33,6 +35,7 @@ public class MainAthenaFactory implements AthenaFactory {
         sigma3 = new Sigma3(hash);
         sigma4 = new Sigma4(hash);
         mixnet = new Mixnet(hash,random);
+        bulletinBoard = BulletinBoard.getInstance();
     }
 
     @Override
@@ -91,6 +94,11 @@ public class MainAthenaFactory implements AthenaFactory {
     @Override
     public MessageDigest getHash() {
         return UTIL.GET_HASH_FUNCTION();
+    }
+
+    @Override
+    public BulletinBoard getBulletinBoard() {
+        return bulletinBoard;
     }
 
 
