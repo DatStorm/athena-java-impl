@@ -6,9 +6,12 @@ import project.dao.athena.PFDStruct;
 import project.dao.athena.PFRStruct;
 import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixProof;
+import project.elgamal.CipherText;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BulletinBoard {
     // static variable single_instance of type Singleton
@@ -38,17 +41,28 @@ public class BulletinBoard {
         this.PfrList = new ArrayList<>();
         this.PfdList = new ArrayList<>();
         this.mixBallots = new ArrayList<>();
+        this.electoralRoll = new ElectoralRoll();
     }
 
 
     /*
      * Public methods.
      */
-    public void addAllBallots(List<Ballot> toAddBallots) {
+    public MixProof retrieveMixProof() { return this.getMixProof(); }
+    public List<Ballot> retrievePublicBallots() { return this.getBallots(); }
+    public boolean electoralRollContains(CipherText publicCredential) { return this.electoralRoll.contains(publicCredential); }
+//    public void addAllBallots(List<Ballot> toAddBallots) {
+//        printUpdate();
+//        this.ballots.addAll(toAddBallots);
+//    }
+    public void addPublicCredentitalToL(CipherText publicCredential_pd) {
         printUpdate();
-        this.ballots.addAll(toAddBallots);
+        this.electoralRoll.add(publicCredential_pd);
     }
-    
+    public void publishTallyOfVotes(Map<BigInteger, Integer> tallyOfVotes) {
+        printUpdate();
+        // TODO: does nothing....
+    }
 
 
     /*
@@ -58,9 +72,9 @@ public class BulletinBoard {
     public void publishPfd(List<PFDStruct> pfd) { this.setPfdList(pfd); }
     public void publishBallot(Ballot ballot) { this.addBallot(ballot); }
     public void publishMixBallots(List<MixBallot> mixBallots) { this.setMixBallots(mixBallots); }
-    public List<Ballot> retrievePublicBallots() { return this.getBallots(); }
+    public void publishMixProof(MixProof mixProof) { this.setMixProof(mixProof); }
 
-    
+
 
     /*
      * Private add methods
@@ -89,10 +103,6 @@ public class BulletinBoard {
         this.mixProof = mixProof;
     }
 
-    private void setElectoralRoll(ElectoralRoll electoralRoll) {
-        printUpdate();
-        this.electoralRoll = electoralRoll;
-    }
 
     private void setMixBallots(List<MixBallot> mixBallots) {
         printUpdate();
@@ -113,14 +123,31 @@ public class BulletinBoard {
     private void printUpdate() {
         System.out.println("-----------------------------");
         System.out.println("BulletinBoard  -- UPDATE --  ");
-        System.out.println("ballots=                     " + ballots);
+
+        StringBuilder b_res = new StringBuilder();
+        b_res.append("[");
+        boolean first = true;
+        for (Ballot ballot : ballots) {
+            if (first) {
+                b_res.append(ballot.toString()).append(", ").append("\n");
+                first = false;
+            }else{
+
+                b_res.append("                             ").append(ballot.toString()).append(", ").append("\n");
+            }
+
+        }
+        b_res.append("                             ").append("]");
+
+        System.out.println("ballots=                     " + b_res.toString());
         System.out.println("PfrList=                     " + PfrList);
         System.out.println("PfdList=                     " + PfdList);
         System.out.println("mixProof=                    " + mixProof);
-        System.out.println("electoralRoll=               " + electoralRoll);
+        System.out.println("electoralRoll=              L" + electoralRoll);
         System.out.println("mixBallots=                  " + mixBallots);
         System.out.println("-----------------------------");
     }
+
 
 
 }

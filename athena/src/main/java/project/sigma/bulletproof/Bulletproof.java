@@ -304,6 +304,8 @@ public class Bulletproof {
         boolean check2 = commitVectorP_left.equals(commitVectorP_right);
         if (!check2) {
             System.err.println("Bulletproof.verifyStatement CHECK 2 FAILED");
+            System.out.println("Bulletproof.verifyStatement         left: "+  commitVectorP_left);
+            System.out.println("Bulletproof.verifyStatement        right: "+  commitVectorP_right);
             return false;
         }
 

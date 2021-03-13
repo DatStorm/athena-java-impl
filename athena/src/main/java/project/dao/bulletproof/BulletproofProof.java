@@ -45,6 +45,8 @@ public class BulletproofProof {
         this.r_vector = r_vector;
     }
 
+   
+
     public static class Builder {
         private BigInteger a;
         private BigInteger s;
@@ -130,4 +132,28 @@ public class BulletproofProof {
             return new BulletproofProof(a, s, y, z, T_1, T_2, x, tau_x, t_hat, mu, l_vector, r_vector);
         }
     }
+
+    public String toNameString() {
+        return "BulletproofProof{" + "a=" + a.toString().substring(0,5) + "...}";
+    }
+
+    @Override
+    public String toString() {
+        return "BulletproofProof{" +
+                "a=" + a +
+                ", s=" + s +
+                ", y=" + y +
+                ", z=" + z +
+                ", T_1=" + T_1 +
+                ", T_2=" + T_2 +
+                ", x=" + x +
+                ", tau_x=" + tau_x +
+                ", t_hat=" + t_hat +
+                ", mu=" + mu +
+                ", l_vector=" + l_vector +
+                ", r_vector=" + r_vector +
+                '}';
+    }
+    
+    
 }

@@ -26,7 +26,6 @@ public class TestAthenaVerify {
 
     MainAthenaFactory msFactory;
     private final int kappa = CONSTANTS.KAPPA;
-    private CredentialTuple dv;
     private PK_Vector pkv;
     private ElGamalSK sk;
     private BulletinBoard bb;
@@ -42,8 +41,7 @@ public class TestAthenaVerify {
 
         sk = setup.sk;
         pkv = setup.pkv;
-        RegisterStruct register = athena.Register(pkv, kappa);
-        dv = register.d;
+        
         bb = msFactory.getBulletinBoard();
 
 
@@ -53,19 +51,22 @@ public class TestAthenaVerify {
     void TestAthenaVerify() {
         int nc = 10;
 
+        RegisterStruct register1 = athena.Register(pkv, kappa);
+        CredentialTuple dv1  = register1.d;
         int vote1_1 = 4;
         int cnt1_1 = 0;
-        System.out.println("--> Vote 1: ");
-        Ballot ballot_1 = athena.Vote(dv, pkv, vote1_1, cnt1_1, nc, kappa);
-        System.out.println("--> Vote 1 done ");
+        System.out.println("--> Voter 1: ");
+        Ballot ballot_1 = athena.Vote(dv1, pkv, vote1_1, cnt1_1, nc, kappa);
+        System.out.println("--> Voter 1 done ");
 
         int vote2_1 = 2;
         int cnt2_1 = 0;
-        System.out.println("--> Vote 2: ");
-        Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
-        System.out.println("--> Vote 2 done ");
+        RegisterStruct register2 = athena.Register(pkv, kappa);
+        CredentialTuple dv2  = register2.d;
+        System.out.println("--> Voter 2: ");
+        Ballot ballot_2 = athena.Vote(dv2, pkv, vote2_1, cnt2_1, nc, kappa);
+        System.out.println("--> Voter 2 done ");
 
-        bb.addAllBallots(Arrays.asList(ballot_1, ballot_2));
         System.out.println("--> Tally: ");
         TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), bb, nc, kappa);
         System.out.println("--> Tally done ");

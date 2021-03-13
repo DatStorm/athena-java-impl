@@ -23,6 +23,7 @@ public class CipherText {
         return "\n\tCiphertext={'c1': " + this.c1 + ", 'c2':" + this.c2 + "}\n";
     }
 
+    
 
     public CipherText multiply(CipherText c, BigInteger p) {
         // TODO: Enforce mod p. User of function should not decide. Maybee include public key or group in fields?
@@ -59,5 +60,9 @@ public class CipherText {
     public CipherText combine(CipherText c) {
         throw new UnsupportedOperationException("TODO: IMPLEMENT ME!!!!");
 //        return null;
+    }
+
+    public String toShortString() {
+        return "C={'c1': " + this.c1.toString().substring(0,5) + ", 'c2':" + this.c2.toString().substring(0,5) + "}";
     }
 }

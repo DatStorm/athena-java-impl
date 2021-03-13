@@ -22,4 +22,15 @@ public class ElectoralRoll {
     public boolean contains(CipherText publicCredential) {
         return listOfPublicCredentials.contains(publicCredential);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+
+        for (CipherText pd : listOfPublicCredentials) {
+            res.append(pd.toShortString()).append(", ");
+        }
+
+        return "[" + res.toString() + ']';
+    }
 }

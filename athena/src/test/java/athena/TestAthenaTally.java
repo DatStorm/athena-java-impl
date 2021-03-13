@@ -52,13 +52,12 @@ public class TestAthenaTally {
         int vote1_1 = 4;
         int cnt1_1 = 0;
         Ballot ballot_1 = athena.Vote(dv, pkv, vote1_1, cnt1_1, nc, kappa);
+        
 
         int vote2_1 = 2;
         int cnt2_1 = 0;
         Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
         
-        bb.addAllBallots(Arrays.asList(ballot_1, ballot_2));
-
         TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), bb, nc,  kappa);
         assertNotNull("Should not be null", tallyStruct.pf.mixBallotList);
         assertNotNull("Should not be null", tallyStruct.pf.pfd);

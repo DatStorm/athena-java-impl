@@ -54,12 +54,12 @@ public class Ballot {
     @Override
     public String toString() {
         return "Ballot{" +
-                "publicCredential=" + publicCredential +
-                ", encryptedNegatedPrivateCredential=" + encryptedNegatedPrivateCredential +
-                ", encryptedVote=" + encryptedVote +
-                ", proofVote=" + proofVote +
-                ", proofNegatedPrivateCredential=" + proofNegatedPrivateCredential +
-                ", counter=" + counter +
+                "pd=" + publicCredential.toShortString() +
+                ", c1=" + encryptedNegatedPrivateCredential.toShortString() +
+                ", c2=" + encryptedVote.toShortString() +
+                ", sigma1=" + proofVote.toNameString() +
+                ", sigma2=" + proofNegatedPrivateCredential.toNameString() +
+                ", cnt=" + counter +
                 '}';
     }
 }
