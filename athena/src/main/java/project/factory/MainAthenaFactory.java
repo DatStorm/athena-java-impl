@@ -3,6 +3,8 @@ package project.factory;
 import project.CONSTANTS;
 import project.UTIL;
 import project.athena.BulletinBoard;
+import project.elgamal.ElGamal;
+import project.elgamal.ElGamalPK;
 import project.mixnet.Mixnet;
 import project.sigma.Sigma1;
 import project.sigma.Sigma3;
@@ -14,44 +16,24 @@ import java.security.MessageDigest;
 import java.util.Random;
 
 public class MainAthenaFactory implements AthenaFactory {
-    private final Sigma1 sigma1;
-    private final Bulletproof bulletproof;
-    //    private final Sigma2 sigma2;
-    private final Sigma3 sigma3;
-    private final Sigma4 sigma4;
-    private final Mixnet mixnet;
     private final MessageDigest hash;
     private final Random random;
-    private BulletinBoard bulletinBoard;
 
 
     public MainAthenaFactory() {
-
         this.random = new Random(CONSTANTS.RANDOM_SEED);
         this.hash = this.getHash();
-        this.sigma1 = new Sigma1(hash);
-        this.bulletproof = new Bulletproof(hash,random);
-//        sigma2 = new Sigma2(hash, this.random);
-        sigma3 = new Sigma3(hash);
-        sigma4 = new Sigma4(hash);
-        mixnet = new Mixnet(hash,random);
-        bulletinBoard = BulletinBoard.getInstance();
+
     }
 
     @Override
     public Bulletproof getBulletProof() {
-        if (bulletproof == null) {
-            System.out.println("MainAthenaFactory.getBulletProof=> null");
-        }
-        return bulletproof;
+        return new Bulletproof(hash,random);
     }
 
     @Override
     public Sigma1 getSigma1() {
-        if (sigma1 == null) {
-            System.out.println("MainAthenaFactory.getSigma1=> null");
-        }
-        return sigma1;
+        return new Sigma1(hash);
     }
 
 //    @Override
@@ -61,26 +43,17 @@ public class MainAthenaFactory implements AthenaFactory {
 
     @Override
     public Sigma3 getSigma3() {
-        if (sigma3 == null) {
-            System.out.println("MainAthenaFactory.getSigma3=> null");
-        }
-        return sigma3;
+        return new Sigma3(hash);
     }
 
     @Override
     public Sigma4 getSigma4() {
-        if (sigma4 == null) {
-            System.out.println("MainAthenaFactory.getSigma4=> null");
-        }
-        return sigma4;
+        return new Sigma4(hash);
     }
 
     @Override
-    public Mixnet getMixnet() {
-        if (mixnet == null) {
-            System.out.println("MainAthenaFactory.getMixnet=> ERROR: mixnet is null needs to be set....");
-        }
-        return mixnet;
+    public Mixnet getMixnet(ElGamal elgamal, ElGamalPK pk) {
+        return new Mixnet(this.hash, elgamal, pk, this.random);
     }
 
     @Override
@@ -98,7 +71,7 @@ public class MainAthenaFactory implements AthenaFactory {
 
     @Override
     public BulletinBoard getBulletinBoard() {
-        return bulletinBoard;
+        return BulletinBoard.getInstance();
     }
 
 

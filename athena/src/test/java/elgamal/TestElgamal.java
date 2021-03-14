@@ -1,7 +1,7 @@
 package elgamal;
 
 import org.junit.jupiter.api.*;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
@@ -64,7 +64,7 @@ public class TestElgamal {
         BigInteger expected = pk.getGroup().g.modPow(msg,pk.getGroup().p);
 
         // Enc_pk(m)=(g^r, g^m*h^r)
-        CipherText c = elGamal.encrypt(msg, pk);
+        Ciphertext c = elGamal.encrypt(msg, pk);
 
         // g^m = Dec_sk(c)
         BigInteger result = elGamal.decrypt(c, sk);
@@ -84,7 +84,7 @@ public class TestElgamal {
         BigInteger expected = pk.getGroup().g.modPow(msg,pk.getGroup().p);
 
         // Enc_pk(m)=(g^r, g^m*h^r)
-        CipherText c = elGamal.encrypt(msg, pk);
+        Ciphertext c = elGamal.encrypt(msg, pk);
         BigInteger result = elGamal.decrypt(c, sk);
 
         assertEquals(expected, result);
@@ -112,7 +112,7 @@ public class TestElgamal {
         BigInteger expected = pk.getGroup().g.modPow(msg,pk.getGroup().p);
 
         // Enc_pk(m)=(g^r, g^m*h^r)
-        CipherText c = elGamal1.encrypt(msg, pk);
+        Ciphertext c = elGamal1.encrypt(msg, pk);
 
         // g^m = Dec_sk(c)
         BigInteger result = elGamal2.decrypt(c, sk);

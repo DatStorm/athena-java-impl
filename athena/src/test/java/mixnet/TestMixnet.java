@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.dao.mixnet.*;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
@@ -40,7 +40,7 @@ public class TestMixnet {
         MessageDigest hash = factory.getHash();
         Random random = factory.getRandom();
 
-        mixnet = new Mixnet(hash,random,elgamal,pk);
+        mixnet = new Mixnet(hash, elgamal, pk, random);
 
     }
 
@@ -50,8 +50,8 @@ public class TestMixnet {
         int a = 2;
         int b = 3;
         int c = a + b;
-        CipherText cipher_1 = elgamal.encrypt(BigInteger.valueOf(a), pk);
-        CipherText cipher_2 = elgamal.encrypt(BigInteger.valueOf(b), pk);
+        Ciphertext cipher_1 = elgamal.encrypt(BigInteger.valueOf(a), pk);
+        Ciphertext cipher_2 = elgamal.encrypt(BigInteger.valueOf(b), pk);
 
         BigInteger g = pk.getGroup().getG();
 
@@ -59,8 +59,8 @@ public class TestMixnet {
         int va = 10;
         int vb = 20;
         int vc = va + vb;
-        CipherText v1 = elgamal.encrypt(BigInteger.valueOf(va), pk);
-        CipherText v2 = elgamal.encrypt(BigInteger.valueOf(vb), pk);
+        Ciphertext v1 = elgamal.encrypt(BigInteger.valueOf(va), pk);
+        Ciphertext v2 = elgamal.encrypt(BigInteger.valueOf(vb), pk);
         // mb1 = (c1 = Enc(1),c2= Enc(v))
         MixBallot mb1 = new MixBallot(cipher_1, v1);
         MixBallot mb2 = new MixBallot(cipher_2, v2);
@@ -77,16 +77,16 @@ public class TestMixnet {
 
     @Test
     void TestMixnet() {
-        CipherText cipher_1 = elgamal.encrypt(BigInteger.valueOf(1), pk);
+        Ciphertext cipher_1 = elgamal.encrypt(BigInteger.valueOf(1), pk);
 
-        CipherText v1 = elgamal.encrypt(BigInteger.valueOf(100), pk);
+        Ciphertext v1 = elgamal.encrypt(BigInteger.valueOf(100), pk);
         // mb1 = (c1 = Enc(1),c2= Enc(v))
         MixBallot mb1 = new MixBallot(cipher_1, v1);
 
-        CipherText v2 = elgamal.encrypt(BigInteger.valueOf(101), pk);
+        Ciphertext v2 = elgamal.encrypt(BigInteger.valueOf(101), pk);
         MixBallot mb2 = new MixBallot(cipher_1, v2);
 
-        CipherText v3 = elgamal.encrypt(BigInteger.valueOf(102), pk);
+        Ciphertext v3 = elgamal.encrypt(BigInteger.valueOf(102), pk);
         MixBallot mb3 = new MixBallot(cipher_1, v3);
 //        CipherText b4 = elgamal.encrypt(BigInteger.valueOf(103),pk);
 //        MixnetStatement stmt = new MixnetStatement(Arrays.asList(b1,b2,b3,b4));

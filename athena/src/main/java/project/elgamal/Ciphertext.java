@@ -3,19 +3,19 @@ package project.elgamal;
 import java.math.BigInteger;
 import java.util.Objects;
 
-public class CipherText {
+public class Ciphertext {
     public BigInteger c1;
     public BigInteger c2;
 
-    public CipherText(BigInteger c1, BigInteger c2) {
+    public Ciphertext(BigInteger c1, BigInteger c2) {
         this.c1 = c1;
         this.c2 = c2;
     }
 
-    public CipherText modPow(BigInteger x, BigInteger p) {
+    public Ciphertext modPow(BigInteger x, BigInteger p) {
         BigInteger c1 = this.c1.modPow(x, p);
         BigInteger c2 = this.c2.modPow(x, p);
-        return new CipherText(c1, c2);
+        return new Ciphertext(c1, c2);
     }
     
     @Override
@@ -25,7 +25,7 @@ public class CipherText {
 
     
 
-    public CipherText multiply(CipherText c, BigInteger p) {
+    public Ciphertext multiply(Ciphertext c, BigInteger p) {
         // TODO: Enforce mod p. User of function should not decide. Maybee include public key or group in fields?
         if (p == null) {
             throw new IllegalArgumentException("Missing group p ");
@@ -33,22 +33,22 @@ public class CipherText {
         BigInteger _c1 = this.c1.multiply(c.c1).mod(p);
         BigInteger _c2 = this.c2.multiply(c.c2).mod(p);
 
-        return new CipherText(_c1, _c2);
+        return new Ciphertext(_c1, _c2);
     }
     
 
-    public CipherText modInverse(BigInteger p) {
+    public Ciphertext modInverse(BigInteger p) {
         BigInteger _c1 = this.c1.modInverse(p);
         BigInteger _c2 = this.c2.modInverse(p);
 
-        return new CipherText(_c1, _c2);
+        return new Ciphertext(_c1, _c2);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CipherText that = (CipherText) o;
+        Ciphertext that = (Ciphertext) o;
         return Objects.equals(c1, that.c1) && Objects.equals(c2, that.c2);
     }
 

@@ -12,4 +12,15 @@ public class MixProof {
         this.shadowMixes = shadowMixes;
         this.shadowSecrets = shadowSecrets;
     }
+
+
+    @Override
+    public String toString() {
+        return "MixProof{" + "..." + "}";
+
+//        return "MixProof{" +
+//                "shadowMixes=" + shadowMixes +
+//                ", shadowSecrets=" + shadowSecrets +
+//                '}';
+    }
 }

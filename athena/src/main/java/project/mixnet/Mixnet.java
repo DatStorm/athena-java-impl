@@ -4,10 +4,9 @@ import com.google.common.primitives.Bytes;
 import project.CONSTANTS;
 import project.UTIL;
 import project.dao.mixnet.*;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
-import project.factory.Factory;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -22,24 +21,13 @@ public class Mixnet {
     private final BigInteger p;
     private final BigInteger q;
 
-    public Mixnet(MessageDigest hashH, Random random, ElGamal elgamal, ElGamalPK pk ) {
+    public Mixnet(MessageDigest hashH, ElGamal elgamal, ElGamalPK pk, Random random) {
         this.hashH = hashH;
         this.elgamal = elgamal;
         this.random = random;
         this.pk = pk;
-        this.p = this.pk.getGroup().getP();
-        this.q = this.pk.getGroup().getQ();
-    }
-
-    public Mixnet(MessageDigest hash, Random random) {
-        this.hashH = hash;
-        this.random = random;
-
-        System.out.println("Mixnet.Mixnet constructor:: Elgamal missing....");
-        this.elgamal = null;
-        this.pk = null;
-        this.p = null;
-        this.q = null;
+        this.p = this.pk.group.p;
+        this.q = this.pk.group.q;
     }
 
     //Reencrypts and permutes the ballots. Returns the mixed ballots and secret(permutation and reencryption randomness).
@@ -59,12 +47,12 @@ public class Mixnet {
             BigInteger si = UTIL.getRandomElement(BigInteger.ZERO, q, random);
 
             //Make reencryption ciphertets
-            CipherText reencryptRi = elgamal.encrypt(BigInteger.ONE, pk, ri);
-            CipherText reencryptSi = elgamal.encrypt(BigInteger.ONE, pk, si);
+            Ciphertext reencryptRi = elgamal.encrypt(BigInteger.ONE, pk, ri);
+            Ciphertext reencryptSi = elgamal.encrypt(BigInteger.ONE, pk, si);
 
             //Reencrypt
-            CipherText c1 = ballot.getC1().multiply(reencryptRi, p);
-            CipherText c2 = ballot.getC2().multiply(reencryptSi, p);
+            Ciphertext c1 = ballot.getC1().multiply(reencryptRi, p);
+            Ciphertext c2 = ballot.getC2().multiply(reencryptSi, p);
             MixBallot reencryptedBallot = new MixBallot(c1, c2);
 
             //Store randomness
@@ -227,12 +215,12 @@ public class Mixnet {
             MixBallot destinationBallot = destinationMix.get(i);
 
             //c1 * Enc(1,R)
-            CipherText reencryptionFactorR = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessR.get(i));
-            CipherText c1 = destinationBallot.getC1().multiply(reencryptionFactorR, p);
+            Ciphertext reencryptionFactorR = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessR.get(i));
+            Ciphertext c1 = destinationBallot.getC1().multiply(reencryptionFactorR, p);
 
             //c2 * Enc(1,S)
-            CipherText reencryptionFactorS = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessS.get(i));
-            CipherText c2 = destinationBallot.getC2().multiply(reencryptionFactorS, p);
+            Ciphertext reencryptionFactorS = this.elgamal.encrypt(BigInteger.ONE, pk, randomnessS.get(i));
+            Ciphertext c2 = destinationBallot.getC2().multiply(reencryptionFactorS, p);
 
             reencryptedSourceMix.add(new MixBallot(c1, c2));
         }

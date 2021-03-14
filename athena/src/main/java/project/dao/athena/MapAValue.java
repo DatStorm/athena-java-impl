@@ -1,15 +1,15 @@
 package project.dao.athena;
 
 import project.dao.mixnet.MixBallot;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 
 public class MapAValue {
     private final int counter;
-    private final CipherText homoCombPubCredAndEncNegatedPrivCred;
-    private final CipherText encryptedVote;
+    private final Ciphertext homoCombPubCredAndEncNegatedPrivCred;
+    private final Ciphertext encryptedVote;
 
 
-    public MapAValue(int counter, CipherText homoCombPubCredAndEncNegatedPrivCred, CipherText encryptedVote) {
+    public MapAValue(int counter, Ciphertext homoCombPubCredAndEncNegatedPrivCred, Ciphertext encryptedVote) {
         this.counter = counter;
         this.homoCombPubCredAndEncNegatedPrivCred = homoCombPubCredAndEncNegatedPrivCred;
         this.encryptedVote = encryptedVote;
@@ -19,17 +19,24 @@ public class MapAValue {
         return counter;
     }
 
-    public CipherText getHomoCombPubCredAndEncNegatedPrivCred() {
+    public Ciphertext getHomoCombPubCredAndEncNegatedPrivCred() {
         return homoCombPubCredAndEncNegatedPrivCred;
     }
 
-    public CipherText getEncryptedVote() {
+    public Ciphertext getEncryptedVote() {
         return encryptedVote;
     }
-    
+
     public MixBallot toMixBallot() {
-         return new MixBallot(this.homoCombPubCredAndEncNegatedPrivCred, this.encryptedVote);
-        }
-    
-    
+        return new MixBallot(this.homoCombPubCredAndEncNegatedPrivCred, this.encryptedVote);
+    }
+
+    @Override
+    public String toString() {
+        return "MapAValue{" +
+                "counter=" + counter +
+                ", homoCombPubCredAndEncNegatedPrivCred=" + homoCombPubCredAndEncNegatedPrivCred +
+                ", encryptedVote=" + encryptedVote +
+                '}';
+    }
 }

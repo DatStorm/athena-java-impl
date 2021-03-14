@@ -6,7 +6,7 @@ import project.dao.athena.PFDStruct;
 import project.dao.athena.PFRStruct;
 import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixProof;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -50,12 +50,12 @@ public class BulletinBoard {
      */
     public MixProof retrieveMixProof() { return this.getMixProof(); }
     public List<Ballot> retrievePublicBallots() { return this.getBallots(); }
-    public boolean electoralRollContains(CipherText publicCredential) { return this.electoralRoll.contains(publicCredential); }
+    public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
 //    public void addAllBallots(List<Ballot> toAddBallots) {
 //        printUpdate();
 //        this.ballots.addAll(toAddBallots);
 //    }
-    public void addPublicCredentitalToL(CipherText publicCredential_pd) {
+    public void addPublicCredentitalToL(Ciphertext publicCredential_pd) {
         printUpdate();
         this.electoralRoll.add(publicCredential_pd);
     }
@@ -138,16 +138,33 @@ public class BulletinBoard {
         }
         b_res.append("                             ").append("]");
 
+        StringBuilder mb_res = new StringBuilder();
+        mb_res.append("[");
+        boolean first_mb = true;
+        for (MixBallot mb : mixBallots) {
+            if (first_mb) {
+                mb_res.append(mb.toShortString()).append(", ").append("\n");
+                first_mb = false;
+            }else{
 
-//        System.out.println("-----------------------------");
-//        System.out.println("BulletinBoard  -- UPDATE --  ");
-//        System.out.println("ballots=                     " + b_res.toString());
-//        System.out.println("PfrList=                     " + PfrList);
-//        System.out.println("PfdList=                     " + PfdList);
-//        System.out.println("mixProof=                    " + mixProof);
-//        System.out.println("electoralRoll=              L" + electoralRoll);
-//        System.out.println("mixBallots=                  " + mixBallots);
-//        System.out.println("-----------------------------");
+                mb_res.append("                             ").append(mb.toShortString()).append(", ").append("\n");
+            }
+
+        }
+        mb_res.append("                             ").append("]");
+
+
+
+
+        System.out.println("-----------------------------");
+        System.out.println("BulletinBoard  -- UPDATE --  ");
+        System.out.println("ballots=                     " + b_res.toString());
+        System.out.println("PfrList=                     " + PfrList);
+        System.out.println("PfdList=                     " + PfdList);
+        System.out.println("mixProof=                    " + mixProof);
+        System.out.println("electoralRoll=              L" + electoralRoll);
+        System.out.println("mixBallots=                  " + mb_res.toString());
+        System.out.println("-----------------------------");
     }
 
 

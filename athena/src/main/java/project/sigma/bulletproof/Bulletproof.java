@@ -50,7 +50,7 @@ public class Bulletproof {
          *********/
         //Extract bit representations from m, s.t. <a_L, 2^n> = m
         List<BigInteger> a_L = extractBits(m, n);
-        assert a_L.size() == n : "|a_L| != n";
+        assert a_L.size() == n : "|" + a_L.toString() + "| != n";
 
         // a_R = a_L - 1 mod q
         List<BigInteger> a_R = UTIL.subtractLists(a_L, _1n_vector, q);
@@ -388,6 +388,10 @@ public class Bulletproof {
     // m => bit representation of m
     public List<BigInteger> extractBits(BigInteger m, int n) {
         String bitsString = m.toString(2);
+
+        if(bitsString.length() > n) {
+            throw new IllegalArgumentException("Cannot extract bits. m takes more than n bits");
+        }
 
         //Extract bits
         List<BigInteger> bits = new ArrayList<>(n);
