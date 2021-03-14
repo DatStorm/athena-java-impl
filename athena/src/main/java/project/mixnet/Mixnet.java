@@ -21,24 +21,13 @@ public class Mixnet {
     private final BigInteger p;
     private final BigInteger q;
 
-    public Mixnet(MessageDigest hashH, Random random, ElGamal elgamal, ElGamalPK pk ) {
+    public Mixnet(MessageDigest hashH, ElGamal elgamal, ElGamalPK pk, Random random) {
         this.hashH = hashH;
         this.elgamal = elgamal;
         this.random = random;
         this.pk = pk;
-        this.p = this.pk.getGroup().getP();
-        this.q = this.pk.getGroup().getQ();
-    }
-
-    public Mixnet(MessageDigest hash, Random random) {
-        this.hashH = hash;
-        this.random = random;
-
-        System.out.println("Mixnet.Mixnet constructor:: Elgamal missing....");
-        this.elgamal = null;
-        this.pk = null;
-        this.p = null;
-        this.q = null;
+        this.p = this.pk.group.p;
+        this.q = this.pk.group.q;
     }
 
     //Reencrypts and permutes the ballots. Returns the mixed ballots and secret(permutation and reencryption randomness).

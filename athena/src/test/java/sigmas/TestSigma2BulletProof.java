@@ -24,8 +24,6 @@ import static project.UTIL.getRandomElement;
 @Tag("TestsSigma2BulletProof")
 @DisplayName("Test Sigma2 BulletProof")
 public class TestSigma2BulletProof {
-
-
     private ElGamalPK pk;
     private Bulletproof sigma2;
     private Random random;

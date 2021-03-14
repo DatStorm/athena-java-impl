@@ -32,12 +32,11 @@ public class AthenaImpl implements Athena {
 
     private final Sigma1 sigma1;
     private final Random random;
-    //    private final Sigma2 sigma2;
     private final Bulletproof bulletProof;
 
     private final Sigma3 sigma3;
     private final Sigma4 sigma4;
-    private final Mixnet mixnet;
+    private Mixnet mixnet;
     private final BulletinBoard bb;
     private boolean initialised;
     private ElGamal elgamal;
@@ -49,16 +48,16 @@ public class AthenaImpl implements Athena {
     private int n_vote;
     private int n_negatedPrivateCredential;
 
-    private AthenaFactory athenaFacotry;
+    private AthenaFactory athenaFactory;
 
 
     public AthenaImpl(AthenaFactory athenaFactory) {
-        this.athenaFacotry = athenaFactory;
+        this.athenaFactory = athenaFactory;
+
         this.sigma1 = athenaFactory.getSigma1();
         this.bulletProof = athenaFactory.getBulletProof();
         this.sigma3 = athenaFactory.getSigma3();
         this.sigma4 = athenaFactory.getSigma4();
-        this.mixnet = athenaFactory.getMixnet();
         this.random = athenaFactory.getRandom();
         this.bb = athenaFactory.getBulletinBoard();
 
@@ -71,9 +70,11 @@ public class AthenaImpl implements Athena {
 
         Gen gen = new Gen(random, kappa);
         ElGamalSK sk = gen.generate();
-        ElGamalPK pk = sk.getPK();
-        Group group = pk.getGroup();
+        ElGamalPK pk = sk.pk;
+        Group group = pk.group;
         this.elgamal = gen.getElGamal(); // TODO: HER!!!!
+
+        this.mixnet = athenaFactory.getMixnet(elgamal, pk);
 
         PublicInfoSigma1 publicInfo = new PublicInfoSigma1(kappa, pk);
         Randomness randR = new Randomness(this.random.nextLong());

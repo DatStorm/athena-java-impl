@@ -1,6 +1,8 @@
 package project.factory;
 
 import project.athena.BulletinBoard;
+import project.elgamal.ElGamal;
+import project.elgamal.ElGamalPK;
 import project.mixnet.Mixnet;
 import project.sigma.Sigma1;
 import project.sigma.Sigma3;
@@ -19,7 +21,7 @@ public interface AthenaFactory {
     Sigma3 getSigma3();
     
     Sigma4 getSigma4();
-    Mixnet getMixnet();
+    Mixnet getMixnet(ElGamal elgamal, ElGamalPK pk);
     Random getRandom();
 
     MessageDigest getHash();
