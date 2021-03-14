@@ -236,8 +236,6 @@ public class AthenaImpl implements Athena {
         bb.publishMixBallots(B);
 
 
-
-
         /* ********
          * Step 3: Reveal eligible votes
          *********/
@@ -365,7 +363,7 @@ public class AthenaImpl implements Athena {
 
             // FIXME: Changed from .replace() since it did nothing
             // A[publicCredential, N] <- (counter, publicCredential * encryptedNegatedPrivateCredential, encyptedVote)
-            A.put(key, updatedValue);
+            A.put(key, updatedValue); // BEFORE .replace(...), AFTER: put(...)
 
         } else if (existingValue.getCounter() == counter) { // Disregard duplicate counters
             MapAValue nullEntry = new MapAValue(counter, null, null);
