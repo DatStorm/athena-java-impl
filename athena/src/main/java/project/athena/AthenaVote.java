@@ -88,7 +88,7 @@ public class AthenaVote {
 
 
         // Get public values from bb.
-        int rangeBitlengthOfNegatedPrivateCredential = bb.retrieveRangeNumberNegatedPrivCred(); 
+        int rangeBitlengthOfNegatedPrivateCredential = bb.retrieveRangeBitLengthOfNegatedPrivateCredential(); 
         List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
         List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
 
@@ -104,7 +104,7 @@ public class AthenaVote {
 //        BulletproofProof proofRangeOfNegatedPrivateCredential = null;
 
 
-        int rangeBitlengthOfVote = bb.retrieveRangeNumberVote();
+        int rangeBitlengthOfVote = bb.retrieveRangeBitLengthOfVote();
         List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
         List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
 

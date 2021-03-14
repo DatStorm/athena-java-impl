@@ -29,8 +29,8 @@ public class AthenaImpl implements Athena {
 
     private boolean initialised;
     private BigInteger mc;
-    private int n_vote;
-    private int n_negatedPrivateCredential;
+    private int rangeBitLengthOfVote;
+    private int rangeBitLengthOfNegatedPrivateCredential;
 
     private final AthenaFactory athenaFactory;
 
@@ -69,21 +69,21 @@ public class AthenaImpl implements Athena {
         Randomness randR = new Randomness(this.random.nextLong());
         ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
 
-        this.n_vote = 3;                          // This is a function of nc. TODO: FIX THESE VALUES
-        this.n_negatedPrivateCredential = 3;      // This is a function of q. TODO: FIX THESE VALUES
+        this.rangeBitLengthOfVote = 4;                          // This is a function of nc. TODO: FIX THESE VALUES             log_2(nc)
+        this.rangeBitLengthOfNegatedPrivateCredential = kappa;      // This is a function of q. TODO: FIX THESE VALUES       log_2(q)
         int mb = 100;                             // TODO: FIX THESE VALUES
-        this.mc = BigInteger.ZERO;                // TODO: Practical: must be of reasonable size. Theoretical: This needs to be within Z_q, i.e. v \in [0,..,nc-1] then mc =< q.
+        this.mc = BigInteger.valueOf(11);                // TODO: Practical: must be of reasonable size. Theoretical: This needs to be within Z_q, i.e. v \in [0,..,nc-1] then mc =< q.
 
-        List<BigInteger> g_vector_vote = group.newGenerators(n_vote, random);
-        List<BigInteger> h_vector_vote = group.newGenerators(n_vote, random);
-        List<BigInteger> g_vector_negatedPrivateCredential = group.newGenerators(n_negatedPrivateCredential, random);
-        List<BigInteger> h_vector_negatedPrivateCredential = group.newGenerators(n_negatedPrivateCredential, random);
+        List<BigInteger> g_vector_vote = group.newGenerators(rangeBitLengthOfVote, random);
+        List<BigInteger> h_vector_vote = group.newGenerators(rangeBitLengthOfVote, random);
+        List<BigInteger> g_vector_negatedPrivateCredential = group.newGenerators(rangeBitLengthOfNegatedPrivateCredential, random);
+        List<BigInteger> h_vector_negatedPrivateCredential = group.newGenerators(rangeBitLengthOfNegatedPrivateCredential, random);
 
         bb.publishNumberOfCandidates(nc);
 
-        bb.publishRangeNumberVote(n_vote);
+        bb.publishRangeNumberVote(rangeBitLengthOfVote);
 
-        bb.publishRangeNumberNegatedPrivCred(n_negatedPrivateCredential);
+        bb.publishRangeNumberNegatedPrivCred(rangeBitLengthOfNegatedPrivateCredential);
 
 
         bb.publish_G_VectorVote(g_vector_vote);

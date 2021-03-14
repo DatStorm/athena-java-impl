@@ -287,7 +287,7 @@ public class Bulletproof {
 
         // Second check equation (66-67), see line 44 and 47 for the provers role in this
         // FIXME: TODO: this has to be a vector according to the completeness
-        List<BigInteger> z_vector_negated = generateConstList(z.negate().mod(q).add(q).mod(q), n); 
+        List<BigInteger> z_vector_negated = generateConstList(z.negate().mod(q).add(q).mod(q), n);
 
         // g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}
         List<BigInteger> exponentTemp_z_mult_Yn = generateListMultWithBigInt(yn_vector, z, q);
@@ -390,7 +390,7 @@ public class Bulletproof {
         String bitsString = m.toString(2);
 
         if(bitsString.length() > n) {
-            throw new IllegalArgumentException("Cannot extract bits. m takes more than n bits");
+            throw new IllegalArgumentException("Cannot extract bits. m takes more than n bits bitsString.length()=" + bitsString.length() + " >n=" + n);
         }
 
         //Extract bits

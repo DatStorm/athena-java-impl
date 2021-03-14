@@ -55,8 +55,8 @@ public class BulletinBoard {
     public List<BigInteger> retrieve_H_VectorNegPrivCred() { return this.getH_vector_negatedPrivateCredential(); }
     public List<BigInteger> retrieve_G_VectorVote() { return this.getG_vector_vote(); }
     public List<BigInteger> retrieve_H_VectorVote() { return this.getH_vector_vote(); }
-    public int retrieveRangeNumberVote() { return this.getRangeNumberVote(); }                          // TODO: Rename to retrieveRangeBitlengthOfVote
-    public int retrieveRangeNumberNegatedPrivCred() { return this.getRangeNumberNegatedPrivCred(); }    // TODO: Rename to retrieveRangeBitlengthOfNegatedPrivateCredential
+    public int retrieveRangeBitLengthOfVote() { return this.getRangeNumberVote(); }
+    public int retrieveRangeBitLengthOfNegatedPrivateCredential() { return this.getRangeNumberNegatedPrivCred(); }
     public List<Ballot> retrievePublicBallots() { return this.getBallots(); }
     public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
     public void addPublicCredentitalToL(Ciphertext publicCredential_pd) { d();this.electoralRoll.add(publicCredential_pd); }
@@ -67,7 +67,7 @@ public class BulletinBoard {
      * Public Publish values
      */
     public void publishPKV(PK_Vector pkv) { this.setPkv(pkv); }
-    public void publishPF(PFStruct pf) { this.setPf(pf); }
+    public void publishPF(PFStruct pf) {  this.setPf(pf); d(); }
     public void publishNumberOfCandidates(int nc) { this.setNc(nc); }
     public void publish_G_VectorVote(List<BigInteger> g_vector_vote) { this.setG_vector_vote(g_vector_vote); }
     public void publishBallot(Ballot ballot) { this.addBallot(ballot); }
@@ -76,7 +76,7 @@ public class BulletinBoard {
     public void publish_H_VectorVote(List<BigInteger> h_vector_vote) { this.setH_vector_vote(h_vector_vote); }
     public void publish_G_VectorNegPrivCred(List<BigInteger> g_vector_negatedPrivateCredential) { this.setG_vector_negatedPrivateCredential(g_vector_negatedPrivateCredential); }
     public void publish_H_VectorNegPrivCred(List<BigInteger> h_vector_negatedPrivateCredential) { this.setH_vector_negatedPrivateCredential(h_vector_negatedPrivateCredential); }
-    public void publishTallyOfVotes(Map<BigInteger, Integer> tallyOfVotes) { d();this.setTallyOfVotes(tallyOfVotes); }
+    public void publishTallyOfVotes(Map<BigInteger, Integer> tallyOfVotes) { this.setTallyOfVotes(tallyOfVotes); d(); }
 
 
 

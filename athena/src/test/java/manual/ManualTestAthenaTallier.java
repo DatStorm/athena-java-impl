@@ -23,6 +23,8 @@ public class ManualTestAthenaTallier {
         // Setup the election
         Tallier tallier = new Tallier(athena, bb, kappa, nc);
         tallier.init();
+        System.out.println("--> Setup done");
+
 
         // Create voters
         int numVoters = 2;
@@ -42,13 +44,17 @@ public class ManualTestAthenaTallier {
         // Vote
         voter1.castVote(7);
         voter2.castVote(3);
+        System.out.println("--> Voter1, Voter2 casted votes");
 
         //Tally the votes
+        System.out.println("--> Tally all votes");
         tallier.tallyVotes();
+
 
         // Verify tally
         Verifier verifier = new Verifier(athena, bb);
         verifier.init();
+        System.out.println("--> Verify Election");
         boolean success = verifier.verifyElection();
 
         System.out.println("DOES WE SUCCED? " + (success ? "YES" : "NO"));

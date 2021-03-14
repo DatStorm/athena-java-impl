@@ -62,8 +62,8 @@ public class AthenaVerify {
         ElGamalPK pk = pkv.pk;
 
         // tallyVotes length should contain at most nc elements
-        if (tallyOfVotes.keySet().size() != nc) {
-            System.err.println("AthenaImpl.Verify => ERROR: tallyOfVotes.keySet().size()=" + tallyOfVotes.keySet().size() + " != nc=" + nc);
+        if (tallyOfVotes.keySet().size() > nc) {
+            System.err.println("AthenaImpl.Verify => ERROR: tallyOfVotes.keySet().size()=" + tallyOfVotes.keySet().size() + " > nc=" + nc);
             return false;
         }
 
@@ -75,7 +75,7 @@ public class AthenaVerify {
 
         // Check that the number of candidates nc in the given election does not exceed the maximum number mc.
         if (BigInteger.valueOf(nc).compareTo(this.mc) > 0) { // if nc > mc
-            System.err.println("AthenaImpl.Verify => ERROR: nc > mc");
+            System.err.println("AthenaImpl.Verify => ERROR: nc= " + nc + " > mc=" + mc);
             return false;
         }
 
@@ -200,7 +200,8 @@ public class AthenaVerify {
 
             boolean veri_dec = sigma3.verifyDecryption(ci_prime, Ni, pk, sigma_i, kappa);
             if (!veri_dec) {
-                System.err.println("AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption");
+                System.err.println(i + ": AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption");
+                System.out.println(i + ": ci_prime = " + ci_prime + ", Ni = " + Ni + ", sigma_i = " + sigma_i);
                 return false;
             }
         }
