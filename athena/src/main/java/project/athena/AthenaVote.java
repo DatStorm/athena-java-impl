@@ -88,13 +88,13 @@ public class AthenaVote {
 
 
         // Get public values from bb.
-        int n_negatedPrivateCredential = bb.retrieveNumberfNegatedPrivCred();
+        int rangeBitlengthOfNegatedPrivateCredential = bb.retrieveRangeNumberNegatedPrivCred(); 
         List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
         List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
 
         // Prove that negated private credential -d resides in Z_q (this is defined using n)
         BulletproofStatement stmnt_1 = new BulletproofStatement(
-                n_negatedPrivateCredential,
+                rangeBitlengthOfNegatedPrivateCredential,
                 encryptedNegatedPrivateCredential.c2,
                 pk,
                 g_vector_negatedPrivateCredential,
@@ -104,14 +104,14 @@ public class AthenaVote {
 //        BulletproofProof proofRangeOfNegatedPrivateCredential = null;
 
 
-        int n_vote = bb.retrieveNumberOfVotes();
+        int rangeBitlengthOfVote = bb.retrieveRangeNumberVote();
         List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
         List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
 
 
         // Prove that vote v resides in [0,nc-1] (this is defined using n)
         BulletproofStatement stmnt_2 = new BulletproofStatement(
-                n_vote,
+                rangeBitlengthOfVote,
                 encryptedVote.c2,
                 pk,
                 g_vector_vote,
@@ -134,7 +134,7 @@ public class AthenaVote {
 
 
 
-        
+
 
         public Builder setSigma1(Sigma1 sigma1) {
             this.sigma1 = sigma1;

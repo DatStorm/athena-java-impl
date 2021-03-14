@@ -26,11 +26,18 @@ public class UTIL {
      * @return byt[] of all elements in the list.
      * @throws IOException
      */
-    public static byte[] ARRAYLIST_TO_BYTE_ARRAY(ArrayList<BigInteger> list) throws IOException {
+    public static byte[] ARRAYLIST_TO_BYTE_ARRAY(ArrayList<BigInteger> list)  {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
         for (BigInteger el : list) {
-            stream.write(el.toByteArray());
+            try {
+                
+                stream.write(el.toByteArray());
+            } catch (IOException e) {
+                
+                e.printStackTrace();
+                System.out.println("UTIL.ARRAYLIST_TO_BYTE_ARRAY------------------> ERROR!!! ");
+            }
         }
         return stream.toByteArray();
     }

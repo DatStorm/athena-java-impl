@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.athena.AthenaImpl;
-import project.dao.athena.SetupStruct;
+import project.dao.athena.ElectionSetup;
 import project.factory.MainAthenaFactory;
 
 
@@ -18,8 +18,11 @@ import static org.junit.Assert.*;
 @Tag("TestsAthenaSetup")
 @DisplayName("Test Athena Setup")
 public class TestAthenaSetup {
-    MainAthenaFactory maFactory;
     private final int kappa = CONSTANTS.KAPPA;
+    private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
+
+    MainAthenaFactory maFactory;
+
 
 
     @BeforeEach
@@ -29,10 +32,10 @@ public class TestAthenaSetup {
 
 
     @Test
-    void TestAthenaSetup() throws IOException {
+    void TestAthenaSetup() {
 
         AthenaImpl athena = new AthenaImpl(maFactory);
-        SetupStruct setup = athena.Setup(kappa);
+        ElectionSetup setup = athena.Setup(kappa, nc);
 
         assertNotEquals("Should not be 0", 0, setup.mb);
         assertNotEquals("Should not be 0", 0, setup.mc);

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import project.CONSTANTS;
 import project.dao.mixnet.*;
 import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
@@ -25,7 +26,9 @@ import static org.junit.Assert.assertTrue;
 @Tag("TestsMixnets")
 @DisplayName("Test Mixnet")
 public class TestMixnet {
+    private int kappa = CONSTANTS.KAPPA;
 
+    
     private Mixnet mixnet;
     private ElGamal elgamal;
     private ElGamalPK pk;
@@ -96,9 +99,9 @@ public class TestMixnet {
         MixStruct mixStruct = mixnet.mix(ballots);
 
         MixStatement statement = new MixStatement(ballots, mixStruct.mixedBallots);
-        MixProof proof = mixnet.proveMix(statement, mixStruct.secret);
+        MixProof proof = mixnet.proveMix(statement, mixStruct.secret, kappa);
 
-        boolean verification = mixnet.verify(statement, proof);
+        boolean verification = mixnet.verify(statement, proof, kappa);
 
         assertTrue("Should return 1: " + verification, verification);
     }

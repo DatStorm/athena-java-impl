@@ -7,9 +7,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.athena.AthenaImpl;
-import project.dao.athena.PK_Vector;
 import project.dao.athena.RegisterStruct;
-import project.dao.athena.SetupStruct;
+import project.dao.athena.ElectionSetup;
 import project.factory.MainAthenaFactory;
 
 import java.io.IOException;
@@ -23,6 +22,7 @@ public class TestAthenaRegister {
 
     MainAthenaFactory msFactory;
     private final int kappa = CONSTANTS.KAPPA;
+    private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
 
 
     @BeforeEach
@@ -31,9 +31,9 @@ public class TestAthenaRegister {
     }
 
     @Test
-    void TestAthenaRegister() throws IOException {
+    void TestAthenaImplRegister() {
         AthenaImpl athena = new AthenaImpl(msFactory);
-        SetupStruct setup = athena.Setup(kappa);
+        ElectionSetup setup = athena.Setup(kappa, nc);
 
         RegisterStruct register = athena.Register(setup.pkv);
 

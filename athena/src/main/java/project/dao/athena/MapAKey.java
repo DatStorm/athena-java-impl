@@ -10,7 +10,7 @@ public class MapAKey {
 
     public MapAKey(Ciphertext counterBallot, BigInteger noncedNegatedPrivateCredential) {
 
-        this.counterBallot = counterBallot; // TODO: rename to counterBallot
-        this.noncedNegatedPrivateCredential = noncedNegatedPrivateCredential; // TODO: rename to decryptedCombinationEncryptedPrivateCredential
+        this.counterBallot = counterBallot; 
+        this.noncedNegatedPrivateCredential = noncedNegatedPrivateCredential; 
     }
 }

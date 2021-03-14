@@ -1,17 +1,9 @@
 package project.athena;
 
-import org.apache.commons.lang3.tuple.Pair;
-import project.UTIL;
 import project.dao.Randomness;
 import project.dao.athena.*;
-import project.dao.mixnet.MixBallot;
-import project.dao.mixnet.MixProof;
-import project.dao.mixnet.MixStatement;
-import project.dao.mixnet.MixStruct;
 import project.dao.sigma1.ProveKeyInfo;
 import project.dao.sigma1.PublicInfoSigma1;
-import project.dao.sigma3.Sigma3Proof;
-import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.*;
 import project.factory.AthenaFactory;
 import project.mixnet.Mixnet;
@@ -20,14 +12,10 @@ import project.sigma.Sigma3;
 import project.sigma.Sigma4;
 import project.sigma.bulletproof.Bulletproof;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class AthenaImpl implements Athena {
-    private final ElectoralRoll L;
 
     private final Sigma1 sigma1;
     private final Bulletproof bulletProof;
@@ -44,7 +32,7 @@ public class AthenaImpl implements Athena {
     private int n_vote;
     private int n_negatedPrivateCredential;
 
-    private AthenaFactory athenaFactory;
+    private final AthenaFactory athenaFactory;
 
 
     public AthenaImpl(AthenaFactory athenaFactory) {
@@ -57,12 +45,12 @@ public class AthenaImpl implements Athena {
         this.random = athenaFactory.getRandom();
         this.bb = athenaFactory.getBulletinBoard();
 
-        this.L = new ElectoralRoll();
         this.initialised = false;
     }
 
     @Override
-    public SetupStruct Setup(int kappa) throws IOException {
+    public ElectionSetup Setup(int kappa, int nc) {
+
 
         if (this.initialised) {
             System.err.println("AthenaImpl.Setup => ERROR: System not initialised call .Setup before hand");
@@ -73,7 +61,7 @@ public class AthenaImpl implements Athena {
         ElGamalSK sk = gen.generate();
         ElGamalPK pk = sk.pk;
         Group group = pk.group;
-        this.elgamal = gen.getElGamal(); // TODO: HER!!!!
+        this.elgamal = gen.getElGamal(); // TODO: HER!!!! Return this in the setupstruct
 
         this.mixnet = athenaFactory.getMixnet(elgamal, pk);
 
@@ -84,23 +72,31 @@ public class AthenaImpl implements Athena {
         this.n_vote = 3;                          // This is a function of nc. TODO: FIX THESE VALUES
         this.n_negatedPrivateCredential = 3;      // This is a function of q. TODO: FIX THESE VALUES
         int mb = 100;                             // TODO: FIX THESE VALUES
-        this.mc = pk.group.q; // This needs to be within Z_q, i.e. v \in [0,..,nc-1] then mc =< q.
+        this.mc = BigInteger.ZERO;                // TODO: Practical: must be of reasonable size. Theoretical: This needs to be within Z_q, i.e. v \in [0,..,nc-1] then mc =< q.
 
         List<BigInteger> g_vector_vote = group.newGenerators(n_vote, random);
         List<BigInteger> h_vector_vote = group.newGenerators(n_vote, random);
         List<BigInteger> g_vector_negatedPrivateCredential = group.newGenerators(n_negatedPrivateCredential, random);
         List<BigInteger> h_vector_negatedPrivateCredential = group.newGenerators(n_negatedPrivateCredential, random);
 
-        bb.publishNumberOfVotes(n_vote);
-        bb.publishNumberfNegatedPrivCred(n_negatedPrivateCredential);
+        bb.publishNumberOfCandidates(nc);
+
+        bb.publishRangeNumberVote(n_vote);
+
+        bb.publishRangeNumberNegatedPrivCred(n_negatedPrivateCredential);
+
+
         bb.publish_G_VectorVote(g_vector_vote);
         bb.publish_H_VectorVote(h_vector_vote);
         bb.publish_G_VectorNegPrivCred(g_vector_negatedPrivateCredential);
         bb.publish_H_VectorNegPrivCred(h_vector_negatedPrivateCredential);
 
 
+        PK_Vector pkv = new PK_Vector(pk, rho);
+        bb.publishPKV(pkv);
+
         this.initialised = true;
-        return new SetupStruct(new PK_Vector(pk, rho), sk, mb, mc);
+        return new ElectionSetup(pkv, sk, mb, mc, nc, elgamal);
     }
 
 
@@ -110,7 +106,6 @@ public class AthenaImpl implements Athena {
             System.err.println("AthenaImpl.Register => ERROR: System not initialised call .Setup before hand");
             return null;
         }
-
         return new AthenaRegister.Builder()
                 .setBB(this.bb)
                 .setRandom(this.random)
@@ -174,7 +169,6 @@ public class AthenaImpl implements Athena {
                 .Verify(pkv, nc, tallyOfVotes, pf);
 
     }
-
 
 }
 

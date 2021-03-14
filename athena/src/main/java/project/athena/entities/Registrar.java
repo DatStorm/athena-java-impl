@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
  * - Invoke Register() to contruct credentials and add the public credential to Electoral Roll on BulletinBoard.
  * -  Issue credentials privately to each voter.
  **/
-public class Registrar {
+public class Registrar implements Entity{
     private List<CredentialTuple> credentialList;
     private Athena athena;
     private BulletinBoard bulletinBoard;

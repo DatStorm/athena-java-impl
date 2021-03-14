@@ -287,7 +287,7 @@ public class Bulletproof {
 
         // Second check equation (66-67), see line 44 and 47 for the provers role in this
         // FIXME: TODO: this has to be a vector according to the completeness
-        List<BigInteger> z_vector_negated = generateConstList(z.negate().mod(q).add(q).mod(q), n); // DO WE NEED TODO: THE MARK .add.mod trick as it is negative.
+        List<BigInteger> z_vector_negated = generateConstList(z.negate().mod(q).add(q).mod(q), n); 
 
         // g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}
         List<BigInteger> exponentTemp_z_mult_Yn = generateListMultWithBigInt(yn_vector, z, q);

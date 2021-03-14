@@ -7,38 +7,53 @@ import project.elgamal.Ciphertext;
 import java.math.BigInteger;
 
 public class PFDStruct {
+    enum Level {
+        VALID,
+        INVALID,
+    }
+
+    public final Level type;
     public final Ciphertext ciphertextCombination;
     public final BigInteger plaintext;
     public final Sigma4Proof proofCombination;
     public final Sigma3Proof proofDecryptionOfCombination;
     public final Sigma3Proof proofDecryptionVote;
-    private final boolean isM;
 
-
-    public PFDStruct(Ciphertext ciphertextCombination, BigInteger plaintext, Sigma4Proof proofCombination, Sigma3Proof proofDecryptionOfCombination, Sigma3Proof proofDecryptionVote) {
+    private PFDStruct(Level type, Ciphertext ciphertextCombination, BigInteger plaintext, Sigma4Proof proofCombination, Sigma3Proof proofDecryptionOfCombination, Sigma3Proof proofDecryptionVote) {
+        this.type = type;
         this.ciphertextCombination = ciphertextCombination;
         this.plaintext = plaintext; // In this case this is the vote
         this.proofCombination = proofCombination;
         this.proofDecryptionOfCombination = proofDecryptionOfCombination;
         this.proofDecryptionVote = proofDecryptionVote;
-        this.isM = true;
     }
-    
-    public PFDStruct(Ciphertext ciphertextCombination, BigInteger plaintext, Sigma4Proof proofCombination, Sigma3Proof proofDecryptionOfCombination) {
-        this.ciphertextCombination = ciphertextCombination;
-        this.plaintext = plaintext; // In this case this is m
-        this.proofCombination = proofCombination;
-        this.proofDecryptionOfCombination = proofDecryptionOfCombination;
-        this.proofDecryptionVote = null; //FIXME: handle this better
-        this.isM = false;
 
+    // When m = 1
+    public static PFDStruct newValid(Ciphertext ciphertextCombination, BigInteger plaintext, Sigma4Proof proofCombination, Sigma3Proof proofDecryptionOfCombination, Sigma3Proof proofDecryptionVote) {
+        return new PFDStruct(
+                Level.VALID,
+                ciphertextCombination,
+                plaintext,
+                proofCombination,
+                proofDecryptionOfCombination,
+                proofDecryptionVote);
+    }
+
+    // When m != 1
+    public static PFDStruct newInvalid(Ciphertext ciphertextCombination, BigInteger plaintext, Sigma4Proof proofCombination, Sigma3Proof proofDecryptionOfCombination) {
+        return new PFDStruct(
+                Level.INVALID,
+                ciphertextCombination,
+                plaintext,
+                proofCombination,
+                proofDecryptionOfCombination,
+                null);
     }
 
 
     @Override
     public String toString() {
-
-        return "PFD{" + (isM ? "m=" : "v=") + plaintext.toString().substring(0,5) + "}";
+        return "PFD{" + (type == Level.VALID ? "m=" : "v=") + plaintext.toString().substring(0, 5) + "}";
 
 
 //        return "PFDStruct{" +

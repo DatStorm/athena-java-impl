@@ -26,7 +26,7 @@ public class Sigma1 {
     }
 
     //input pk, sk,
-    public ProveKeyInfo ProveKey(PublicInfoSigma1 publicInfoSigma1, ElGamalSK sk, Randomness r, int kappa) throws IOException {
+    public ProveKeyInfo ProveKey(PublicInfoSigma1 publicInfoSigma1, ElGamalSK sk, Randomness r, int kappa) {
         Random random = new SecureRandom();
 
         // lists
@@ -88,7 +88,7 @@ public class Sigma1 {
 
 
 
-    private ArrayList<CoinFlipInfo> coinFlippingProtocol(Randomness r, BigInteger g, BigInteger h, int kappa, ArrayList<BigInteger> y1_yk) throws IOException {
+    private ArrayList<CoinFlipInfo> coinFlippingProtocol(Randomness r, BigInteger g, BigInteger h, int kappa, ArrayList<BigInteger> y1_yk) {
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = new ArrayList<>();
         Random coinRandom = new SecureRandom();
         Random hashRandom = new Random(r.getValue());
@@ -106,7 +106,7 @@ public class Sigma1 {
     }
 
 
-    public BigInteger hashH(byte[] fi, BigInteger g, BigInteger h, ArrayList<BigInteger> y1_yk) throws IOException {
+    public BigInteger hashH(byte[] fi, BigInteger g, BigInteger h, ArrayList<BigInteger> y1_yk)  {
 
 //        long long_r = r.getValue();
 //        byte[] rand_bytes = Longs.toByteArray(long_r);

@@ -13,7 +13,6 @@ import java.security.MessageDigest;
 import java.util.*;
 
 public class Mixnet {
-    private final int n = CONSTANTS.MIXNET_N;
     private final MessageDigest hashH;
     private final ElGamal elgamal;
     private final Random random;
@@ -72,14 +71,14 @@ public class Mixnet {
         return new MixStruct(mixedBallots, secret);
     }
 
-    public MixProof proveMix(MixStatement statement, MixSecret originalMixSecret) {
+    public MixProof proveMix(MixStatement statement, MixSecret originalMixSecret, int kappa) {
         List<MixBallot> ballots = statement.ballots;
         List<MixBallot> mixedBallots = statement.mixedBallots;
 
         //Do shadow mix
         List<MixStruct> shadowMixStructs = new ArrayList<>();
         List<List<MixBallot>> shadowMixes = new ArrayList<>();
-        for (int i = 0; i < n; i++) { // Improve?
+        for (int i = 0; i < kappa; i++) {
             MixStruct shadowMixStruct = mix(ballots);
 
             shadowMixStructs.add(shadowMixStruct);
@@ -87,11 +86,11 @@ public class Mixnet {
         }
 
         //Calculate challenges from hash
-        List<Boolean> challenges = hash(shadowMixes);
+        List<Boolean> challenges = hash(shadowMixes,kappa);
 
         //Calculate proof values
         List<MixSecret> composedMixSecrets = new ArrayList<>();
-        for (int j = 0; j < n; j++) {
+        for (int j = 0; j < kappa; j++) {
             //Extract challenge
             Boolean challenge = challenges.get(j);
 
@@ -141,7 +140,7 @@ public class Mixnet {
         }
     }
 
-    private List<Boolean> hash(List<List<MixBallot>> ballots) {
+    private List<Boolean> hash(List<List<MixBallot>> ballots, int kappa) {
         byte[] concatenated = new byte[]{};
 
         // \mathcal{B}_j for j in [1,n]
@@ -154,23 +153,25 @@ public class Mixnet {
         byte[] hashed = this.hashH.digest(concatenated);
 
         // create list of C
-        List<Boolean> listOfC = ByteConverter.valueOf(hashed, n);
-        assert listOfC.size() == n : "listOfC.size()=" + listOfC.size() + " != n=" + n;
+        List<Boolean> listOfC = ByteConverter.valueOf(hashed, kappa);
+        assert listOfC.size() == kappa : "listOfC.size()=" + listOfC.size() + " != kappa=" + kappa;
 
         return listOfC;
     }
 
-    public boolean verify(MixStatement statement, MixProof proof) {
+    public boolean verify(MixStatement statement, MixProof proof, int kappa) {
+        // Check proof size
+        if(proof.shadowMixes.size() != kappa) {
+            return false;
+        }
 
-        // B^\prime (step 2)
         List<MixBallot> originalBallots = statement.ballots;
         List<MixBallot> mixedOriginalBallots = statement.mixedBallots;
         List<List<MixBallot>> shadowMixes = proof.shadowMixes;
 
         // in this list there is n elements....
-        List<Boolean> challenges = hash(shadowMixes);
-
-        for (int j = 0; j < n; j++) {
+        List<Boolean> challenges = hash(shadowMixes, kappa);
+        for (int j = 0; j < kappa; j++) {
             //For each shadow mix
             List<MixBallot> shadowMix = proof.shadowMixes.get(j);
             MixSecret mixSecret = proof.shadowSecrets.get(j);

@@ -19,8 +19,10 @@ import static org.junit.Assert.assertNotNull;
 @DisplayName("Test Athena Vote")
 public class TestAthenaVote {
 
-    MainAthenaFactory msFactory;
+    private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
     private final int kappa = CONSTANTS.KAPPA;
+    
+    MainAthenaFactory msFactory;
     private CredentialTuple dv;
     private PK_Vector pkv;
 
@@ -28,10 +30,10 @@ public class TestAthenaVote {
 
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         msFactory = new MainAthenaFactory();
         athena = new AthenaImpl(msFactory);
-        SetupStruct setup = athena.Setup(kappa);
+        ElectionSetup setup = athena.Setup(kappa, nc);
 
         pkv = setup.pkv;
         RegisterStruct register = athena.Register(pkv);

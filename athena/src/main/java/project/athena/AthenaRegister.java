@@ -14,6 +14,8 @@ import java.util.Random;
 
 public class AthenaRegister {
     private static final int kappa = CONSTANTS.KAPPA;
+    
+    
     private final BulletinBoard bb;
     private final Random random;
     private final Sigma1 sigma1;
@@ -60,8 +62,6 @@ public class AthenaRegister {
         private Random random;
         private Sigma1 sigma1;
         private ElGamal elgamal;
-
-
         public Builder setBB(BulletinBoard bb) {
             this.bb = bb;
             return this;

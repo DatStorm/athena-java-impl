@@ -14,7 +14,6 @@ import project.factory.MainAthenaFactory;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
@@ -23,9 +22,11 @@ import static org.junit.Assert.assertTrue;
 @Tag("TestsAthenaVerify")
 @DisplayName("Test Athena Verify")
 public class TestAthenaVerify {
+    private final int kappa = CONSTANTS.KAPPA;
+    private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
 
     MainAthenaFactory msFactory;
-    private final int kappa = CONSTANTS.KAPPA;
+
     private PK_Vector pkv;
     private ElGamalSK sk;
     private BulletinBoard bb;
@@ -34,10 +35,10 @@ public class TestAthenaVerify {
 
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         msFactory = new MainAthenaFactory();
         athena = new AthenaImpl(msFactory);
-        SetupStruct setup = athena.Setup(kappa);
+        ElectionSetup setup = athena.Setup(kappa, nc);
 
         sk = setup.sk;
         pkv = setup.pkv;
@@ -71,7 +72,7 @@ public class TestAthenaVerify {
         TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc);
         System.out.println("--> Tally done ");
 
-        Map<BigInteger, Integer> b = tallyStruct.votes_b;
+        Map<BigInteger, Integer> b = tallyStruct.tallyOfVotes;
         PFStruct pf = tallyStruct.pf;
 
         System.out.println("--> Verify: ");

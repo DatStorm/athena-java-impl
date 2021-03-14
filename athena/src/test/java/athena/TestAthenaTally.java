@@ -10,7 +10,6 @@ import project.elgamal.ElGamalSK;
 import project.factory.MainAthenaFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -19,8 +18,10 @@ import static org.junit.Assert.assertNotNull;
 @DisplayName("Test Athena Tally")
 public class TestAthenaTally {
 
-    MainAthenaFactory msFactory;
     private final int kappa = CONSTANTS.KAPPA;
+    private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
+
+    MainAthenaFactory msFactory;
     private CredentialTuple dv;
     private PK_Vector pkv;
     private ElGamalSK sk;
@@ -30,10 +31,10 @@ public class TestAthenaTally {
 
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         msFactory = new MainAthenaFactory();
         athena = new AthenaImpl(msFactory);
-        SetupStruct setup = athena.Setup(kappa);
+        ElectionSetup setup = athena.Setup(kappa, nc);
 
         sk = setup.sk;
         pkv = setup.pkv;
@@ -62,7 +63,7 @@ public class TestAthenaTally {
         assertNotNull("Should not be null", tallyStruct.pf.mixBallotList);
         assertNotNull("Should not be null", tallyStruct.pf.pfd);
         assertNotNull("Should not be null", tallyStruct.pf.pfr);
-        assertNotNull("Should not be null", tallyStruct.votes_b);
+        assertNotNull("Should not be null", tallyStruct.tallyOfVotes);
 
 
     }

@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class AthenaTally {
     private static final int kappa = CONSTANTS.KAPPA;
 
+
     private Random random;
     private ElGamal elgamal;
     private BulletinBoard bb;
@@ -69,31 +70,26 @@ public class AthenaTally {
         List<PFRStruct> pfr = filterResult.getRight();
 
         // Perform random mix
-        Pair<List<MixBallot>, MixProof> mixnetResult = mixnet(A);
-        List<MixBallot> mixedBallots = mixnetResult.getLeft();
-        MixProof mixProof = mixnetResult.getRight();
-
-        // Publish prof
-        bb.publishMixProof(mixProof);
+        Pair<List<MixBallot>, MixProof> mixPair = mixnet(A);
+        List<MixBallot> mixedBallots = mixPair.getLeft();
+        MixProof mixProof = mixPair.getRight();
 
         System.out.println("---> |B|: " + mixedBallots.size());
-
-        // Post pfr and mixedBallots to the bulletin board
-        bb.publishPfr(pfr);
-        bb.publishMixBallots(mixedBallots);
 
         /* ********
          * Step 3: Reveal eligible votes
          *********/
         // Tally eligible votes and prove computations
-        Pair<Map<BigInteger, Integer>, List<PFDStruct>> rr = revealEligibleVotes(sk, mixedBallots, kappa);
-        Map<BigInteger, Integer> tallyOfVotes = rr.getLeft();
-        List<PFDStruct> pfd = rr.getRight();
+        Pair<Map<BigInteger, Integer>, List<PFDStruct>> revealPair = revealEligibleVotes(sk, mixedBallots, kappa);
+        Map<BigInteger, Integer> tallyOfVotes = revealPair.getLeft();
+        List<PFDStruct> pfd = revealPair.getRight();
 
-        // post pfd to bulletin board
-        bb.publishPfd(pfd);
+        // Post (b, (pfr, B, pfd) ) to bullitin boardet
         bb.publishTallyOfVotes(tallyOfVotes);
-        return new TallyStruct(tallyOfVotes, new PFStruct(pfr, mixedBallots, pfd, mixProof));
+        PFStruct pf = new PFStruct(pfr, mixedBallots, pfd, mixProof);
+        bb.publishPF(pf);
+
+        return new TallyStruct(tallyOfVotes, pf);
     }
 
     // Step 1 of Tally
@@ -133,6 +129,7 @@ public class AthenaTally {
 //                finalBallots.remove(ballot);
 //            }
         }
+
         return finalBallots;
     }
 
@@ -220,8 +217,8 @@ public class AthenaTally {
 
         // Prove mix
         MixStatement statement = new MixStatement(ballots, mixedBallots);
-        MixProof mixProof = mixnet.proveMix(statement, mixStruct.secret);
-        assert mixnet.verify(statement, mixProof);
+        MixProof mixProof = mixnet.proveMix(statement, mixStruct.secret, kappa);
+        assert mixnet.verify(statement, mixProof, kappa);
 
         return Pair.of(mixedBallots, mixProof);
     }
@@ -275,17 +272,17 @@ public class AthenaTally {
                 Sigma3Proof voteDecryptionProof = sigma3.proveDecryption(encryptedVote, vote, sk, kappa);
 
                 // Store proofs
-                PFDStruct value = new PFDStruct(c_prime, vote, combinationProof, combinationDecryptionProof, voteDecryptionProof);
+                PFDStruct value = PFDStruct.newValid(c_prime, vote, combinationProof, combinationDecryptionProof, voteDecryptionProof);
                 pfd.add(value);
 
             } else { // m != 1
                 System.out.println("--> M!=1");
 
-                PFDStruct value = new PFDStruct(c_prime, m, combinationProof, combinationDecryptionProof); // FIXME: proofDecryptionVote sat to null in Object....
+                PFDStruct value = PFDStruct.newInvalid(c_prime, m, combinationProof, combinationDecryptionProof);
                 pfd.add(value);
             }
         }
-
+        
         return Pair.of(tallyOfVotes, pfd);
     }
 

@@ -152,7 +152,7 @@ public class AthenaVerify {
 
         // Verify mixnet
         MixStatement statement = new MixStatement(filteredBallots, B);
-        boolean veri_mix = mixnet.verify(statement, mixProof);
+        boolean veri_mix = mixnet.verify(statement, mixProof, kappa);
         if (!veri_mix) {
             System.err.println("AthenaImpl.Verify => ERROR: mixProof was invalid");
             return false;
@@ -330,7 +330,7 @@ public class AthenaVerify {
             this.sigma1 = sigma1;
             return this;
         }
-        
+
 
         public Builder setBulletproof(Bulletproof bulletproof) {
             this.bulletproof = bulletproof;
@@ -357,7 +357,7 @@ public class AthenaVerify {
             this.bb = bb;
             return this;
         }
-      
+
         public Builder setMc(BigInteger mc) {
             this.mc = mc;
             return this;

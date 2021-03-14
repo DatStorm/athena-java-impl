@@ -26,9 +26,8 @@ public class Ciphertext {
     
 
     public Ciphertext multiply(Ciphertext c, BigInteger p) {
-        // TODO: Enforce mod p. User of function should not decide. Maybee include public key or group in fields?
-        if (p == null) {
-            throw new IllegalArgumentException("Missing group p ");
+        if (p == null || c == null) {
+            throw new IllegalArgumentException("Ciphertext.multiply: Missing group p ");
         }
         BigInteger _c1 = this.c1.multiply(c.c1).mod(p);
         BigInteger _c2 = this.c2.multiply(c.c2).mod(p);
