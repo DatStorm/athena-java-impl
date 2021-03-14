@@ -45,8 +45,6 @@ public class BulletproofProof {
         this.r_vector = r_vector;
     }
 
-   
-
     public static class Builder {
         private BigInteger a;
         private BigInteger s;
@@ -134,7 +132,7 @@ public class BulletproofProof {
     }
 
     public String toNameString() {
-        return "BulletproofProof{" + "a=" + a.toString().substring(0,5) + "...}";
+        return "BulletproofProof{" + "a=" + a.toString().substring(0, 5) + "...}";
     }
 
     @Override

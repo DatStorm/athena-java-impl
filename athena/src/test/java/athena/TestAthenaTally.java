@@ -37,7 +37,7 @@ public class TestAthenaTally {
 
         sk = setup.sk;
         pkv = setup.pkv;
-        RegisterStruct register = athena.Register(pkv, kappa);
+        RegisterStruct register = athena.Register(pkv);
         dv = register.d;
         bb = msFactory.getBulletinBoard();
 
@@ -51,14 +51,14 @@ public class TestAthenaTally {
 
         int vote1_1 = 4;
         int cnt1_1 = 0;
-        Ballot ballot_1 = athena.Vote(dv, pkv, vote1_1, cnt1_1, nc, kappa);
+        Ballot ballot_1 = athena.Vote(dv, pkv, vote1_1, cnt1_1, nc);
         
 
         int vote2_1 = 2;
         int cnt2_1 = 0;
-        Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
+        Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc);
         
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk),  nc,  kappa);
+        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk),  nc);
         assertNotNull("Should not be null", tallyStruct.pf.mixBallotList);
         assertNotNull("Should not be null", tallyStruct.pf.pfd);
         assertNotNull("Should not be null", tallyStruct.pf.pfr);

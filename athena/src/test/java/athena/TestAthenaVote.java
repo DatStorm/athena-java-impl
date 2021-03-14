@@ -34,7 +34,7 @@ public class TestAthenaVote {
         SetupStruct setup = athena.Setup(kappa);
 
         pkv = setup.pkv;
-        RegisterStruct register = athena.Register(pkv, kappa);
+        RegisterStruct register = athena.Register(pkv);
         dv = register.d;
 
     }
@@ -45,7 +45,7 @@ public class TestAthenaVote {
         int vote = 4;
         int cnt = 0;
         int nc = 10;
-        Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc, kappa);
+        Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc);
         assertNotNull("Should not be null", ballot.getPublicCredential());
         assertNotNull("Should not be null", ballot.getEncryptedNegatedPrivateCredential());
         assertNotNull("Should not be null", ballot.getEncryptedVote());
