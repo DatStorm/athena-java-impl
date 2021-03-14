@@ -5,7 +5,7 @@ import project.CONSTANTS;
 import project.sigma.Sigma3;
 import project.dao.sigma3.Sigma3Proof;
 import project.dao.sigma3.Sigma3Statement;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
@@ -23,7 +23,7 @@ public class TestSigma3 {
     private Sigma3 sigma3;
     private Sigma3Statement statement;
     private ElGamalSK sk;
-    private CipherText cipher;
+    private Ciphertext cipher;
     private BigInteger plain_msg_m;
 
 

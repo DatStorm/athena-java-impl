@@ -1,16 +1,16 @@
 package project.dao.mixnet;
 
 import com.google.common.primitives.Bytes;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 
 import java.math.BigInteger;
 import java.util.Objects;
 
 public class MixBallot {
-    private final CipherText c1;
-    private final CipherText c2;
+    private final Ciphertext c1;
+    private final Ciphertext c2;
 
-    public MixBallot(CipherText c1, CipherText c2) {
+    public MixBallot(Ciphertext c1, Ciphertext c2) {
         this.c1 = c1;
         this.c2 = c2;
     }
@@ -24,17 +24,17 @@ public class MixBallot {
     }
 
     public MixBallot multiply(MixBallot ballot, BigInteger q) {
-        CipherText c1_mult = this.c1.multiply(ballot.c1, q);
-        CipherText c2_vote = this.c2.multiply(ballot.c2, q);
+        Ciphertext c1_mult = this.c1.multiply(ballot.c1, q);
+        Ciphertext c2_vote = this.c2.multiply(ballot.c2, q);
         return new MixBallot(c1_mult,c2_vote);
     }
 
 
-    public CipherText getC1() {
+    public Ciphertext getC1() {
         return c1;
     }
 
-    public CipherText getC2() {
+    public Ciphertext getC2() {
         return c2;
     }
 

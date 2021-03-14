@@ -1,25 +1,24 @@
 package project.dao.athena;
 
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ElectoralRoll {
-    private List<CipherText> listOfPublicCredentials;
+    private List<Ciphertext> listOfPublicCredentials;
 
     public ElectoralRoll() {
         this.listOfPublicCredentials = new ArrayList<>();
     }
 
 
-    public void add(CipherText publicCredential) {
+    public void add(Ciphertext publicCredential) {
         this.listOfPublicCredentials.add(publicCredential);
     }
 
     // Check that the publicCredential is in the electoral roll
-    public boolean contains(CipherText publicCredential) {
+    public boolean contains(Ciphertext publicCredential) {
         return listOfPublicCredentials.contains(publicCredential);
     }
 
@@ -27,7 +26,7 @@ public class ElectoralRoll {
     public String toString() {
         StringBuilder res = new StringBuilder();
 
-        for (CipherText pd : listOfPublicCredentials) {
+        for (Ciphertext pd : listOfPublicCredentials) {
             res.append(pd.toShortString()).append(", ");
         }
 

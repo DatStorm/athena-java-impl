@@ -266,7 +266,9 @@ public class UTIL {
     }
 
     public static List<BigInteger> hadamardProduct(List<BigInteger> l_vector, List<BigInteger> r_vector, BigInteger order) {
-        assert l_vector.size() == r_vector.size() : l_vector.size() + " != " + r_vector.size();
+        if (l_vector.size() != r_vector.size()) {
+            throw new IllegalArgumentException("List sizes must match");
+        }
 
         int n = l_vector.size();
         List<BigInteger> result = new ArrayList<>(n);

@@ -1,18 +1,17 @@
 package project.dao.athena;
 
 import project.dao.bulletproof.BulletproofProof;
-import project.dao.sigma2.Sigma2Proof;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 
 public class Ballot {
-    public final CipherText publicCredential;
-    public final CipherText encryptedNegatedPrivateCredential;
-    public final CipherText encryptedVote;
+    public final Ciphertext publicCredential;
+    public final Ciphertext encryptedNegatedPrivateCredential;
+    public final Ciphertext encryptedVote;
     public final BulletproofProof proofVote;
     public final BulletproofProof proofNegatedPrivateCredential;
     public final int counter;
 
-    public Ballot(CipherText publicCredential, CipherText encryptedVote, CipherText encryptedNegatedPrivateCredential, BulletproofProof proofVote, BulletproofProof proofNegatedPrivateCredential, int counter) {
+    public Ballot(Ciphertext publicCredential, Ciphertext encryptedVote, Ciphertext encryptedNegatedPrivateCredential, BulletproofProof proofVote, BulletproofProof proofNegatedPrivateCredential, int counter) {
         this.publicCredential = publicCredential;
         this.encryptedNegatedPrivateCredential = encryptedNegatedPrivateCredential;
         this.encryptedVote = encryptedVote;
@@ -22,17 +21,17 @@ public class Ballot {
     }
     
     // b[1] = pd
-    public CipherText getPublicCredential() {
+    public Ciphertext getPublicCredential() {
         return publicCredential;
     }
 
     // b[2] = c1
-    public CipherText getEncryptedNegatedPrivateCredential() {
+    public Ciphertext getEncryptedNegatedPrivateCredential() {
         return encryptedNegatedPrivateCredential;
     }
 
     // b[3] = c2
-    public CipherText getEncryptedVote() {
+    public Ciphertext getEncryptedVote() {
         return encryptedVote;
     }
 

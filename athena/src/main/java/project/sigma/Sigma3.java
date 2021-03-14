@@ -4,7 +4,7 @@ import com.google.common.primitives.Bytes;
 import project.UTIL;
 import project.dao.sigma3.Sigma3Statement;
 import project.dao.sigma3.Sigma3Proof;
-import project.elgamal.CipherText;
+import project.elgamal.Ciphertext;
 import project.elgamal.ElGamalPK;
 import project.elgamal.ElGamalSK;
 
@@ -25,7 +25,7 @@ public class Sigma3 {
     }
 
     // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
-    public Sigma3Proof proveDecryption(CipherText ciphertext, BigInteger plaintext, ElGamalSK sk, int kappa) {
+    public Sigma3Proof proveDecryption(Ciphertext ciphertext, BigInteger plaintext, ElGamalSK sk, int kappa) {
         return proveLogEquality(createStatement(sk.pk, ciphertext, plaintext), sk.toBigInteger(), kappa);
     }
 
@@ -35,7 +35,7 @@ public class Sigma3 {
 
 
 
-    public boolean verifyDecryption(CipherText ciphertext, BigInteger plaintext, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
+    public boolean verifyDecryption(Ciphertext ciphertext, BigInteger plaintext, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
         return verifyLogEquality(createStatement(pk,ciphertext,plaintext), decProof, kappa);
     }
 
@@ -119,7 +119,7 @@ public class Sigma3 {
      * @param plain
      * @return
      */
-    public static Sigma3Statement createStatement(ElGamalPK pk, CipherText cipher, BigInteger plain) {
+    public static Sigma3Statement createStatement(ElGamalPK pk, Ciphertext cipher, BigInteger plain) {
         BigInteger p = pk.getGroup().getP();
         BigInteger g = pk.getGroup().getG();
 

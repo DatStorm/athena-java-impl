@@ -84,13 +84,13 @@ public class ElGamal {
      *
      * @param msg bigint in range [0; 2^bitlength -1]
      */
-    public CipherText encrypt(BigInteger msg, ElGamalPK pk) {
+    public Ciphertext encrypt(BigInteger msg, ElGamalPK pk) {
         BigInteger r = UTIL.getRandomElement(BigInteger.ZERO, group.q, this.random);
         return encrypt(msg, pk, r);
     }
 
     // Exponential ElGamal
-    public CipherText encrypt(BigInteger msg, ElGamalPK pk, BigInteger r) {
+    public Ciphertext encrypt(BigInteger msg, ElGamalPK pk, BigInteger r) {
         BigInteger p = pk.group.p;
         BigInteger q = pk.group.q;
         r = r.mod(q).add(q).mod(q);
@@ -111,12 +111,12 @@ public class ElGamal {
 
         // C = (g^r, g^m·h^r)
         BigInteger expMsg = g.modPow(msg, p);
-        return new CipherText(g.modPow(r, p), expMsg.multiply(h.modPow(r, p)).mod(p));
+        return new Ciphertext(g.modPow(r, p), expMsg.multiply(h.modPow(r, p)).mod(p));
     }
 
 
     // Decrypting El Gamal encryption using secret key
-    public BigInteger decrypt(CipherText cipherText, ElGamalSK sk) {
+    public BigInteger decrypt(Ciphertext cipherText, ElGamalSK sk) {
         BigInteger c1 = cipherText.c1;
         BigInteger c2 = cipherText.c2;
         BigInteger p = sk.getPK().getGroup().getP();
