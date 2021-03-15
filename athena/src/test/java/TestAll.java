@@ -22,6 +22,6 @@ import org.junit.runner.RunWith;
         "TestsAthenaTally",
         "TestsAthenaVerify",
 })
-@ExcludeTags({"TestsSigma2"})
+@ExcludeTags({""})
 public class TestAll {
 }

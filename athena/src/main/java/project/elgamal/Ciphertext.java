@@ -23,6 +23,9 @@ public class Ciphertext {
         return "\n\tCiphertext={'c1': " + this.c1 + ", 'c2':" + this.c2 + "}\n";
     }
 
+    public String toFormattedString() {
+        return "Ciphertext={\n\t\t'c1': " + this.c1 + ",\n \t\t'c2': " + this.c2 + "}\n";
+    }
     
 
     public Ciphertext multiply(Ciphertext c, BigInteger p) {

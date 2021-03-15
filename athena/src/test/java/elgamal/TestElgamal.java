@@ -26,6 +26,8 @@ public class TestElgamal {
     @BeforeEach
     void setUp() {
         nbits = 32 * Byte.SIZE;
+//        nbits = 32;
+
         random = new SecureRandom();
         elGamal = new ElGamal(nbits, random);
         sk = elGamal.generateSK();

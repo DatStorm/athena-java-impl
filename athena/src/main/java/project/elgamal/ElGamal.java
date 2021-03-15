@@ -9,7 +9,6 @@ import java.security.SecureRandom;
 import java.util.*;
 
 public class ElGamal {
-    //    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private Group group;
     private Random random;
 
@@ -48,12 +47,12 @@ public class ElGamal {
     }
 
     private static Group generateGroup(int bitLength, Random random) {
-        BigInteger p = CONSTANTS.ELGAMAL_P; //TODO: maybe don't use fixed
-        BigInteger q = CONSTANTS.ELGAMAL_Q; //TODO: maybe don't use fixed
-        BigInteger g = CONSTANTS.ELGAMAL_G; //TODO: maybe don't use fixed
+        BigInteger p = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_P; //TODO: maybe don't use fixed
+        BigInteger q = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_Q; //TODO: maybe don't use fixed
+        BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G; //TODO: maybe don't use fixed
 
 
-        // SECURE == 2048
+//        // SECURE == 2048
 //        BigInteger p, q, g;
 //        do {
 //            p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
@@ -63,7 +62,7 @@ public class ElGamal {
 //        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
 //
 //        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
-//        g = generateNewG(p,random); // FIXME: Replace above
+//        //g = Group.findGenerator(p, random); // FIXME: Replace above HMMMMMMMM. Suspect
 
 
         if (p.bitLength() <= bitLength) {

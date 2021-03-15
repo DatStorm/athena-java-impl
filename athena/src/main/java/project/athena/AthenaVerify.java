@@ -6,9 +6,9 @@ import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixProof;
 import project.dao.mixnet.MixStatement;
 import project.dao.sigma3.Sigma3Proof;
+import project.dao.sigma3.Sigma3Statement;
 import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.Ciphertext;
-import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.mixnet.Mixnet;
 import project.sigma.Sigma1;
@@ -23,7 +23,6 @@ import java.util.stream.IntStream;
 
 public class AthenaVerify {
     private static final int kappa = CONSTANTS.KAPPA;
-
 
     private final Sigma1 sigma1;
     private final Bulletproof bulletproof;
@@ -98,14 +97,14 @@ public class AthenaVerify {
             return false;
         }
 
-        // Verify that homomorphic combinatins use the same nonce for all negated credentials
-        boolean homoCombinationsAreValid = this.checkHomoCombinations(validBallots, pf.pfr, pk);
+        // Verify decryption of homomorphic combination
+        boolean homoCombinationsAreValid = this.verifyDecryptionOfNoncedPublicCredential(validBallots, pf.pfr, pk);
         if (!homoCombinationsAreValid) {
             return false;
         }
 
-        // Verify decryption of homomorphic combination
-        boolean decryptionsAreValid = this.checkDecryptions(validBallots, pf.pfr, pk);
+        // Verify that homomorphic combinatins use the same nonce for all negated credentials
+        boolean decryptionsAreValid = this.verifySameNonceWasUsedOnAllPublicCredentials(validBallots, pf.pfr, pk);
         if (!decryptionsAreValid) {
             return false;
         }
@@ -161,7 +160,51 @@ public class AthenaVerify {
         return true;
     }
 
-    private boolean checkDecryptions(List<Ballot> validBallots, List<PFRStruct> pfr, ElGamalPK pk) {
+    private boolean verifyDecryptionOfNoncedPublicCredential(List<Ballot> validBallots, List<PFRStruct> pfr, ElGamalPK pk) {
+        int ell = validBallots.size();
+        // Verify decryption of nonced public credential
+        //////////////////////////////////////////////////////////////////////////////////
+        // AND_{1<= i <= \ell} sigma3.VerDec(pk, c'[i],N[i] , proveDecryptionOfCombination, \kappa);
+        //////////////////////////////////////////////////////////////////////////////////
+        for (int i = 0; i < ell; i++) {
+            PFRStruct pfr_data = pfr.get(i);
+            Ciphertext ci_prime = pfr_data.ciphertextCombination;
+
+//            System.err.println(i + ": AthenaImpl.Verify => ci_prime:");
+//            System.err.println(ci_prime.toFormattedString());
+
+            BigInteger Ni = pfr_data.plaintext_N;
+            Sigma3Proof sigma_i = pfr_data.proofDecryption;
+
+            Sigma3Statement stmnt3 = Sigma3.createStatement(pk, ci_prime, Ni);
+            /*
+             * log_{alpha_base} alpha = log_{beta_base} beta
+             *      alpha_base  = g
+             *      alpha       = c1^n = Enc_pk(-d)^n mod p = (g^r,g^-d * h^r)^n = (g^{r * n},g^{-d * n} * h^{r * n})
+             *      beta_base   = g
+             *      beta        = Ni = Dec_sk(ci_prime) = Dec_sk(homoComb(c1,n))= Dec_sk(c1^n mod p)
+             *
+             * log_{g} c1^n = log_{g} Ni
+             *
+             */
+
+
+
+            boolean veri_dec = sigma3.verifyDecryption(stmnt3, sigma_i, kappa);
+            if (!veri_dec) {
+                System.err.println(i + ": AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption");
+//                System.out.println(i + ": ci_prime = " + ci_prime.toFormattedString());
+                System.out.println(i + ": Ni       = " + Ni);
+//                System.out.println(i + ": sigma_i  = " + sigma_i);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+// Verify that the same nonce was used in all noncedPublicCredentials aka. c'
+private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validBallots, List<PFRStruct> pfr, ElGamalPK pk) {
         int ell = validBallots.size();
         // Verify that the same nonce was used on all nonced private credentials
         //////////////////////////////////////////////////////////////////////////////////
@@ -183,29 +226,6 @@ public class AthenaVerify {
                 return false;
             }
         }
-        return true;
-    }
-
-    private boolean checkHomoCombinations(List<Ballot> validBallots, List<PFRStruct> pfr, ElGamalPK pk) {
-        int ell = validBallots.size();
-        // Verify decryption of nonced private credential
-        //////////////////////////////////////////////////////////////////////////////////
-        // AND_{1<= i <= \ell} VerDec(pk, c'[i],N[i] , proveDecryptionOfCombination, \kappa);
-        //////////////////////////////////////////////////////////////////////////////////
-        for (int i = 0; i < ell; i++) {
-            PFRStruct pfr_data = pfr.get(i);
-            Ciphertext ci_prime = pfr_data.ciphertextCombination;
-            BigInteger Ni = pfr_data.plaintext_N;
-            Sigma3Proof sigma_i = pfr_data.proofDecryption;
-
-            boolean veri_dec = sigma3.verifyDecryption(ci_prime, Ni, pk, sigma_i, kappa);
-            if (!veri_dec) {
-                System.err.println(i + ": AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption");
-                System.out.println(i + ": ci_prime = " + ci_prime + ", Ni = " + Ni + ", sigma_i = " + sigma_i);
-                return false;
-            }
-        }
-
         return true;
     }
 

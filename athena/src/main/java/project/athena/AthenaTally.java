@@ -3,15 +3,13 @@ package project.athena;
 import org.apache.commons.lang3.tuple.Pair;
 import project.CONSTANTS;
 import project.UTIL;
-import project.athena.AthenaCommon;
-import project.athena.AthenaRegister;
-import project.athena.BulletinBoard;
 import project.dao.athena.*;
 import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixProof;
 import project.dao.mixnet.MixStatement;
 import project.dao.mixnet.MixStruct;
 import project.dao.sigma3.Sigma3Proof;
+import project.dao.sigma3.Sigma3Statement;
 import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
@@ -65,7 +63,7 @@ public class AthenaTally {
          * Step 2: Mix final votes
          *********/
         //Filter ReVotes and pfr proof of same nonce
-        Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterResult = filterReVotesAndProoveSameNonce(validBallots, sk);
+        Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterResult = filterReVotesAndProveSameNonce(validBallots, sk);
         Map<MapAKey, MapAValue> A = filterResult.getLeft();
         List<PFRStruct> pfr = filterResult.getRight();
 
@@ -134,7 +132,7 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
-    private Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterReVotesAndProoveSameNonce(List<Ballot> ballots, ElGamalSK sk) {
+    private Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterReVotesAndProveSameNonce(List<Ballot> ballots, ElGamalSK sk) {
         int ell = ballots.size();
 
         List<PFRStruct> pfr = new ArrayList<>();
@@ -150,7 +148,15 @@ public class AthenaTally {
 
             // Homomorpically reencrypt(by raising to power n) ballot and decrypt
             Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p);
+
+            // Dec(Enc(x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
             BigInteger noncedNegatedPrivateCredential = elgamal.decrypt(ci_prime, sk);
+
+            if (i == 0) {
+                System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce");
+                System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce Ni:");
+                System.out.println(noncedNegatedPrivateCredential);
+            }
 
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredential);
@@ -159,7 +165,10 @@ public class AthenaTally {
             A.put(key, updatedValue);
 
             // Prove decryption
-            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
+//            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
+            Sigma3Statement stmnt = null;
+            BigInteger secret =  null;
+            Sigma3Proof decryptionProof = sigma3.proveDecryption(stmnt, secret, kappa);
 
             // Proove that the same nonce was used for all ballots.
             if (pfr.size() > 0) {

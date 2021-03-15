@@ -420,6 +420,7 @@ public class Bulletproof {
             //bitstring[i]=0
             //powers.add(i)
         //return powers;
+        return null;
     }
 
 }

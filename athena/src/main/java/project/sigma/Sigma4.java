@@ -24,14 +24,8 @@ public class Sigma4 {
     }
 
     public Sigma4Proof proveCombination(ElGamalSK sk, Ciphertext combinedCiphertext, Ciphertext ciphertext, BigInteger nonce_n, int kappa) {
-        return proveCombination(
-                sk,
-                Collections.singletonList(combinedCiphertext),
-                Collections.singletonList(ciphertext),
-                nonce_n,
-                kappa);
+        return proveCombination(sk, Collections.singletonList(combinedCiphertext), Collections.singletonList(ciphertext), nonce_n, kappa);
     }
-
 
     public Sigma4Proof proveCombination(ElGamalSK sk, List<Ciphertext> listOfcombinedCiphertext, List<Ciphertext> listOfCiphertexts, BigInteger nonce_n, int kappa) {
         ArrayList<Sigma3Proof> alpha_beta_omegaProofs = new ArrayList<>();

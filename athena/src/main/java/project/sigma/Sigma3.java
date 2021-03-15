@@ -33,10 +33,12 @@ public class Sigma3 {
         return proveLogEquality(statement, secret, kappa);
     }
 
-
-
     public boolean verifyDecryption(Ciphertext ciphertext, BigInteger plaintext, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
         return verifyLogEquality(createStatement(pk,ciphertext,plaintext), decProof, kappa);
+    }
+
+    public boolean verifyDecryption(Sigma3Statement statement, Sigma3Proof decProof, int kappa) {
+        return verifyLogEquality(statement, decProof, kappa);
     }
 
     // log_{alpha_base} alpha = log_{beta_base} beta}
@@ -125,7 +127,7 @@ public class Sigma3 {
 
         // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
         BigInteger alpha = pk.getH();
-        BigInteger beta = cipher.c2.multiply(g.modPow(plain,p).modInverse(p)).mod(p);
+        BigInteger beta = cipher.c2.multiply(g.modPow(plain, p).modInverse(p)).mod(p);
         BigInteger alpha_base = pk.getGroup().getG();
         BigInteger beta_base = cipher.c1;
 
@@ -133,19 +135,21 @@ public class Sigma3 {
     }
 
 
-    public boolean checkPart1(BigInteger g, BigInteger r, BigInteger a, BigInteger h, BigInteger c, BigInteger p) {
-        BigInteger gr = g.modPow(r, p);
-        BigInteger ahc = a.multiply(h.modPow(c,p)).mod(p);
-        d("p1: gr=" + gr + ", ahc="+ ahc);
-        return gr.compareTo(ahc) == 0;
+    public boolean checkPart1(BigInteger alpha_base, BigInteger r, BigInteger a, BigInteger alpha, BigInteger c, BigInteger p) {
+        BigInteger alpha_base_r = alpha_base.modPow(r, p);
+        BigInteger a_alpha_c = a.multiply(alpha.modPow(c,p)).mod(p);
+//        d("p1: alpha_base_r=" + alpha_base_r + ", a_alpha_c="+ a_alpha_c);
+        return alpha_base_r.compareTo(a_alpha_c) == 0;
     }
     
 
-    public boolean checkPart2(BigInteger c1, BigInteger r, BigInteger b, BigInteger z, BigInteger c, BigInteger p) {
-        BigInteger c1_r = c1.modPow(r,p);
-        BigInteger bz_c = b.multiply(z.modPow(c,p)).mod(p);
-        d("p2: c1_r=" + c1_r + ", bz_c="+ bz_c);
-        return c1_r.compareTo(bz_c) == 0;
+    public boolean checkPart2(BigInteger beta_base, BigInteger r, BigInteger b, BigInteger beta, BigInteger c, BigInteger p) {
+        BigInteger beta_base_r = beta_base.modPow(r,p);
+
+        BigInteger b_beta_c = b.multiply(beta.modPow(c,p)).mod(p);
+        d("check2: beta_base_r=   " + beta_base_r);
+        d("check2: b_beta_c=      " + b_beta_c);
+        return beta_base_r.compareTo(b_beta_c) == 0;
     }
 
 

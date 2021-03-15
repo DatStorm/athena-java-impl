@@ -8,7 +8,6 @@ import project.sigma.Sigma1;
 import project.sigma.Sigma3;
 import project.sigma.Sigma4;
 import project.sigma.bulletproof.Bulletproof;
-import project.sigma.sigma2.Sigma2;
 
 import java.security.MessageDigest;
 import java.util.Random;
