@@ -409,4 +409,17 @@ public class Bulletproof {
         return bits;
     }
 
+    // Mark
+    public List<Integer> decomposeIntoPowersOfTwoMinusOne(BigInteger n) {
+        // n to bitstring
+
+        List<Integer> powers = new ArrayList<>();
+        // While bitstring != 000000
+            //bitstring++
+            //Find highest i where bitstring[i]=1
+            //bitstring[i]=0
+            //powers.add(i)
+        //return powers;
+    }
+
 }
