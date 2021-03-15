@@ -148,7 +148,8 @@ public class AthenaImpl implements Athena {
                 .setSigma3(this.sigma3)
                 .setSigma4(this.sigma4)
                 .setMixnet(this.mixnet)
-                .build().Tally(skv,nc);
+                .build()
+                .Tally(skv,nc);
     }
 
     @Override

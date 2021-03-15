@@ -13,24 +13,22 @@ public class ElGamal {
     private Random random;
 
     private int messageSpaceLength;
-    private Map<BigInteger, Integer> lookupTable;
+    private Map<BigInteger, BigInteger> lookupTable;
 
     public ElGamal(Group group, int messageSpaceLength, Random random) {
         this.random = random;
         this.group = group;
         this.messageSpaceLength = messageSpaceLength;
 
-        // Generate lookup
+
+        // Generate lookup table for decryption
         BigInteger g = group.g;
         BigInteger p = group.p;
-        BigInteger q = group.q;
-
-        /*
         lookupTable = new HashMap<>();
         for(int i = 0; i < messageSpaceLength; i++) {
-            lookupTable.put(g.pow(i).mod(p), i);
+            lookupTable.put(g.pow(i).mod(p), BigInteger.valueOf(i));
         }
-        */
+
     }
 
     public ElGamal(Group group, Random random) {
@@ -123,16 +121,20 @@ public class ElGamal {
         BigInteger c1NegAlpha = c1Alpha.modInverse(p); // c1^-\alpha
 
         // plain = g^m  (look up table to find it needed)
-        BigInteger plain = c2.multiply(c1NegAlpha).mod(p); // m=c2 * c1^-alpha mod p
+        BigInteger element = c2.multiply(c1NegAlpha).mod(p); // m=c2 * c1^-alpha mod p
 
-        return plain;
+        if(!lookupTable.containsKey(element)){
+            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than " + messageSpaceLength);
+        } else {
+            return lookupTable.get(element);
+        }
     }
 
 
     // Generate random sk
     public ElGamalSK generateSK() {
         if (this.group == null) {
-            System.out.println("MARKKKKKKKK");
+            System.out.println("group = null");
         }
         BigInteger q = this.group.getQ();
         BigInteger sk = UTIL.getRandomElement(q, random);

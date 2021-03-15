@@ -7,12 +7,10 @@
     <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/athena/AthenaImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/athena/AthenaImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/factory/AthenaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/factory/AthenaFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/factory/MainAthenaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/factory/MainAthenaFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/mixnet/Mixnet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/sigma/bulletproof/Bulletproof.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/sigma/bulletproof/Bulletproof.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/mixnet/TestMixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/mixnet/TestMixnet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/sigmas/TestSigma2BulletProof.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/sigmas/TestSigma2BulletProof.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/athena/AthenaTally.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/athena/AthenaTally.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/athena/AthenaVerify.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/athena/AthenaVerify.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/elgamal/ElGamal.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/elgamal/ElGamal.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/project/sigma/Sigma3.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/project/sigma/Sigma3.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +52,20 @@
       <recent name="project.dao.mixnet" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.TestAthenaTally">
+  <component name="RunManager" selected="Application.ManualTestAthenaTallier">
+    <configuration name="ManualTestAthenaTallier" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="manual.ManualTestAthenaTallier" />
+      <module name="athena" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="manual.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="TestAthenaTally" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="athena" />
       <extension name="coverage">
@@ -81,22 +92,6 @@
       <option name="PACKAGE_NAME" value="sigmas" />
       <option name="MAIN_CLASS_NAME" value="sigmas.TestSigma2BulletProof" />
       <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestSigma2BulletProof.TestExtractBits" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="sigmas.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="sigmas" />
-      <option name="MAIN_CLASS_NAME" value="sigmas.TestSigma2BulletProof" />
-      <option name="METHOD_NAME" value="TestExtractBits" />
-      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -134,19 +129,19 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="JUnit.TestSigma2BulletProof.TestExtractBits" />
       <item itemvalue="JUnit.TestSigma2BulletProof.TestSigma2PedersenCommit" />
       <item itemvalue="JUnit.TestSigma2BulletProof" />
       <item itemvalue="JUnit.TestSigma2BulletProof.TestSigma2BulletProofOutOfRange" />
       <item itemvalue="JUnit.TestAthenaTally" />
+      <item itemvalue="Application.ManualTestAthenaTallier" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.ManualTestAthenaTallier" />
         <item itemvalue="JUnit.TestAthenaTally" />
         <item itemvalue="JUnit.TestSigma2BulletProof.TestSigma2BulletProofOutOfRange" />
         <item itemvalue="JUnit.TestSigma2BulletProof" />
         <item itemvalue="JUnit.TestSigma2BulletProof.TestSigma2PedersenCommit" />
-        <item itemvalue="JUnit.TestSigma2BulletProof.TestExtractBits" />
       </list>
     </recent_temporary>
   </component>
@@ -172,16 +167,5 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/athena/src/main/java/project/sigma/bulletproof/Bulletproof.java</url>
-          <line>52</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

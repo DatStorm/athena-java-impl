@@ -34,7 +34,7 @@ public class Sigma3 {
     }
 
     public boolean verifyDecryption(Ciphertext ciphertext, BigInteger plaintext, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
-        return verifyLogEquality(createStatement(pk,ciphertext,plaintext), decProof, kappa);
+        return verifyLogEquality(createStatement(pk, ciphertext, plaintext), decProof, kappa);
     }
 
     public boolean verifyDecryption(Sigma3Statement statement, Sigma3Proof decProof, int kappa) {
@@ -127,7 +127,7 @@ public class Sigma3 {
 
         // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
         BigInteger alpha = pk.getH();
-        BigInteger beta = cipher.c2.multiply(g.modPow(plain, p).modInverse(p)).mod(p);
+        BigInteger beta = cipher.c2.multiply(g.modPow(plain, p).modInverse(p)).mod(p);  //c2/g^m = h^r g^m * g^-m
         BigInteger alpha_base = pk.getGroup().getG();
         BigInteger beta_base = cipher.c1;
 
