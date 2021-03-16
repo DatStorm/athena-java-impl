@@ -67,6 +67,18 @@ public class AthenaTally {
         Map<MapAKey, MapAValue> A = filterResult.getLeft();
         List<PFRStruct> pfr = filterResult.getRight();
 
+        System.out.println(A.values().stream()
+                .map(MapAValue::getCombinedCredential) //rename to combinedCredential
+                .map(combinedCredential -> elgamal.decryptWithoutLookup(combinedCredential, sk))
+                .collect(Collectors.toList()));
+
+        assert A.values().stream()
+                .map(MapAValue::getCombinedCredential) //rename to combinedCredential
+                .map(combinedCredential -> elgamal.decryptWithoutLookup(combinedCredential, sk))
+                .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1...";
+
+
+
         // Perform random mix
         Pair<List<MixBallot>, MixProof> mixPair = mixnet(A);
         List<MixBallot> mixedBallots = mixPair.getLeft();
@@ -150,18 +162,14 @@ public class AthenaTally {
             Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p);
 
             // Dec(Enc(x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            // BigInteger noncedNegatedPrivateCredential = elgamal.decrypt(ci_prime, sk); // We cannot do this, because -d*none
             BigInteger noncedNegatedPrivateCredentialElement = elgamal.decryptWithoutLookup(ci_prime, sk);
-            BigInteger noncedNegatedPrivateCredential = noncedNegatedPrivateCredentialElement; //FIXME: Fy for satan. Slet slet slet slet!!!
 
-            if (i == 0) {
-                System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce");
-                System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce Ni:");
-                System.out.println(noncedNegatedPrivateCredentialElement);
+            if (i == 0) { // Just for debug help
+                System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce Ni: " + noncedNegatedPrivateCredentialElement);
             }
 
             // Update map with highest counter entry.
-            MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredential);
+            MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);
             MapAValue existingValue = A.get(key);
             MapAValue updatedValue = getHighestCounterEntry(existingValue, ballot, sk.pk.group.p);
             A.put(key, updatedValue);
@@ -170,7 +178,7 @@ public class AthenaTally {
             /*
              * TODO: MEGA WRONG TO GIVE sk to the proof needs to be ???
              */
-            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
+            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredentialElement, sk, kappa);
 //            Sigma3Statement stmnt = Sigma3.createStatement(sk.pk, ci_prime, ); //
 //            BigInteger secret = null ;
 //            Sigma3Proof decryptionProof = sigma3.proveDecryption(stmnt, secret, kappa);
@@ -182,11 +190,11 @@ public class AthenaTally {
                 List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
                 Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCiphertexts, nonce_n, kappa);
 
-                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredential, decryptionProof, omega));
+                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, omega));
             } else {
                 // The else case does not create the ProveComb since this else case is only used in the first iteration
                 // of the loop true case is used the remaining time.
-                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredential, decryptionProof, null));
+                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, null));
             }
 
             ci_prime_previous = ci_prime;
@@ -203,6 +211,8 @@ public class AthenaTally {
             // Update the map if A[(bi[1]; N)] is empty, or contains a lower counter
 
             Ciphertext combinedCredential = ballot.getPublicCredential().multiply(ballot.getEncryptedNegatedPrivateCredential(), p);
+
+            System.out.println("AthenaTally.getHighestCounterEntry combCred: " + combinedCredential.toFormattedString());
             MapAValue updatedValue = new MapAValue(counter, combinedCredential, ballot.getEncryptedVote());
 
             return updatedValue;
@@ -254,7 +264,7 @@ public class AthenaTally {
             Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
 
             // Decrypt nonced combinedCredential
-            System.out.println(c_prime);
+            System.out.println("c_prime: " +  c_prime);
             BigInteger m = elgamal.decrypt(c_prime, sk);
 
             // Prove that c' is a homomorphic combination of combinedCredential

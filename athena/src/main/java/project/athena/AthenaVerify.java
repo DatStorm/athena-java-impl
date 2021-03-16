@@ -173,10 +173,9 @@ public class AthenaVerify {
 //            System.err.println(i + ": AthenaImpl.Verify => ci_prime:");
 //            System.err.println(ci_prime.toFormattedString());
 
-            BigInteger Ni = pfr_data.plaintext_N;
-            Sigma3Proof sigma_i = pfr_data.proofDecryption;
+            BigInteger noncedNegatedPrivateCredentialElement = pfr_data.plaintext_N;
+            Sigma3Proof decyptionProof = pfr_data.proofDecryption;
 
-            Sigma3Statement stmnt3 = Sigma3.createStatement(pk, ci_prime, Ni);
 
             /*
              * log_{alpha_base} alpha = log_{beta_base} beta
@@ -189,12 +188,12 @@ public class AthenaVerify {
              */
 
 
-
-            boolean veri_dec = sigma3.verifyDecryption(stmnt3, sigma_i, kappa);
+            // Proove that the nonced private credential was decrypted correctly
+            boolean veri_dec = sigma3.verifyDecryption(ci_prime, noncedNegatedPrivateCredentialElement, pk, decyptionProof, kappa);
             if (!veri_dec) {
                 System.err.println(i + ": AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption");
 //                System.out.println(i + ": ci_prime = " + ci_prime.toFormattedString());
-                System.out.println(i + ": Ni       = " + Ni);
+                System.out.println(i + ": Ni       = " + noncedNegatedPrivateCredentialElement);
 //                System.out.println(i + ": sigma_i  = " + sigma_i);
                 return false;
             }

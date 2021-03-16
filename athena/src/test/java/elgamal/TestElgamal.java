@@ -1,6 +1,8 @@
 package elgamal;
 
 import org.junit.jupiter.api.*;
+import project.UTIL;
+import project.athena.AthenaCommon;
 import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
@@ -120,5 +122,32 @@ public class TestElgamal {
         BigInteger result = elGamal2.decrypt(c, sk);
 
         assertEquals(expected, result);
+    }
+
+    @Test
+    void TestHomoCombinations() {
+        BigInteger g = pk.getGroup().getG();
+        BigInteger p = pk.getGroup().getP();
+        BigInteger q = pk.getGroup().getQ();
+
+
+        // Combined d with -d. Should yeild an encryption of 1
+        BigInteger d = UTIL.getRandomElement(q, random);
+        Ciphertext publicCredential = elGamal.encrypt(d, pk);
+        Ciphertext encryptedNegatedPrivateCredential = elGamal.encrypt(d.negate().mod(q).add(q).mod(q), pk);
+        Ciphertext combinedCredential = publicCredential.multiply(encryptedNegatedPrivateCredential, p);
+
+        // Nonce
+        BigInteger n = UTIL.getRandomElement(q, random);
+        Ciphertext noncedCombinedCredential = AthenaCommon.homoCombination(combinedCredential, n, p);
+
+        // Decrypt
+        BigInteger expected = BigInteger.ONE;
+        BigInteger result = elGamal.decryptWithoutLookup(noncedCombinedCredential, sk);
+
+        
+
+        assertEquals(expected, result, "should be the same, 1 == 1" );
+
     }
 }

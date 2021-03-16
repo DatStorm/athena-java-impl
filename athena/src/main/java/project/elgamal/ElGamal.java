@@ -46,22 +46,22 @@ public class ElGamal {
     }
 
     private static Group generateGroup(int bitLength, Random random) {
-        BigInteger p = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_P; //TODO: maybe don't use fixed
-        BigInteger q = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_Q; //TODO: maybe don't use fixed
-        BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G; //TODO: maybe don't use fixed
+//        BigInteger p = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_P; //TODO: maybe don't use fixed
+//        BigInteger q = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_Q; //TODO: maybe don't use fixed
+//        BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G; //TODO: maybe don't use fixed
 
 
-//        // SECURE == 2048
-//        BigInteger p, q, g;
-//        do {
-//            p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
-//            q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
-//
-//            // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
-//        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
-//
-//        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
-//        //g = Group.findGenerator(p, random); // FIXME: Replace above HMMMMMMMM. Suspect
+        // SECURE == 2048
+        BigInteger p, q, g;
+        do {
+            p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
+            q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
+
+            // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
+        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
+
+        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
+        //g = Group.findGenerator(p, random); // FIXME: Replace above HMMMMMMMM. Suspect
 
 
         if (p.bitLength() <= bitLength) {
@@ -126,7 +126,7 @@ public class ElGamal {
 
         if(!lookupTable.containsKey(element)){
             System.out.println(element);
-            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than " + messageSpaceLength);
+            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength + " was: " + element);
         } else {
             return lookupTable.get(element);
         }

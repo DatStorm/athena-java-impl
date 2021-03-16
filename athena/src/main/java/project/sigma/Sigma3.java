@@ -25,16 +25,20 @@ public class Sigma3 {
     }
 
     // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
-    public Sigma3Proof proveDecryption(Ciphertext ciphertext, BigInteger plaintext, ElGamalSK sk, int kappa) {
-        return proveLogEquality(createStatement(sk.pk, ciphertext, plaintext), sk.toBigInteger(), kappa);
+    /**
+    * param plaintextElement: A group element representing the plaintext. g^m
+    *
+    */
+    public Sigma3Proof proveDecryption(Ciphertext ciphertext, BigInteger plaintextElement, ElGamalSK sk, int kappa) {
+        return proveLogEquality(createStatement(sk.pk, ciphertext, plaintextElement), sk.toBigInteger(), kappa);
     }
 
     public Sigma3Proof proveDecryption(Sigma3Statement statement, BigInteger secret, int kappa) {
         return proveLogEquality(statement, secret, kappa);
     }
 
-    public boolean verifyDecryption(Ciphertext ciphertext, BigInteger plaintext, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
-        return verifyLogEquality(createStatement(pk, ciphertext, plaintext), decProof, kappa);
+    public boolean verifyDecryption(Ciphertext ciphertext, BigInteger plaintextElement, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
+        return verifyLogEquality(createStatement(pk, ciphertext, plaintextElement), decProof, kappa);
     }
 
     public boolean verifyDecryption(Sigma3Statement statement, Sigma3Proof decProof, int kappa) {
@@ -117,22 +121,22 @@ public class Sigma3 {
     /**
      *
      * @param pk
-     * @param cipher
-     * @param plain
+     * @param ciphertext
+     * @param plaintextElement: the group element representing the value. g^m
      * @return
      */
-    public static Sigma3Statement createStatement(ElGamalPK pk, Ciphertext cipher, BigInteger plain) {
+    public static Sigma3Statement createStatement(ElGamalPK pk, Ciphertext ciphertext, BigInteger plaintextElement) {
         BigInteger p = pk.getGroup().getP();
         BigInteger g = pk.getGroup().getG();
 
         // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
         BigInteger alpha = pk.getH();
+        BigInteger alpha_base = pk.getGroup().getG();
         
         // beta = c2 * g^(plain)^{-1} mod p 
         // c2/g^m = h^r g^m * g^-m
-        BigInteger beta = cipher.c2.multiply(g.modPow(plain, p).modInverse(p)).mod(p);
-        BigInteger alpha_base = pk.getGroup().getG();
-        BigInteger beta_base = cipher.c1;
+        BigInteger beta = ciphertext.c2.multiply(plaintextElement.modInverse(p)).mod(p);
+        BigInteger beta_base = ciphertext.c1;
 
         return new Sigma3Statement(pk.getGroup(), alpha, beta, alpha_base, beta_base);
     }
