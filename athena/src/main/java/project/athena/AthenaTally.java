@@ -165,10 +165,13 @@ public class AthenaTally {
             A.put(key, updatedValue);
 
             // Prove decryption
-//            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
-            Sigma3Statement stmnt = null;
-            BigInteger secret =  null;
-            Sigma3Proof decryptionProof = sigma3.proveDecryption(stmnt, secret, kappa);
+            /*
+             * TODO: MEGA WRONG TO GIVE sk to the proof needs to be ???
+             */
+            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
+//            Sigma3Statement stmnt = Sigma3.createStatement(sk.pk, ci_prime, ); //
+//            BigInteger secret =  ;
+//            Sigma3Proof decryptionProof = sigma3.proveDecryption(stmnt, secret, kappa);
 
             // Proove that the same nonce was used for all ballots.
             if (pfr.size() > 0) {

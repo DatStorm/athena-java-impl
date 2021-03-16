@@ -127,6 +127,8 @@ public class Sigma3 {
 
         // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
         BigInteger alpha = pk.getH();
+
+        // beta = c2 * g^(plain)^{-1} mod p 
         BigInteger beta = cipher.c2.multiply(g.modPow(plain, p).modInverse(p)).mod(p);
         BigInteger alpha_base = pk.getGroup().getG();
         BigInteger beta_base = cipher.c1;
