@@ -13,24 +13,23 @@ public class ElGamal {
     private Random random;
 
     private int messageSpaceLength;
-    private Map<BigInteger, Integer> lookupTable;
+    private Map<BigInteger, BigInteger> lookupTable;
 
     public ElGamal(Group group, int messageSpaceLength, Random random) {
         this.random = random;
         this.group = group;
         this.messageSpaceLength = messageSpaceLength;
 
-        // Generate lookup
+
+        // Generate lookup table for decryption
         BigInteger g = group.g;
         BigInteger p = group.p;
-        BigInteger q = group.q;
-
-        /*
         lookupTable = new HashMap<>();
         for(int i = 0; i < messageSpaceLength; i++) {
-            lookupTable.put(g.pow(i).mod(p), i);
+            lookupTable.put(g.pow(i).mod(p), BigInteger.valueOf(i));
         }
-        */
+
+        System.out.println(lookupTable);
     }
 
     public ElGamal(Group group, Random random) {
@@ -123,16 +122,34 @@ public class ElGamal {
         BigInteger c1NegAlpha = c1Alpha.modInverse(p); // c1^-\alpha
 
         // plain = g^m  (look up table to find it needed)
-        BigInteger plain = c2.multiply(c1NegAlpha).mod(p); // m=c2 * c1^-alpha mod p
+        BigInteger element = c2.multiply(c1NegAlpha).mod(p); // m=c2 * c1^-alpha mod p
 
-        return plain;
+        if(!lookupTable.containsKey(element)){
+            System.out.println(element);
+            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than " + messageSpaceLength);
+        } else {
+            return lookupTable.get(element);
+        }
+    }
+
+    // Decrypting El Gamal encryption using secret key
+    public BigInteger decryptWithoutLookup(Ciphertext cipherText, ElGamalSK sk) {
+        BigInteger c1 = cipherText.c1;
+        BigInteger c2 = cipherText.c2;
+        BigInteger p = sk.getPK().getGroup().getP();
+        BigInteger c1Alpha = c1.modPow(sk.toBigInteger(), p);      // c1^\alpha
+        BigInteger c1NegAlpha = c1Alpha.modInverse(p); // c1^-\alpha
+
+        // plain = g^m  (look up table to find it needed)
+        BigInteger element = c2.multiply(c1NegAlpha).mod(p); // m=c2 * c1^-alpha mod p
+        return element;
     }
 
 
     // Generate random sk
     public ElGamalSK generateSK() {
         if (this.group == null) {
-            System.out.println("MARKKKKKKKK");
+            System.out.println("group = null");
         }
         BigInteger q = this.group.getQ();
         BigInteger sk = UTIL.getRandomElement(q, random);

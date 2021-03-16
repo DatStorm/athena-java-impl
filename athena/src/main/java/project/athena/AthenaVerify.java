@@ -177,6 +177,7 @@ public class AthenaVerify {
             Sigma3Proof sigma_i = pfr_data.proofDecryption;
 
             Sigma3Statement stmnt3 = Sigma3.createStatement(pk, ci_prime, Ni);
+
             /*
              * log_{alpha_base} alpha = log_{beta_base} beta
              *      alpha_base  = g
@@ -185,7 +186,6 @@ public class AthenaVerify {
              *      beta        = Ni = Dec_sk(ci_prime) = Dec_sk(homoComb(c1,n))= Dec_sk(c1^n mod p)
              *
              * log_{g} c1^n = log_{g} Ni
-             *
              */
 
 

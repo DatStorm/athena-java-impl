@@ -150,12 +150,14 @@ public class AthenaTally {
             Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p);
 
             // Dec(Enc(x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredential = elgamal.decrypt(ci_prime, sk);
+            // BigInteger noncedNegatedPrivateCredential = elgamal.decrypt(ci_prime, sk); // We cannot do this, because -d*none
+            BigInteger noncedNegatedPrivateCredentialElement = elgamal.decryptWithoutLookup(ci_prime, sk);
+            BigInteger noncedNegatedPrivateCredential = noncedNegatedPrivateCredentialElement; //FIXME: Fy for satan. Slet slet slet slet!!!
 
             if (i == 0) {
                 System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce");
                 System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce Ni:");
-                System.out.println(noncedNegatedPrivateCredential);
+                System.out.println(noncedNegatedPrivateCredentialElement);
             }
 
             // Update map with highest counter entry.
@@ -170,7 +172,7 @@ public class AthenaTally {
              */
             Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredential, sk, kappa);
 //            Sigma3Statement stmnt = Sigma3.createStatement(sk.pk, ci_prime, ); //
-//            BigInteger secret =  ;
+//            BigInteger secret = null ;
 //            Sigma3Proof decryptionProof = sigma3.proveDecryption(stmnt, secret, kappa);
 
             // Proove that the same nonce was used for all ballots.
@@ -248,10 +250,11 @@ public class AthenaTally {
             Ciphertext encryptedVote = mixBallot.getC2();
 
             // Apply a nonce to the combinedCredential
-            BigInteger nonce = UTIL.getRandomElement(q, random);
+            BigInteger nonce = UTIL.getRandomElement(BigInteger.ONE, q, random);
             Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
 
             // Decrypt nonced combinedCredential
+            System.out.println(c_prime);
             BigInteger m = elgamal.decrypt(c_prime, sk);
 
             // Prove that c' is a homomorphic combination of combinedCredential
