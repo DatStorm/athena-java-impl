@@ -9,7 +9,7 @@ import java.util.Random;
 public class Gen {
     private final ElGamal elGamal;
 
-    public Gen(Random random, int kappa) {
+    public Gen(Random random, int msgSpaceLength, int kappa) {
         if(random == null){
             throw new RuntimeException("Gen() => Coins r is null");
         }
@@ -17,7 +17,7 @@ public class Gen {
             throw new RuntimeException("Gen() => kappa is 0");
         }
 
-        this.elGamal = new ElGamal(kappa, random);
+        this.elGamal = new ElGamal(kappa, msgSpaceLength, random);
     }
 
     public ElGamal getElGamal() {

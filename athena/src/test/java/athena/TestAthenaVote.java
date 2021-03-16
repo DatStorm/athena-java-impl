@@ -66,7 +66,7 @@ public class TestAthenaVote {
 
     @Test
     void TestBallotConstuction() {
-        int vote = 4;
+        int vote = 7;
         int cnt = 0;
         int nc = 10;
         Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc);
@@ -79,4 +79,15 @@ public class TestAthenaVote {
         BigInteger decryptedVote = elgamal.decrypt(ballot.encryptedVote, sk);
         assertEquals(vote, decryptedVote.intValueExact());
     }
+    @Test
+    void TestBallotConstuction2_0() {
+
+        int vote = 4;
+        int cnt = 0;
+        int nc = 10;
+        Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc);
+
+
+    }
+
 }

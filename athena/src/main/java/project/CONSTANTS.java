@@ -20,12 +20,18 @@ public class CONSTANTS {
      */
     public static final int KAPPA = ELGAMAL_BIT_LENGTH;
 
+    /**
+     * TODO: FIX THIS!!! Should be nc
+     */
+    public static final int MSG_SPACE_LENGTH = -1;
+
 
     public static class ELGAMAL_CURRENT {
         public static final BigInteger ELGAMAL_P = ELGAMAL_32_BITS.ELGAMAL_P;
         public static final BigInteger ELGAMAL_Q = ELGAMAL_32_BITS.ELGAMAL_Q;
         public static final BigInteger ELGAMAL_G = ELGAMAL_32_BITS.ELGAMAL_G;
         public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_32_BITS.ELGAMAL_BIT_LENGTH;
+        public static final BigInteger FAKE_SK = ELGAMAL_32_BITS.FAKE_SK;
     }
 
 
@@ -37,6 +43,7 @@ public class CONSTANTS {
         public static final BigInteger ELGAMAL_P = new BigInteger("7951924187");
         public static final BigInteger ELGAMAL_Q = new BigInteger("3975962093");
         public static final BigInteger ELGAMAL_G = new BigInteger("3849857299");
+        public static final BigInteger FAKE_SK = new BigInteger("963783867");
     }
 
 
@@ -60,6 +67,20 @@ public class CONSTANTS {
         public static final BigInteger ELGAMAL_Q = new BigInteger("101781930962782588966975763840932996276214507001118712595705133449243092091013309998493947176881059978528115373858291378602997243067993038319348768420524426070496304658393989013844012264481352037461456655151146983764147448926960284113821296172219171303794004069613706732080990100930836568187956323499805831543");
         public static final BigInteger ELGAMAL_G = new BigInteger("1844215720087197381744494932667834995394592854090000269565019288241668468229931410777742064942636776445825219224117373251985570793034245911908637548366552981960421195704530326918084242971835539836821340557428309723513510836056755747806132206209220185984626592005964560631795631069575371181435232772937697315");
     }
+
+
+    /**
+     * COLORS
+     */
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
 
 
     //    public static final int ELGAMAL_BIT_LENGTH = 2048; //SECURE

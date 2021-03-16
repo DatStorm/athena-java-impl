@@ -16,6 +16,11 @@ public class ElGamal {
     private Map<BigInteger, BigInteger> lookupTable;
 
     public ElGamal(Group group, int messageSpaceLength, Random random) {
+
+        if (messageSpaceLength < 0) {
+            System.out.println("ERROR messageSpaceLength < 0");
+        }
+
         this.random = random;
         this.group = group;
         this.messageSpaceLength = messageSpaceLength;
@@ -31,36 +36,32 @@ public class ElGamal {
         System.out.println(lookupTable);
     }
 
-    public ElGamal(Group group, Random random) {
-        this(group, 5, random);
-    }
+//    public ElGamal(int bitLength) {
+//        this(bitLength, new SecureRandom());
+//    }
 
-    public ElGamal(int bitLength) {
-        this(bitLength, new SecureRandom());
-    }
-
-    public ElGamal(int bitLength, Random random) {
-        this(generateGroup(bitLength, random), random);
+    public ElGamal(int bitLength, int messageSpaceLength, Random random) {
+        this(generateGroup(bitLength, random), messageSpaceLength, random);
 
     }
 
     private static Group generateGroup(int bitLength, Random random) {
-//        BigInteger p = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_P; //TODO: maybe don't use fixed
-//        BigInteger q = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_Q; //TODO: maybe don't use fixed
-//        BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G; //TODO: maybe don't use fixed
+        BigInteger p = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_P; //TODO: maybe don't use fixed
+        BigInteger q = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_Q; //TODO: maybe don't use fixed
+        BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G; //TODO: maybe don't use fixed
 
 
-        // SECURE == 2048
-        BigInteger p, q, g;
-        do {
-            p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
-            q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
-
-            // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
-        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
-
-        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
-        //g = Group.findGenerator(p, random); // FIXME: Replace above HMMMMMMMM. Suspect
+//        // SECURE == 2048
+//        BigInteger p, q, g;
+//        do {
+//            p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
+//            q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
+//
+//            // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
+//        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
+//
+//        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
+//        //g = Group.findGenerator(p, random); // FIXME: Replace above HMMMMMMMM. Suspect
 
 
         if (p.bitLength() <= bitLength) {
@@ -118,8 +119,8 @@ public class ElGamal {
         BigInteger element = localDecrypt(cipherText, sk);
 
         if(!lookupTable.containsKey(element)){
-            System.out.println("ElGamal.decrypt Dec_sk(c) = g^m = " + element);
-            System.out.println("ElGamal.decrypt           table = " + lookupTable);
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
 
             throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength);
         } else {
@@ -150,7 +151,9 @@ public class ElGamal {
             System.out.println("group = null");
         }
         BigInteger q = this.group.getQ();
-        BigInteger sk = UTIL.getRandomElement(q, random);
+//        BigInteger sk = UTIL.getRandomElement(q, random);
+
+        BigInteger sk = CONSTANTS.ELGAMAL_CURRENT.FAKE_SK; // TODO: FIXME: remove me once testing is done
 
         return new ElGamalSK(this.group, sk);
     }

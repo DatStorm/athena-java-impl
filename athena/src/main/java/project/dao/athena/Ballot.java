@@ -1,5 +1,6 @@
 package project.dao.athena;
 
+import project.CONSTANTS;
 import project.athena.AthenaVerify;
 import project.athena.BulletinBoard;
 import project.dao.bulletproof.BulletproofProof;
@@ -57,7 +58,9 @@ public class Ballot {
         return "Ballot{" +
                 "pd=" + publicCredential.toShortString() +
                 ", c1=" + encryptedNegatedPrivateCredential.toShortString() +
-                ", c2=" + encryptedVote.toShortString() +
+                CONSTANTS.ANSI_RED +
+                ", enc_VOTE:=" + encryptedVote.toFormattedString() +
+                CONSTANTS.ANSI_RESET +
 //                ", sigma1=" + proofVote.toNameString() +
 //                ", sigma2=" + proofNegatedPrivateCredential.toNameString() +
                 ", cnt=" + counter +

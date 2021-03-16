@@ -57,7 +57,7 @@ public class AthenaImpl implements Athena {
             return null;
         }
 
-        Gen gen = new Gen(random, kappa);
+        Gen gen = new Gen(random, nc, kappa);
         ElGamalSK sk = gen.generate();
         ElGamalPK pk = sk.pk;
         Group group = pk.group;

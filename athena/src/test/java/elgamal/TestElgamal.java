@@ -1,6 +1,7 @@
 package elgamal;
 
 import org.junit.jupiter.api.*;
+import project.CONSTANTS;
 import project.UTIL;
 import project.athena.AthenaCommon;
 import project.elgamal.Ciphertext;
@@ -31,7 +32,7 @@ public class TestElgamal {
 //        nbits = 32;
 
         random = new SecureRandom();
-        elGamal = new ElGamal(nbits, random);
+        elGamal = new ElGamal(nbits, CONSTANTS.MSG_SPACE_LENGTH,  random);
         sk = elGamal.generateSK();
         pk = elGamal.generatePk(sk);
 
@@ -50,7 +51,7 @@ public class TestElgamal {
 //    @RepeatedTest(100)
     @Test
     void TestRandomLong() {
-        ElGamal elGamal = new ElGamal(Long.SIZE);
+        ElGamal elGamal = new ElGamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
 
         ElGamalSK sk = elGamal.generateSK();
         ElGamalPK pk = elGamal.generatePk(sk);
@@ -96,8 +97,8 @@ public class TestElgamal {
 
     @Test
     void TestElGamalDescription() {
-        ElGamal elGamal1 = new ElGamal(Long.SIZE);
-        ElGamal elGamal2 = new ElGamal(elGamal1.getDescription(), random);
+        ElGamal elGamal1 = new ElGamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
+        ElGamal elGamal2 = new ElGamal(elGamal1.getDescription(),CONSTANTS.MSG_SPACE_LENGTH ,random);
 
         ElGamalSK sk = elGamal1.generateSK();
         ElGamalPK pk = elGamal1.generatePk(sk);
@@ -145,7 +146,7 @@ public class TestElgamal {
         BigInteger expected = BigInteger.ONE;
         BigInteger result = elGamal.decryptWithoutLookup(noncedCombinedCredential, sk);
 
-        
+
 
         assertEquals(expected, result, "should be the same, 1 == 1" );
 

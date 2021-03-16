@@ -20,7 +20,7 @@ public class MainFactory implements Factory {
 
     public MainFactory() {
         this.random = new Random(CONSTANTS.RANDOM_SEED);
-        this.gen = new Gen(this.random, CONSTANTS.KAPPA);
+        this.gen = new Gen(this.random,CONSTANTS.MSG_SPACE_LENGTH ,CONSTANTS.KAPPA);
         this.sk = gen.generate();
     }
 

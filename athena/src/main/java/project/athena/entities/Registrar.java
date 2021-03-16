@@ -43,9 +43,7 @@ public class Registrar implements Entity {
         // Run Register(numVoters)
         credentialList = IntStream.range(0, numVoters).mapToObj(i -> athena.Register(pkVector).d).collect(Collectors.toList());
         boolean success = credentialList.size() == numVoters;
-
         assert success : "credentialList.size() != numVoters";
-
         return success;
     }
 

@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 public class AthenaTally {
     private static final int kappa = CONSTANTS.KAPPA;
 
-
     private Random random;
     private ElGamal elgamal;
     private BulletinBoard bb;
@@ -47,6 +46,24 @@ public class AthenaTally {
         ElGamalPK pk = sk.pk;
         BigInteger p = pk.getGroup().p;
         BigInteger q = pk.getGroup().q;
+
+        // voter 1 votes  => 7
+        // voter 2 votes  => 3
+        List<BigInteger> res2 = Arrays.asList(BigInteger.valueOf(7), BigInteger.valueOf(3));
+//        System.out.println("-----------------------------------");
+//        System.out.println("BB: "+ this.bb.retrievePublicBallots());
+//        System.out.println("-----------------------------------");
+
+        int i = 0;
+        for (Ballot ballot : this.bb.retrievePublicBallots()) {
+            Ciphertext encryptedVote = ballot.getEncryptedVote();
+            System.out.println("JA TAK          :::  " + encryptedVote.toFormattedString());
+            BigInteger dec = elgamal.decrypt(encryptedVote, sk);
+            System.out.println("AthenaTally.Tally Dec_sk(..) = " + dec);
+            System.out.println("AthenaTally.Tally res = " + res2.get(i));
+            assert dec.equals(res2.get(i)) : "Det fejler....";
+            i++;
+        }
 
         /* ********
          * Step 1: Remove invalid ballots
@@ -80,12 +97,12 @@ public class AthenaTally {
         // voter 1 votes  => 7
         // voter 2 votes  => 3
         List<BigInteger> res = Arrays.asList(BigInteger.valueOf(3), BigInteger.valueOf(7));
-        int i = 0;
+        int i2 = 0;
         for (MapAValue value : A.values()) {
             BigInteger dec = elgamal.decrypt(value.getEncryptedVote(), sk);
             System.out.println("AthenaTally.Tally Dec_sk(..) = " + dec);
-            assert dec.equals(res.get(i)) : "Det fejler....";
-            i++;
+            assert dec.equals(res.get(i2)) : "Det fejler....";
+            i2++;
         }
 
 

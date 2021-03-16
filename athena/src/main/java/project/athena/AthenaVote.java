@@ -1,6 +1,7 @@
 package project.athena;
 
 import project.CONSTANTS;
+import project.UTIL;
 import project.dao.athena.Ballot;
 import project.dao.athena.CredentialTuple;
 import project.dao.athena.PK_Vector;
@@ -10,6 +11,7 @@ import project.dao.bulletproof.BulletproofStatement;
 import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
+import project.elgamal.ElGamalSK;
 import project.sigma.Sigma1;
 import project.sigma.bulletproof.Bulletproof;
 
@@ -75,18 +77,31 @@ public class AthenaVote {
         BigInteger negatedPrivateCredential = credentialTuple.privateCredential.negate();
         negatedPrivateCredential = negatedPrivateCredential.mod(q).add(q).mod(q);
 
-        assert negatedPrivateCredential.add(credentialTuple.privateCredential).mod(q).equals(BigInteger.ZERO) : "-d + d != 0"; // -d + d = 0
+        assert negatedPrivateCredential.add(credentialTuple.privateCredential).mod(q).equals(BigInteger.ZERO) : "-d + d != 0";
 
 
-        // Create encryption of negated private credential, i.e. g^{-d}
-        BigInteger randomness_s = BigInteger.valueOf(random.nextLong()); // FIXME: Generate coins s
+        // Create encryption of negated private credential
+        BigInteger randomness_s = UTIL.getRandomElement(q, random);
         Ciphertext encryptedNegatedPrivateCredential = elgamal.encrypt(negatedPrivateCredential, pk, randomness_s);
 
-
-        // Create encryption of vote, i.e. g^{v}
+        // Create encryption of vote,
         BigInteger voteAsBigInteger = BigInteger.valueOf(vote);
-        BigInteger randomness_t = BigInteger.valueOf(random.nextLong()); // FIXME: Generate coins t
+        BigInteger randomness_t = UTIL.getRandomElement(q, random);
+
+
         Ciphertext encryptedVote = elgamal.encrypt(voteAsBigInteger, pk, randomness_t);
+
+        // is this the sk the same??? :D
+        ElGamalSK sk__ = new ElGamalSK(pk.group, CONSTANTS.ELGAMAL_CURRENT.FAKE_SK);
+        BigInteger decrypted = elgamal.decrypt(encryptedVote, sk__);
+        System.out.println("VOTE TO ENC: " + voteAsBigInteger);
+        System.out.println("VOTE DEC:    " + decrypted);
+
+
+        assert decrypted.equals(voteAsBigInteger) : "AEFAEKF";
+
+
+
 
 
         // Get public values from bb.
@@ -119,6 +134,7 @@ public class AthenaVote {
         BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
         BulletproofProof proofRangeOfVote = bulletProof.proveStatement(stmnt_2, secret_2);
 
+        System.out.println("FUCKKKKKKKK      :::  " + encryptedVote.toFormattedString());
         Ballot ballot = new Ballot.Builder()
                 .setPublicCredential(publicCredential)
                 .setEncryptedNegatedPrivateCredential(encryptedNegatedPrivateCredential)
