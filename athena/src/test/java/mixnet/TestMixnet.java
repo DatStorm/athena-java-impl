@@ -71,10 +71,10 @@ public class TestMixnet {
         BigInteger p = pk.getGroup().getP();
         MixBallot mult = mb1.multiply(mb2,p);
 
-        BigInteger dec_c1 = elgamal.decrypt(mult.getC1(),sk);
+        BigInteger dec_c1 = elgamal.decrypt(mult.getCombinedCredential(),sk);
         assertEquals("should be ??", g.modPow(BigInteger.valueOf(c),p), dec_c1);
         
-        BigInteger dec_c2 = elgamal.decrypt(mult.getC2(),sk);
+        BigInteger dec_c2 = elgamal.decrypt(mult.getEncryptedVote(),sk);
         assertEquals("should be ??", g.modPow(BigInteger.valueOf(vc),p), dec_c2);
     }
 

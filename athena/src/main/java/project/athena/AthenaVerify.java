@@ -6,7 +6,6 @@ import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixProof;
 import project.dao.mixnet.MixStatement;
 import project.dao.sigma3.Sigma3Proof;
-import project.dao.sigma3.Sigma3Statement;
 import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.Ciphertext;
 import project.elgamal.ElGamalPK;
@@ -250,8 +249,8 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
         for (Integer i : uncountedBallotIndices) {
             // Get relevant data
             MixBallot mixBallot = B.get(i);
-            Ciphertext combinedCredential = mixBallot.getC1();
-            Ciphertext encryptedVote = mixBallot.getC2();
+            Ciphertext combinedCredential = mixBallot.getCombinedCredential();
+            Ciphertext encryptedVote = mixBallot.getEncryptedVote();
 
             PFDStruct verificationInfo = pfd.get(i);
             Ciphertext c_prime = verificationInfo.ciphertextCombination;
@@ -300,7 +299,7 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
         for (int j : uncountedBallotIndices) {
             // "else case" in the verification step 3
             MixBallot mixBallot = B.get(j);
-            Ciphertext combinedCredential = mixBallot.getC1();
+            Ciphertext combinedCredential = mixBallot.getCombinedCredential();
 
             PFDStruct pfd_data = pfd.get(j);
             Ciphertext c_prime = pfd_data.ciphertextCombination;
@@ -328,7 +327,7 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
             }
 
             if (!m.equals(BigInteger.ONE)) {
-                System.err.println("AthenaImpl.Verify => ERROR: m == 1");
+                System.err.println(j + ": AthenaImpl.Verify => ERROR: m == 1");
                 return false;
             }
         }

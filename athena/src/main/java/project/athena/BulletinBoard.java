@@ -118,19 +118,23 @@ public class BulletinBoard {
         mb_res.append(space).append("]");
 
 
-        System.out.println("-----------------------------");
-        System.out.println("BulletinBoard  -- UPDATE --  ");
-        System.out.println("ballots=                     " + b_res.toString());
+        p("-----------------------------");
+        p("BulletinBoard  -- UPDATE --  ");
+        p("ballots=                     " + b_res.toString());
 
         if (pf != null) {
-            System.out.println("PfrList=                     " + pf.pfr);
-            System.out.println("PfdList=                     " + pf.pfd);
-            System.out.println("mixProof=                    " + pf.mixProof);
+            p("PfrList=                     " + pf.pfr);
+            p("PfdList=                     " + pf.pfd);
+            p("mixProof=                    " + pf.mixProof);
         }
 
-        System.out.println("electoralRoll=              L" + electoralRoll);
-        System.out.println("mixBallots=                  " + mb_res.toString());
-        System.out.println("-----------------------------");
+        p("electoralRoll=              L" + electoralRoll);
+        p("mixBallots=                  " + mb_res.toString());
+        p("-----------------------------");
+    }
+
+    private void p(String s) {
+//        System.out.println(s);
     }
 
 

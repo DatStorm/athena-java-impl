@@ -9,7 +9,6 @@ import project.dao.mixnet.MixProof;
 import project.dao.mixnet.MixStatement;
 import project.dao.mixnet.MixStruct;
 import project.dao.sigma3.Sigma3Proof;
-import project.dao.sigma3.Sigma3Statement;
 import project.dao.sigma4.Sigma4Proof;
 import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
@@ -67,15 +66,31 @@ public class AthenaTally {
         Map<MapAKey, MapAValue> A = filterResult.getLeft();
         List<PFRStruct> pfr = filterResult.getRight();
 
-        System.out.println(A.values().stream()
-                .map(MapAValue::getCombinedCredential) //rename to combinedCredential
+        System.out.println("A: " + A.values().stream()
+                .map(MapAValue::getCombinedCredential)
                 .map(combinedCredential -> elgamal.decryptWithoutLookup(combinedCredential, sk))
                 .collect(Collectors.toList()));
 
         assert A.values().stream()
-                .map(MapAValue::getCombinedCredential) //rename to combinedCredential
+                .map(MapAValue::getCombinedCredential)
                 .map(combinedCredential -> elgamal.decryptWithoutLookup(combinedCredential, sk))
-                .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1...";
+                .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1 before mixing";
+
+
+        // voter 1 votes  => 7
+        // voter 2 votes  => 3
+        List<BigInteger> res = Arrays.asList(BigInteger.valueOf(3), BigInteger.valueOf(7));
+        int i = 0;
+        for (MapAValue value : A.values()) {
+            BigInteger dec = elgamal.decrypt(value.getEncryptedVote(), sk);
+            System.out.println("AthenaTally.Tally Dec_sk(..) = " + dec);
+            assert dec.equals(res.get(i)) : "Det fejler....";
+            i++;
+        }
+
+
+
+
 
 
 
@@ -83,6 +98,25 @@ public class AthenaTally {
         Pair<List<MixBallot>, MixProof> mixPair = mixnet(A);
         List<MixBallot> mixedBallots = mixPair.getLeft();
         MixProof mixProof = mixPair.getRight();
+
+
+        for (MixBallot value : mixedBallots) {
+            BigInteger dec = elgamal.decrypt(value.getEncryptedVote(), sk);
+            System.out.println("AthenaTally.Tally Dec_sk(..) = " + dec);
+            assert res.contains(dec) : "Det fejler2....";
+        }
+
+
+
+        assert mixedBallots.stream()
+                .map(MixBallot::getCombinedCredential)
+                .map(combCred -> elgamal.decryptWithoutLookup(combCred, sk))
+                .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)): "Not equal 1 after mixing";
+
+        System.out.println("M: " + mixedBallots.stream()
+                .map(MixBallot::getCombinedCredential)
+                .map(combCred -> elgamal.decryptWithoutLookup(combCred, sk))
+                .collect(Collectors.toList()));
 
         System.out.println("---> |B|: " + mixedBallots.size());
 
@@ -94,7 +128,7 @@ public class AthenaTally {
         Map<BigInteger, Integer> tallyOfVotes = revealPair.getLeft();
         List<PFDStruct> pfd = revealPair.getRight();
 
-        // Post (b, (pfr, B, pfd) ) to bullitin boardet
+        // Post (b, (pfr, B, pfd) ) to bullitin board
         bb.publishTallyOfVotes(tallyOfVotes);
         PFStruct pf = new PFStruct(pfr, mixedBallots, pfd, mixProof);
         bb.publishPF(pf);
@@ -105,6 +139,8 @@ public class AthenaTally {
     // Step 1 of Tally
     public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoard bb) {
         List<Ballot> finalBallots = new ArrayList<>(bb.retrievePublicBallots());
+
+        System.out.println("FINAL BALLOTS.size(): " + finalBallots.size());
 
         for (Ballot ballot : bb.retrievePublicBallots()) {
             Ciphertext publicCredential = ballot.getPublicCredential();
@@ -175,9 +211,6 @@ public class AthenaTally {
             A.put(key, updatedValue);
 
             // Prove decryption
-            /*
-             * TODO: MEGA WRONG TO GIVE sk to the proof needs to be ???
-             */
             Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredentialElement, sk, kappa);
 //            Sigma3Statement stmnt = Sigma3.createStatement(sk.pk, ci_prime, ); //
 //            BigInteger secret = null ;
@@ -256,16 +289,21 @@ public class AthenaTally {
         BigInteger q = sk.pk.group.q;
 
         for (MixBallot mixBallot : mixedBallots) {
-            Ciphertext combinedCredential = mixBallot.getC1();
-            Ciphertext encryptedVote = mixBallot.getC2();
+            Ciphertext combinedCredential = mixBallot.getCombinedCredential();
+            Ciphertext encryptedVote = mixBallot.getEncryptedVote();
 
             // Apply a nonce to the combinedCredential
             BigInteger nonce = UTIL.getRandomElement(BigInteger.ONE, q, random);
             Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
 
             // Decrypt nonced combinedCredential
-            System.out.println("c_prime: " +  c_prime);
-            BigInteger m = elgamal.decrypt(c_prime, sk);
+            BigInteger m_mark = elgamal.decryptWithoutLookup(combinedCredential, sk);
+            assert m_mark.equals(BigInteger.ONE) : "Something wrong ??";
+
+            BigInteger m = elgamal.decryptWithoutLookup(c_prime, sk);
+            System.out.println("--> c_prime: " +  c_prime);
+            System.out.println("--> m:       " +  m);
+
 
             // Prove that c' is a homomorphic combination of combinedCredential
             Sigma4Proof combinationProof = sigma4.proveCombination(
@@ -280,7 +318,8 @@ public class AthenaTally {
 
             // Check validity of private credential. (decrypted combinedCredential = 1)
             if (m.equals(BigInteger.ONE)) {
-                System.out.println("--> M=1");
+                System.out.println("AthenaTally.revealEligibleVotes CASE: M=1  ");
+                System.out.println("AthenaTally.revealEligibleVotes Enc_pk(v): " + encryptedVote.toFormattedString());
 
                 // Decrypt vote
                 BigInteger vote = elgamal.decrypt(encryptedVote, sk);
@@ -301,7 +340,7 @@ public class AthenaTally {
                 pfd.add(value);
 
             } else { // m != 1
-                System.out.println("--> M!=1");
+                System.out.println("--> CASE: M!=1");
 
                 PFDStruct value = PFDStruct.newInvalid(c_prime, m, combinationProof, combinationDecryptionProof);
                 pfd.add(value);

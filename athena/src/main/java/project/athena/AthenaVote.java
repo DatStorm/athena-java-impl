@@ -30,7 +30,7 @@ public class AthenaVote {
                        Bulletproof bulletProof,
                        Random random,
                        ElGamal elgamal,
-                       BulletinBoard bb){
+                       BulletinBoard bb) {
 
         this.sigma1 = sigma1;
         this.bulletProof = bulletProof;
@@ -75,6 +75,8 @@ public class AthenaVote {
         BigInteger negatedPrivateCredential = credentialTuple.privateCredential.negate();
         negatedPrivateCredential = negatedPrivateCredential.mod(q).add(q).mod(q);
 
+        assert negatedPrivateCredential.add(credentialTuple.privateCredential).mod(q).equals(BigInteger.ZERO) : "-d + d != 0"; // -d + d = 0
+
 
         // Create encryption of negated private credential, i.e. g^{-d}
         BigInteger randomness_s = BigInteger.valueOf(random.nextLong()); // FIXME: Generate coins s
@@ -88,7 +90,7 @@ public class AthenaVote {
 
 
         // Get public values from bb.
-        int rangeBitlengthOfNegatedPrivateCredential = bb.retrieveRangeBitLengthOfNegatedPrivateCredential(); 
+        int rangeBitlengthOfNegatedPrivateCredential = bb.retrieveRangeBitLengthOfNegatedPrivateCredential();
         List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
         List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
 
@@ -101,8 +103,6 @@ public class AthenaVote {
                 h_vector_negatedPrivateCredential);
         BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential, randomness_s);
         BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
-//        BulletproofProof proofRangeOfNegatedPrivateCredential = null;
-
 
         int rangeBitlengthOfVote = bb.retrieveRangeBitLengthOfVote();
         List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
@@ -118,9 +118,16 @@ public class AthenaVote {
                 h_vector_vote);
         BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
         BulletproofProof proofRangeOfVote = bulletProof.proveStatement(stmnt_2, secret_2);
-//        BulletproofProof proofRangeOfVote = null;
 
-        Ballot ballot = new Ballot(publicCredential, encryptedNegatedPrivateCredential, encryptedVote, proofRangeOfNegatedPrivateCredential, proofRangeOfVote, cnt);
+        Ballot ballot = new Ballot.Builder()
+                .setPublicCredential(publicCredential)
+                .setEncryptedNegatedPrivateCredential(encryptedNegatedPrivateCredential)
+                .setEncryptedVote(encryptedVote)
+                .setProofVote(proofRangeOfVote)
+                .setProofNegatedPrivateCredential(proofRangeOfNegatedPrivateCredential)
+                .setCounter(cnt)
+                .build();
+
         bb.publishBallot(ballot);
         return ballot;
     }
@@ -131,9 +138,6 @@ public class AthenaVote {
         private Random random;
         private ElGamal elgamal;
         private BulletinBoard bb;
-
-
-
 
 
         public Builder setSigma1(Sigma1 sigma1) {
@@ -163,16 +167,13 @@ public class AthenaVote {
         }
 
 
-
         public AthenaVote build() {
             //Check that all fields are set
-            if (
-                            bb == null ||
-                            random == null ||
-                            sigma1 == null ||
-                            bulletProof == null ||
-                            elgamal == null
-
+            if (bb == null ||
+                random == null ||
+                sigma1 == null ||
+                bulletProof == null ||
+                elgamal == null
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }

@@ -140,9 +140,9 @@ public class AthenaImpl implements Athena {
             return null;
         }
         return new AthenaTally.Builder()
-                .setRandom(random)
-                .setElgamal(elgamal)
-                .setBb(bb)
+                .setRandom(this.random)
+                .setElgamal(this.elgamal)
+                .setBb(this.bb)
                 .setSigma1(this.sigma1)
                 .setBulletProof(this.bulletProof)
                 .setSigma3(this.sigma3)

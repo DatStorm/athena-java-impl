@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
  * - Invoke Register() to contruct credentials and add the public credential to Electoral Roll on BulletinBoard.
  * -  Issue credentials privately to each voter.
  **/
-public class Registrar implements Entity{
+public class Registrar implements Entity {
     private List<CredentialTuple> credentialList;
     private Athena athena;
     private BulletinBoard bulletinBoard;
@@ -43,7 +43,9 @@ public class Registrar implements Entity{
         // Run Register(numVoters)
         credentialList = IntStream.range(0, numVoters).mapToObj(i -> athena.Register(pkVector).d).collect(Collectors.toList());
         boolean success = credentialList.size() == numVoters;
-                
+
+        assert success : "credentialList.size() != numVoters";
+
         return success;
     }
 
@@ -54,7 +56,12 @@ public class Registrar implements Entity{
             System.err.println("Registrar.sendCredentials => the list of credentials produced is empty!");
             return null;
         }
-        
+
+        if (!(index >= 0 && index < credentialList.size())) {
+            System.err.println("Registrar.sendCredentials => the list of credentials produced is < 0 or >size!");
+            return null;
+        }
+
         CredentialTuple credentials = credentialList.get(index);
         return credentials;
     }

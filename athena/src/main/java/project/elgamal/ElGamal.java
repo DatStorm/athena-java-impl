@@ -20,7 +20,6 @@ public class ElGamal {
         this.group = group;
         this.messageSpaceLength = messageSpaceLength;
 
-
         // Generate lookup table for decryption
         BigInteger g = group.g;
         BigInteger p = group.p;
@@ -115,18 +114,14 @@ public class ElGamal {
 
     // Decrypting El Gamal encryption using secret key
     public BigInteger decrypt(Ciphertext cipherText, ElGamalSK sk) {
-        BigInteger c1 = cipherText.c1;
-        BigInteger c2 = cipherText.c2;
-        BigInteger p = sk.getPK().getGroup().getP();
-        BigInteger c1Alpha = c1.modPow(sk.toBigInteger(), p);      // c1^\alpha
-        BigInteger c1NegAlpha = c1Alpha.modInverse(p); // c1^-\alpha
 
-        // plain = g^m  (look up table to find it needed)
-        BigInteger element = c2.multiply(c1NegAlpha).mod(p); // m=c2 * c1^-alpha mod p
+        BigInteger element = localDecrypt(cipherText, sk);
 
         if(!lookupTable.containsKey(element)){
-            System.out.println(element);
-            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength + " was: " + element);
+            System.out.println("ElGamal.decrypt Dec_sk(c) = g^m = " + element);
+            System.out.println("ElGamal.decrypt           table = " + lookupTable);
+
+            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength);
         } else {
             return lookupTable.get(element);
         }
@@ -134,6 +129,10 @@ public class ElGamal {
 
     // Decrypting El Gamal encryption using secret key
     public BigInteger decryptWithoutLookup(Ciphertext cipherText, ElGamalSK sk) {
+        return localDecrypt(cipherText, sk);
+    }
+
+    private BigInteger localDecrypt(Ciphertext cipherText, ElGamalSK sk) {
         BigInteger c1 = cipherText.c1;
         BigInteger c2 = cipherText.c2;
         BigInteger p = sk.getPK().getGroup().getP();
@@ -141,8 +140,7 @@ public class ElGamal {
         BigInteger c1NegAlpha = c1Alpha.modInverse(p); // c1^-\alpha
 
         // plain = g^m  (look up table to find it needed)
-        BigInteger element = c2.multiply(c1NegAlpha).mod(p); // m=c2 * c1^-alpha mod p
-        return element;
+        return c2.multiply(c1NegAlpha).mod(p);
     }
 
 

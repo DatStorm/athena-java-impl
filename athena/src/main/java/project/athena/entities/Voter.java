@@ -46,7 +46,12 @@ public class Voter implements Entity {
 //     public Ballot castVote(int vote) {
         if (pk_vector == null) {
             System.err.println("Voter.castVote => pkVector is null! Please run Voter.init()");
-//             return null;
+             return;
+        }
+
+        if (vote > nc) {
+            System.err.println("Voter.castVote => vote > nc! Please fix.");
+            return;
         }
 
         counter = counter + 1;
