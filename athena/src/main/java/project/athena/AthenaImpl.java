@@ -153,7 +153,7 @@ public class AthenaImpl implements Athena {
     }
 
     @Override
-    public boolean Verify(PK_Vector pkv, int nc, Map<BigInteger, Integer> tallyOfVotes, PFStruct pf) {
+    public boolean Verify(PK_Vector pkv, int nc, Map<Integer, Integer> tallyOfVotes, PFStruct pf) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Verify => ERROR: System not initialised call .Setup before hand");
             return false;
@@ -168,7 +168,6 @@ public class AthenaImpl implements Athena {
                 .setMc(this.mc)
                 .build()
                 .Verify(pkv, nc, tallyOfVotes, pf);
-
     }
 
 }

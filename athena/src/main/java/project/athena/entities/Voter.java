@@ -32,6 +32,7 @@ public class Voter implements Entity {
     public void init() {
         // Fetch pk and nc from bulletin board
         pk_vector = bulletinBoard.retrievePK_vector();
+//         g,h = bulletinBoard // TODO: retrieve g and h vector
         nc = bulletinBoard.retrieveNumberOfCandidates();
         counter = 0;
     }

@@ -20,7 +20,7 @@ public class AthenaCommon {
     }
 
     // Check all values if hashmap is equal to x.
-    public static boolean valuesAreAllX(Map<BigInteger, Integer> map, Integer x){
+    public static boolean valuesAreAllX(Map<Integer, Integer> map, Integer x){
         for (Integer i : map.values()) {
             if (!x.equals(i)) {
                 System.out.println("found a deviating value");

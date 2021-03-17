@@ -13,7 +13,7 @@ import java.util.Map;
 public class BulletinBoard {
     // static variable single_instance of type Singleton
     private static BulletinBoard single_instance = null;
-    private Map<BigInteger, Integer> tallyOfVotes;
+    private Map<Integer, Integer> tallyOfVotes;
     private PFStruct pf;
     private List<Ballot> ballots;
     private ElectoralRoll electoralRoll;
@@ -60,7 +60,7 @@ public class BulletinBoard {
     public List<Ballot> retrievePublicBallots() { return this.getBallots(); }
     public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
     public void addPublicCredentitalToL(Ciphertext publicCredential_pd) { d();this.electoralRoll.add(publicCredential_pd); }
-    public Map<BigInteger, Integer> retrieveTallyOfVotes() { return this.getTallyOfVotes(); }
+    public Map<Integer, Integer> retrieveTallyOfVotes() { return this.getTallyOfVotes(); }
 
 
     /*
@@ -76,7 +76,7 @@ public class BulletinBoard {
     public void publish_H_VectorVote(List<BigInteger> h_vector_vote) { this.setH_vector_vote(h_vector_vote); }
     public void publish_G_VectorNegPrivCred(List<BigInteger> g_vector_negatedPrivateCredential) { this.setG_vector_negatedPrivateCredential(g_vector_negatedPrivateCredential); }
     public void publish_H_VectorNegPrivCred(List<BigInteger> h_vector_negatedPrivateCredential) { this.setH_vector_negatedPrivateCredential(h_vector_negatedPrivateCredential); }
-    public void publishTallyOfVotes(Map<BigInteger, Integer> tallyOfVotes) { this.setTallyOfVotes(tallyOfVotes); d(); }
+    public void publishTallyOfVotes(Map<Integer, Integer> tallyOfVotes) { this.setTallyOfVotes(tallyOfVotes); d(); }
 
 
 
@@ -151,7 +151,7 @@ public class BulletinBoard {
     private List<BigInteger> getH_vector_negatedPrivateCredential() { return h_vector_negatedPrivateCredential; }
     private int getNc() { return nc; }
     private PFStruct getPF() { return this.pf; }
-    private Map<BigInteger, Integer> getTallyOfVotes() { return tallyOfVotes; }
+    private Map<Integer, Integer> getTallyOfVotes() { return tallyOfVotes; }
     private PK_Vector getPkv() { return pkv; }
 
 
@@ -168,7 +168,7 @@ public class BulletinBoard {
     private void setH_vector_negatedPrivateCredential(List<BigInteger> h_vector_negatedPrivateCredential) { this.h_vector_negatedPrivateCredential = h_vector_negatedPrivateCredential; }
     private void setNc(int nc) { this.nc = nc; }
     private void setPf(PFStruct pf) { this.pf = pf; }
-    private void setTallyOfVotes(Map<BigInteger, Integer> tallyOfVotes) { this.tallyOfVotes = tallyOfVotes; }
+    private void setTallyOfVotes(Map<Integer, Integer> tallyOfVotes) { this.tallyOfVotes = tallyOfVotes; }
     private void setPkv(PK_Vector pkv) { this.pkv = pkv; }
 
 

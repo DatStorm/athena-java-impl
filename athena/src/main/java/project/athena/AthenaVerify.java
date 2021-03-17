@@ -51,7 +51,7 @@ public class AthenaVerify {
 
     public boolean Verify(PK_Vector pkv,
                           int nc,
-                          Map<BigInteger, Integer> tallyOfVotes,
+                          Map<Integer, Integer> tallyOfVotes,
                           PFStruct pf) {
         if (!AthenaCommon.parsePKV(pkv)) {
             System.err.println("AthenaVerify:=> ERROR: pkv null");
@@ -82,7 +82,7 @@ public class AthenaVerify {
          * Check 1: Check ballot removal
          *********/
         // check {b_1,...,b_\ell} = Ø implies b is a zero-filled vector.
-        List<Ballot> validBallots = AthenaTally.removeInvalidBallots(pk, bb);
+        List<Ballot> validBallots = AthenaTally.removeInvalidBallots(pk, this.bb, this.bulletproof);
         if (validBallots.isEmpty() && !AthenaCommon.valuesAreAllX(tallyOfVotes, 0)) {
             System.err.println("AthenaVerify:=> Check 1 failed.");
             return false;
@@ -176,7 +176,6 @@ public class AthenaVerify {
             Sigma3Proof decyptionProof = pfr_data.proofDecryption;
 
 
-
             // Prove that the nonced private credential was decrypted correctly
             System.out.println("-----------------------");
             boolean veri_dec = sigma3.verifyDecryption(ci_prime, noncedNegatedPrivateCredentialElement, pk, decyptionProof, kappa);
@@ -192,8 +191,8 @@ public class AthenaVerify {
         return true;
     }
 
-// Verify that the same nonce was used in all noncedPublicCredentials aka. c'
-private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validBallots, List<PFRStruct> pfr, ElGamalPK pk) {
+    // Verify that the same nonce was used in all noncedPublicCredentials aka. c'
+    private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validBallots, List<PFRStruct> pfr, ElGamalPK pk) {
         int ell = validBallots.size();
         // Verify that the same nonce was used on all nonced private credentials
         //////////////////////////////////////////////////////////////////////////////////
@@ -218,7 +217,7 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
         return true;
     }
 
-    private boolean checkRevelation(List<MixBallot> B, List<PFDStruct> pfd, Map<BigInteger, Integer> officialTally, ElGamalPK pk, int nc) {
+    private boolean checkRevelation(List<MixBallot> B, List<PFDStruct> pfd, Map<Integer, Integer> officialTally, ElGamalPK pk, int nc) {
         if (pfd.size() != B.size()) {
             System.err.println("AthenaVerify:=> ERROR: pfd.size() != |B|");
             return false;
@@ -237,7 +236,7 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
         // Find which ballots vote for each candidate
         // [0, .... |B| -1]  = [0, 100]
         Map<Integer, Integer> tally = new HashMap<>(nc);
-        for (int candidate = 0; candidate < nc; candidate++){
+        for (int candidate = 0; candidate < nc; candidate++) {
             tally.put(candidate, 0);
         }
 
@@ -282,7 +281,7 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
                 System.out.println(i + " -------------------- HERE ----------------");
                 System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption(encryptedVote, vote)");
                 System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption    encryptedVote=   " + encryptedVote.toOneLineString());
-                System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption             vote=   "+ g.pow(vote).mod(p));
+                System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption             vote=   " + g.pow(vote).mod(p));
                 System.out.println(i + " -------------------- DONE ----------------");
 
                 continue;
@@ -295,25 +294,14 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
 
         }
 
-        // Ensure that the tallier counted ALL valid ballots.
-        /* NEW 1.0:
-            * tally(vote=3) = 1 > cntBalInd[i=0] = 0
-            * tally(vote=7) = 1 > cntBalInd[i=1] = 1 <-- FEJLER DER!!!
-            *
-            * OLD:
-            * tally(vote=3) = 1 > cntBalInd[vote=3] = ERROR !!
-            */
-
-
         // Check that our tally matches talliers tally
-        for (int candidate = 0; candidate < nc; candidate++){
+        for (int candidate = 0; candidate < nc; candidate++) {
             BigInteger key = BigInteger.valueOf(candidate);
             if (tally.get(candidate).equals(officialTally.get(key))) {
                 System.out.println("AthenaVerify: Tallier did not count valid votes correctly");
                 return false;
             }
         }
-
 
 
         assert countedBallotIndices.size() == 2 : "WE SHOULD FIND 2 ballots here";
@@ -354,8 +342,8 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
             boolean veri_dec_m = sigma3.verifyDecryption(c_prime, m, pk, proofDecryptionOfCombination, kappa);
             if (!veri_dec_m) {
                 System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption(c', m)");
-                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption: c'= " +c_prime);
-                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption:  m= " +m);
+                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption: c'= " + c_prime);
+                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption:  m= " + m);
                 return false;
             }
 

@@ -21,7 +21,7 @@ public class Verifier implements Entity {
     private PK_Vector pk_vector;
     private PFStruct pf;
     private int nc;
-    private Map<BigInteger, Integer> tally;
+    private Map<Integer, Integer> tally;
 
     public Verifier(Athena athena, BulletinBoard bulletinBoard) {
         this.athena = athena;

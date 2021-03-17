@@ -72,7 +72,7 @@ public class TestAthenaVerify {
         TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc);
         System.out.println("--> Tally done ");
 
-        Map<BigInteger, Integer> b = tallyStruct.tallyOfVotes;
+        Map<Integer, Integer> b = tallyStruct.tallyOfVotes;
         PFStruct pf = tallyStruct.pf;
 
         System.out.println("--> Verify: ");
