@@ -26,7 +26,10 @@ public class Ciphertext {
     public String toFormattedString() {
         return "Ciphertext={\n\t\t'c1': " + this.c1 + ",\n \t\t'c2': " + this.c2 + "}\n";
     }
-    
+
+    public String toOneLineString() {
+        return "Ciphertext={\t'c1': " + this.c1 + ",\t'c2': " + this.c2 + "}";
+    }
 
     public Ciphertext multiply(Ciphertext c, BigInteger p) {
         if (p == null || c == null) {

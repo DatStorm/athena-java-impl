@@ -94,8 +94,6 @@ public class AthenaVote {
         // is this the sk the same??? :D
         ElGamalSK sk__ = new ElGamalSK(pk.group, CONSTANTS.ELGAMAL_CURRENT.FAKE_SK);
         BigInteger decrypted = elgamal.decrypt(encryptedVote, sk__);
-        System.out.println("VOTE TO ENC: " + voteAsBigInteger);
-        System.out.println("VOTE DEC:    " + decrypted);
 
 
         assert decrypted.equals(voteAsBigInteger) : "AEFAEKF";
@@ -134,7 +132,6 @@ public class AthenaVote {
         BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
         BulletproofProof proofRangeOfVote = bulletProof.proveStatement(stmnt_2, secret_2);
 
-        System.out.println("FUCKKKKKKKK      :::  " + encryptedVote.toFormattedString());
         Ballot ballot = new Ballot.Builder()
                 .setPublicCredential(publicCredential)
                 .setEncryptedNegatedPrivateCredential(encryptedNegatedPrivateCredential)

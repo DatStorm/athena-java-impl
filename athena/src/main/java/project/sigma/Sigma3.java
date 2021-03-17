@@ -145,7 +145,8 @@ public class Sigma3 {
     public boolean checkPart1(BigInteger alpha_base, BigInteger r, BigInteger a, BigInteger alpha, BigInteger c, BigInteger p) {
         BigInteger alpha_base_r = alpha_base.modPow(r, p);
         BigInteger a_alpha_c = a.multiply(alpha.modPow(c,p)).mod(p);
-//        d("p1: alpha_base_r=" + alpha_base_r + ", a_alpha_c="+ a_alpha_c);
+        d("check1: alpha_base_r=  " + alpha_base_r);
+        d("check1: a_alpha_c=     " + a_alpha_c);
         return alpha_base_r.compareTo(a_alpha_c) == 0;
     }
     

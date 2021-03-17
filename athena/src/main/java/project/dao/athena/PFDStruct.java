@@ -53,7 +53,9 @@ public class PFDStruct {
 
     @Override
     public String toString() {
-        return "PFD{" + (type == Level.VALID ? "m=" : "v=") + plaintext.toString().substring(0, 5) + "}";
+//        String substring = plaintext.toString().substring(0, 5);
+        String substring = plaintext.toString();
+        return "PFD{" + (type == Level.VALID ? "m=" : "v=") + substring + ", Sigma3.proofDec(...)^Comb: "+ proofDecryptionOfCombination.toString() + "}";
 
 
 //        return "PFDStruct{" +

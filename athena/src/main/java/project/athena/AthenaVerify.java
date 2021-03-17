@@ -54,26 +54,26 @@ public class AthenaVerify {
                           Map<BigInteger, Integer> tallyOfVotes,
                           PFStruct pf) {
         if (!AthenaCommon.parsePKV(pkv)) {
-            System.err.println("AthenaImpl.Verify => ERROR: pkv null");
+            System.err.println("AthenaVerify:=> ERROR: pkv null");
             return false;
         }
         ElGamalPK pk = pkv.pk;
 
         // tallyVotes length should contain at most nc elements
         if (tallyOfVotes.keySet().size() > nc) {
-            System.err.println("AthenaImpl.Verify => ERROR: tallyOfVotes.keySet().size()=" + tallyOfVotes.keySet().size() + " > nc=" + nc);
+            System.err.println("AthenaVerify:=> ERROR: tallyOfVotes.keySet().size()=" + tallyOfVotes.keySet().size() + " > nc=" + nc);
             return false;
         }
 
         // Verify that the ElGamal keys are constructed correctly
         if (!AthenaCommon.verifyKey(sigma1, pkv, kappa)) {
-            System.err.println("AthenaImpl.Verify => ERROR: VerifyKey(...) => false");
+            System.err.println("AthenaVerify:=> ERROR: VerifyKey(...) => false");
             return false;
         }
 
         // Check that the number of candidates nc in the given election does not exceed the maximum number mc.
         if (BigInteger.valueOf(nc).compareTo(this.mc) > 0) { // if nc > mc
-            System.err.println("AthenaImpl.Verify => ERROR: nc= " + nc + " > mc=" + mc);
+            System.err.println("AthenaVerify:=> ERROR: nc= " + nc + " > mc=" + mc);
             return false;
         }
 
@@ -84,7 +84,7 @@ public class AthenaVerify {
         // check {b_1,...,b_\ell} = Ø implies b is a zero-filled vector.
         List<Ballot> validBallots = AthenaTally.removeInvalidBallots(pk, bb);
         if (validBallots.isEmpty() && !AthenaCommon.valuesAreAllX(tallyOfVotes, 0)) {
-            System.err.println("AthenaImpl.Verify => Check 1 failed.");
+            System.err.println("AthenaVerify:=> Check 1 failed.");
             return false;
         }
 
@@ -92,12 +92,12 @@ public class AthenaVerify {
          * Check 2: Check mix
          *********/
         if (!AthenaCommon.parsePF(pf)) {
-            System.err.println("AthenaImpl.Verify => ERROR: pf parsed as null");
+            System.err.println("AthenaVerify:=> ERROR: pf parsed as null");
             return false;
         }
 
         // Verify decryption of homomorphic combination
-        boolean homoCombinationsAreValid = this.verifyDecryptionOfNoncedPublicCredential(validBallots, pf.pfr, pk);
+        boolean homoCombinationsAreValid = this.verifyDecryptionOfNoncedNegatedPrivateCredential(validBallots, pf.pfr, pk);
         if (!homoCombinationsAreValid) {
             return false;
         }
@@ -119,7 +119,7 @@ public class AthenaVerify {
          * Check 3: Check revelation
          *********/
         // Verify that
-        return this.checkRevelation(pf.mixBallotList, pf.pfd, pk);
+        return this.checkRevelation(pf.mixBallotList, pf.pfd, tallyOfVotes, pk, nc);
     }
 
     private static boolean checkMix(Mixnet mixnet, List<Ballot> validBallots, PFStruct pf, ElGamalPK pk) {
@@ -152,14 +152,14 @@ public class AthenaVerify {
         MixStatement statement = new MixStatement(filteredBallots, B);
         boolean veri_mix = mixnet.verify(statement, mixProof, kappa);
         if (!veri_mix) {
-            System.err.println("AthenaImpl.Verify => ERROR: mixProof was invalid");
+            System.err.println("AthenaVerify:=> ERROR: mixProof was invalid");
             return false;
         }
 
         return true;
     }
 
-    private boolean verifyDecryptionOfNoncedPublicCredential(List<Ballot> validBallots, List<PFRStruct> pfr, ElGamalPK pk) {
+    private boolean verifyDecryptionOfNoncedNegatedPrivateCredential(List<Ballot> validBallots, List<PFRStruct> pfr, ElGamalPK pk) {
         int ell = validBallots.size();
         // Verify decryption of nonced public credential
         //////////////////////////////////////////////////////////////////////////////////
@@ -169,28 +169,19 @@ public class AthenaVerify {
             PFRStruct pfr_data = pfr.get(i);
             Ciphertext ci_prime = pfr_data.ciphertextCombination;
 
-//            System.err.println(i + ": AthenaImpl.Verify => ci_prime:");
+//            System.err.println(i + ": AthenaVerify:=> ci_prime:");
 //            System.err.println(ci_prime.toFormattedString());
 
             BigInteger noncedNegatedPrivateCredentialElement = pfr_data.plaintext_N;
             Sigma3Proof decyptionProof = pfr_data.proofDecryption;
 
 
-            /*
-             * log_{alpha_base} alpha = log_{beta_base} beta
-             *      alpha_base  = g
-             *      alpha       = c1^n = Enc_pk(-d)^n mod p = (g^r,g^-d * h^r)^n = (g^{r * n},g^{-d * n} * h^{r * n})
-             *      beta_base   = g
-             *      beta        = Ni = Dec_sk(ci_prime) = Dec_sk(homoComb(c1,n))= Dec_sk(c1^n mod p)
-             *
-             * log_{g} c1^n = log_{g} Ni
-             */
 
-
-            // Proove that the nonced private credential was decrypted correctly
+            // Prove that the nonced private credential was decrypted correctly
+            System.out.println("-----------------------");
             boolean veri_dec = sigma3.verifyDecryption(ci_prime, noncedNegatedPrivateCredentialElement, pk, decyptionProof, kappa);
             if (!veri_dec) {
-                System.err.println(i + ": AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption");
+                System.err.println(i + ": AthenaVerify:=> ERROR: Sigma3.verifyDecryption");
 //                System.out.println(i + ": ci_prime = " + ci_prime.toFormattedString());
                 System.out.println(i + ": Ni       = " + noncedNegatedPrivateCredentialElement);
 //                System.out.println(i + ": sigma_i  = " + sigma_i);
@@ -220,18 +211,22 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
 
             boolean veri_comb = sigma4.verifyCombination(pk, combinedList, listOfEncryptedNegatedPrivateCredential, proofCombination, kappa);
             if (!veri_comb) {
-                System.err.println("AthenaImpl.Verify => ERROR: Sigma4.verifyCombination([c'_i-1, c'_i], [b_i-1, b_i])");
+                System.err.println("AthenaVerify:=> ERROR: Sigma4.verifyCombination([c'_i-1, c'_i], [b_i-1, b_i])");
                 return false;
             }
         }
         return true;
     }
 
-    private boolean checkRevelation(List<MixBallot> B, List<PFDStruct> pfd, ElGamalPK pk) {
+    private boolean checkRevelation(List<MixBallot> B, List<PFDStruct> pfd, Map<BigInteger, Integer> officialTally, ElGamalPK pk, int nc) {
         if (pfd.size() != B.size()) {
-            System.err.println("AthenaImpl.Verify => ERROR: pfd.size() != |B|");
+            System.err.println("AthenaVerify:=> ERROR: pfd.size() != |B|");
             return false;
         }
+
+        BigInteger p = pk.getGroup().getP();
+        BigInteger g = pk.getGroup().getG();
+
 
         // Verify that all valid ballots were counted, and that the rest are invalid.
         // [0,1,..., |B|-1]
@@ -241,12 +236,20 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
 
         // Find which ballots vote for each candidate
         // [0, .... |B| -1]  = [0, 100]
-        Map<BigInteger, Integer> tally = new HashMap<>();
+        Map<Integer, Integer> tally = new HashMap<>(nc);
+        for (int candidate = 0; candidate < nc; candidate++){
+            tally.put(candidate, 0);
+        }
+
+
         List<Integer> countedBallotIndices = new ArrayList<>();
 
 
         // Find and count valid ballots
         for (Integer i : uncountedBallotIndices) {
+
+            //TODO: Skal vi ikke switche på om m=1 eller m!= 1 ??
+
             // Get relevant data
             MixBallot mixBallot = B.get(i);
             Ciphertext combinedCredential = mixBallot.getCombinedCredential();
@@ -259,7 +262,7 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
             // Verify homo combination
             boolean veri_comb = sigma4.verifyCombination(pk, c_prime, combinedCredential, proofCombination, kappa);
             if (!veri_comb) {
-                System.out.println(i + "AthenaImpl.Verify => ERROR: Sigma4.verifyCombination(c', c1)");
+                System.out.println(i + "AthenaVerify:=> ERROR: Sigma4.verifyCombination(c', c1)");
                 continue;
             }
 
@@ -267,16 +270,21 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
             Sigma3Proof proofDecryptionOfCombination = verificationInfo.proofDecryptionOfCombination;
             boolean veri_dec_1 = sigma3.verifyDecryption(c_prime, BigInteger.ONE, pk, proofDecryptionOfCombination, kappa);
             if (!veri_dec_1) {
-                System.out.println(i + "AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption(c', 1)");
+                System.out.println(i + "AthenaVerify:=> ERROR: Sigma3.verifyDecryption(c', 1)");
                 continue;
             }
 
             // Verify decryption of vote
-            BigInteger vote = verificationInfo.plaintext;
+            Integer vote = verificationInfo.plaintext.intValueExact();
             Sigma3Proof proofDecryptionVote = verificationInfo.proofDecryptionVote;
-            boolean veri_dec_v = sigma3.verifyDecryption(encryptedVote, vote, pk, proofDecryptionVote, kappa);
+            boolean veri_dec_v = sigma3.verifyDecryption(encryptedVote, g.pow(vote).mod(p), pk, proofDecryptionVote, kappa);
             if (!veri_dec_v) {
-                System.out.println(i + "AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption(encryptedVote, vote)");
+                System.out.println(i + " -------------------- HERE ----------------");
+                System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption(encryptedVote, vote)");
+                System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption    encryptedVote=   " + encryptedVote.toOneLineString());
+                System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption             vote=   "+ g.pow(vote).mod(p));
+                System.out.println(i + " -------------------- DONE ----------------");
+
                 continue;
             }
 
@@ -285,15 +293,36 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
             tally.merge(vote, 1, Integer::sum);
             countedBallotIndices.add(i);
 
-            // Ensure that the tallier counted ALL valid ballots.
-            if (tally.get(vote) > countedBallotIndices.get(vote.intValueExact())) {
-                System.out.println("AthenaImpl.Verify. Tallier did not count all valid votes");
+        }
+
+        // Ensure that the tallier counted ALL valid ballots.
+        /* NEW 1.0:
+            * tally(vote=3) = 1 > cntBalInd[i=0] = 0
+            * tally(vote=7) = 1 > cntBalInd[i=1] = 1 <-- FEJLER DER!!!
+            *
+            * OLD:
+            * tally(vote=3) = 1 > cntBalInd[vote=3] = ERROR !!
+            */
+
+
+        // Check that our tally matches talliers tally
+        for (int candidate = 0; candidate < nc; candidate++){
+            BigInteger key = BigInteger.valueOf(candidate);
+            if (tally.get(candidate).equals(officialTally.get(key))) {
+                System.out.println("AthenaVerify: Tallier did not count valid votes correctly");
                 return false;
             }
         }
 
+
+
+        assert countedBallotIndices.size() == 2 : "WE SHOULD FIND 2 ballots here";
+        System.out.println("SIZE OF UNCOUNTED BEFORE: " + uncountedBallotIndices.size());
+
         // Remove the indices from 'countedBallotIndices' from 'uncountedBallotIndices'
         uncountedBallotIndices.removeAll(countedBallotIndices);
+
+        System.out.println("SIZE OF UNCOUNTED AFTER: " + uncountedBallotIndices.size());
 
         // and for each remaining integer i \in {1,..., |B|}
         for (int j : uncountedBallotIndices) {
@@ -313,21 +342,25 @@ private boolean verifySameNonceWasUsedOnAllPublicCredentials(List<Ballot> validB
                     proofCombination,
                     kappa);
             if (!veri_comb) {
-                System.err.println("AthenaImpl.Verify => ERROR: Sigma4.verifyCombination(c', c1)");
+                System.err.println("AthenaVerify:=> ERROR: Sigma4.verifyCombination(c', c1)");
                 return false;
             }
 
             // Verify decryption of homo combination into m != 1
             BigInteger m = pfd_data.plaintext;
             Sigma3Proof proofDecryptionOfCombination = pfd_data.proofDecryptionOfCombination;
+            System.out.println("-------------------- BELOW ----------------");
+            System.out.println(pfd_data.toString());
             boolean veri_dec_m = sigma3.verifyDecryption(c_prime, m, pk, proofDecryptionOfCombination, kappa);
             if (!veri_dec_m) {
-                System.err.println("AthenaImpl.Verify => ERROR: Sigma3.verifyDecryption(c', m)");
+                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption(c', m)");
+                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption: c'= " +c_prime);
+                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption:  m= " +m);
                 return false;
             }
 
             if (!m.equals(BigInteger.ONE)) {
-                System.err.println(j + ": AthenaImpl.Verify => ERROR: m == 1");
+                System.err.println(j + ": AthenaVerify:=> ERROR: m == 1");
                 return false;
             }
         }

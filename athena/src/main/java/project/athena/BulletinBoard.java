@@ -70,10 +70,7 @@ public class BulletinBoard {
     public void publishPF(PFStruct pf) {  this.setPf(pf); } //d();
     public void publishNumberOfCandidates(int nc) { this.setNc(nc); }
     public void publish_G_VectorVote(List<BigInteger> g_vector_vote) { this.setG_vector_vote(g_vector_vote); }
-    public void publishBallot(Ballot ballot) {
-//        System.out.println("BulletinBoard.publishBallot received ballot = " + ballot.toString());
-        this.addBallot(ballot);
-    }
+    public void publishBallot(Ballot ballot) { this.addBallot(ballot); }
     public void publishRangeNumberVote(int n_vote) { this.setRangeNumberVote(n_vote); }
     public void publishRangeNumberNegatedPrivCred(int n_negatedPrivateCredential) { this.setRangeNumberNegatedPrivCred(n_negatedPrivateCredential); }
     public void publish_H_VectorVote(List<BigInteger> h_vector_vote) { this.setH_vector_vote(h_vector_vote); }

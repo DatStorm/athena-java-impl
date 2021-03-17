@@ -32,8 +32,6 @@ public class ElGamal {
         for(int i = 0; i < messageSpaceLength; i++) {
             lookupTable.put(g.pow(i).mod(p), BigInteger.valueOf(i));
         }
-
-        System.out.println(lookupTable);
     }
 
 //    public ElGamal(int bitLength) {

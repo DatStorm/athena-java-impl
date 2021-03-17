@@ -47,20 +47,11 @@ public class AthenaTally {
         BigInteger p = pk.getGroup().p;
         BigInteger q = pk.getGroup().q;
 
-        // voter 1 votes  => 7
-        // voter 2 votes  => 3
         List<BigInteger> res2 = Arrays.asList(BigInteger.valueOf(7), BigInteger.valueOf(3));
-//        System.out.println("-----------------------------------");
-//        System.out.println("BB: "+ this.bb.retrievePublicBallots());
-//        System.out.println("-----------------------------------");
-
         int i = 0;
         for (Ballot ballot : this.bb.retrievePublicBallots()) {
             Ciphertext encryptedVote = ballot.getEncryptedVote();
-            System.out.println("JA TAK          :::  " + encryptedVote.toFormattedString());
             BigInteger dec = elgamal.decrypt(encryptedVote, sk);
-            System.out.println("AthenaTally.Tally Dec_sk(..) = " + dec);
-            System.out.println("AthenaTally.Tally res = " + res2.get(i));
             assert dec.equals(res2.get(i)) : "Det fejler....";
             i++;
         }
@@ -83,10 +74,6 @@ public class AthenaTally {
         Map<MapAKey, MapAValue> A = filterResult.getLeft();
         List<PFRStruct> pfr = filterResult.getRight();
 
-        System.out.println("A: " + A.values().stream()
-                .map(MapAValue::getCombinedCredential)
-                .map(combinedCredential -> elgamal.decryptWithoutLookup(combinedCredential, sk))
-                .collect(Collectors.toList()));
 
         assert A.values().stream()
                 .map(MapAValue::getCombinedCredential)
@@ -100,15 +87,9 @@ public class AthenaTally {
         int i2 = 0;
         for (MapAValue value : A.values()) {
             BigInteger dec = elgamal.decrypt(value.getEncryptedVote(), sk);
-            System.out.println("AthenaTally.Tally Dec_sk(..) = " + dec);
-            assert dec.equals(res.get(i2)) : "Det fejler....";
+            assert res.contains(dec) : "Det fejler3....";
             i2++;
         }
-
-
-
-
-
 
 
         // Perform random mix
@@ -120,8 +101,9 @@ public class AthenaTally {
         for (MixBallot value : mixedBallots) {
             BigInteger dec = elgamal.decrypt(value.getEncryptedVote(), sk);
             System.out.println("AthenaTally.Tally Dec_sk(..) = " + dec);
-            assert res.contains(dec) : "Det fejler2....";
+            assert res.contains(dec) : "Det fejler4....";
         }
+
 
 
 
@@ -130,12 +112,6 @@ public class AthenaTally {
                 .map(combCred -> elgamal.decryptWithoutLookup(combCred, sk))
                 .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)): "Not equal 1 after mixing";
 
-        System.out.println("M: " + mixedBallots.stream()
-                .map(MixBallot::getCombinedCredential)
-                .map(combCred -> elgamal.decryptWithoutLookup(combCred, sk))
-                .collect(Collectors.toList()));
-
-        System.out.println("---> |B|: " + mixedBallots.size());
 
         /* ********
          * Step 3: Reveal eligible votes
@@ -156,8 +132,6 @@ public class AthenaTally {
     // Step 1 of Tally
     public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoard bb) {
         List<Ballot> finalBallots = new ArrayList<>(bb.retrievePublicBallots());
-
-        System.out.println("FINAL BALLOTS.size(): " + finalBallots.size());
 
         for (Ballot ballot : bb.retrievePublicBallots()) {
             Ciphertext publicCredential = ballot.getPublicCredential();
@@ -318,8 +292,6 @@ public class AthenaTally {
             assert m_mark.equals(BigInteger.ONE) : "Something wrong ??";
 
             BigInteger m = elgamal.decryptWithoutLookup(c_prime, sk);
-            System.out.println("--> c_prime: " +  c_prime);
-            System.out.println("--> m:       " +  m);
 
 
             // Prove that c' is a homomorphic combination of combinedCredential
@@ -336,10 +308,10 @@ public class AthenaTally {
             // Check validity of private credential. (decrypted combinedCredential = 1)
             if (m.equals(BigInteger.ONE)) {
                 System.out.println("AthenaTally.revealEligibleVotes CASE: M=1  ");
-                System.out.println("AthenaTally.revealEligibleVotes Enc_pk(v): " + encryptedVote.toFormattedString());
 
                 // Decrypt vote
                 BigInteger vote = elgamal.decrypt(encryptedVote, sk);
+                BigInteger voteElement = elgamal.decryptWithoutLookup(encryptedVote, sk);
 
                 // Tally the vote
                 if (tallyOfVotes.containsKey(vote)) { // Check that map already has some votes for that candidate.
@@ -350,15 +322,14 @@ public class AthenaTally {
                 }
 
                 // Prove correct decryption of vote
-                Sigma3Proof voteDecryptionProof = sigma3.proveDecryption(encryptedVote, vote, sk, kappa);
+                Sigma3Proof voteDecryptionProof = sigma3.proveDecryption(encryptedVote, voteElement, sk, kappa);
 
                 // Store proofs
                 PFDStruct value = PFDStruct.newValid(c_prime, vote, combinationProof, combinationDecryptionProof, voteDecryptionProof);
                 pfd.add(value);
 
             } else { // m != 1
-                System.out.println("--> CASE: M!=1");
-
+                System.out.println("AthenaTally.revealEligibleVotes CASE: M != 1  ");
                 PFDStruct value = PFDStruct.newInvalid(c_prime, m, combinationProof, combinationDecryptionProof);
                 pfd.add(value);
             }
