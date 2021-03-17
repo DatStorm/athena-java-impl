@@ -17,7 +17,7 @@ public class ElGamal {
     public ElGamal(Group group, int messageSpaceLength, Random random) {
 
         if (messageSpaceLength < 0) {
-            System.out.println("ERROR messageSpaceLength < 0");
+            System.err.println("ERROR messageSpaceLength < 0");
         }
 
         this.random = random;
@@ -58,7 +58,6 @@ public class ElGamal {
 //        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
 //
 //        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
-//        //g = Group.findGenerator(p, random); // FIXME: Replace above HMMMMMMMM. Suspect
 
 
         if (p.bitLength() <= bitLength) {
@@ -74,9 +73,17 @@ public class ElGamal {
         return group;
     }
 
+
+
+    /**
+     * Precondition: messageElement should be in the group
+     * @param messageElement A group element in group G
+     * @param pk
+     * @return
+     */
     public Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk){
         BigInteger r = UTIL.getRandomElement(BigInteger.ZERO, group.q, this.random);
-        return exponentialEncrypt(messageElement, pk, r);
+        return encrypt(messageElement, pk, r);
     }
 
     public Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk, BigInteger r){
@@ -84,13 +91,14 @@ public class ElGamal {
         BigInteger q = pk.group.q;
         r = r.mod(q).add(q).mod(q);
 
-        //TODO: Check that messageElement is a group element
+        // We dont know how to check group membership, but lets just check group order for safety.
+        assert messageElement.modPow(q, p).equals(BigInteger.ONE);
 
         // Extract public key
         BigInteger g = pk.group.g;
         BigInteger h = pk.h;
 
-        // C = (g^r, g^m·h^r)
+        // C = (g^r, m·h^r)
         return new Ciphertext(g.modPow(r, p), h.modPow(r, p).multiply(messageElement).mod(p));
     }
 
@@ -113,8 +121,6 @@ public class ElGamal {
         if (msg.signum() == -1) {
             throw new IllegalArgumentException("BigInteger must be positive. Was " + msg);
         }
-        // Check for 0 invalid
-
         // Extract public key
         BigInteger g = pk.group.g;
 
@@ -164,9 +170,8 @@ public class ElGamal {
         }
 
         BigInteger q = this.group.getQ();
-//        BigInteger sk = UTIL.getRandomElement(q, random);
+        BigInteger sk = UTIL.getRandomElement(q, random);
 
-        BigInteger sk = CONSTANTS.ELGAMAL_CURRENT.FAKE_SK; // TODO: FIXME: remove me once testing is done
 
         return new ElGamalSK(this.group, sk);
     }

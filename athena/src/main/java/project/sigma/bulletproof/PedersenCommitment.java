@@ -21,7 +21,7 @@ public class PedersenCommitment {
         return  g.modPow(m,order).multiply(h.modPow(r,order)).mod(order);
     }
 
-    // Pedersen's vector commitment h^x gs^ms * hs^rs of message ms using randomness rs.
+    // Pedersen's vector commitment h^x * gs^ms * hs^rs of message ms using randomness rs.
     // The order denotes the order of the group.
     public static BigInteger commitVector(
         BigInteger h,

@@ -44,10 +44,8 @@ public class Sigma1 {
         BigInteger h = publicInfoSigma1.getPK().getH();
 
 
-        BigInteger _p_minus_1 = p.subtract(BigInteger.ONE);
-        BigInteger p_minus_1 = q; // TODO: Changed to q instead of p-1
         for (int i = 0; i < kappa; i++) {
-            BigInteger ei = UTIL.getRandomElement(p_minus_1, random); //int ei = new rand ei in Z_p-1;
+            BigInteger ei = UTIL.getRandomElement(q, random); //int ei = new rand ei in Z_q;
 
             e1_ek.add(ei);
             y1_yk.add(g.modPow(ei, p));
@@ -69,7 +67,7 @@ public class Sigma1 {
             if (bi) {
                 // b_i = 1
                 // s_i = e_i - e_j mod p-1
-                si = ei.subtract(ej).mod(p_minus_1);
+                si = ei.subtract(ej).mod(q);
             } else {
                 // b_i = 0
                 si = ei;
@@ -80,7 +78,7 @@ public class Sigma1 {
         }
 
         // zeta = \alpha(sk) - e[j] mod (p-1)
-        BigInteger zeta = alpha.subtract(ej).mod(p_minus_1);
+        BigInteger zeta = alpha.subtract(ej).mod(q);
 
         return new ProveKeyInfo(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
     }
@@ -107,11 +105,6 @@ public class Sigma1 {
 
 
     public BigInteger hashH(byte[] fi, BigInteger g, BigInteger h, ArrayList<BigInteger> y1_yk)  {
-
-//        long long_r = r.getValue();
-//        byte[] rand_bytes = Longs.toByteArray(long_r);
-//        byte [] bA_bytes = new byte[]{(byte) (bA? 1:0)};
-
         // f -> F(r,b_A)
         byte[] hashbytes = this.hashFunctionH.digest(Bytes.concat(fi, UTIL.ARRAYLIST_TO_BYTE_ARRAY(y1_yk)));
 

@@ -43,21 +43,11 @@ public class AthenaTally {
     }
 
     public TallyStruct Tally(SK_Vector skv, int nc) {
-
         ElGamalSK sk = skv.sk;
         ElGamalPK pk = sk.pk;
-        BigInteger p = pk.getGroup().p;
-        BigInteger q = pk.getGroup().q;
 
-        List<Integer> res2 = Arrays.asList(7, 3);
-        int i = 0;
-        for (Ballot ballot : this.bb.retrievePublicBallots()) {
-            Ciphertext encryptedVote = ballot.getEncryptedVote();
-            BigInteger voteElement = elgamal.decrypt(encryptedVote, sk);
-            Integer vote = elgamal.lookup(voteElement);
-            assert vote.equals(res2.get(i)) : "Det fejler....";
-            i++;
-        }
+
+
 
         /* ********
          * Step 1: Remove invalid ballots
@@ -84,28 +74,10 @@ public class AthenaTally {
                 .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1 before mixing";
 
 
-        // voter 1 votes  => 7
-        // voter 2 votes  => 3
-        List<Integer> res = Arrays.asList(3,7);
-        for (MapAValue value : A.values()) {
-            BigInteger voteElement = elgamal.decrypt(value.getEncryptedVote(), sk);
-            Integer vote = elgamal.lookup(voteElement);
-            assert res.contains(vote) : "Det fejler3....";
-        }
-
-
         // Perform random mix
         Pair<List<MixBallot>, MixProof> mixPair = mixnet(A);
         List<MixBallot> mixedBallots = mixPair.getLeft();
         MixProof mixProof = mixPair.getRight();
-
-
-        for (MixBallot value : mixedBallots) {
-            BigInteger voteElement = elgamal.decrypt(value.getEncryptedVote(), sk);
-            Integer vote = elgamal.lookup(voteElement);
-            System.out.println("AthenaTally.Tally Dec_sk(..) = " + vote);
-            assert res.contains(vote) : "Det fejler4....";
-        }
 
 
         assert mixedBallots.stream()
@@ -144,9 +116,8 @@ public class AthenaTally {
                 finalBallots.remove(ballot);
             }
 
-            // TODO:
+
             // TODO: Fix the bulletproof range stuff into two proofs.
-            // TODO:
 //            // Verify that the negated private credential is in the valid range
 //            // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersens' commitment of (-d) using randomness s
 //            Ciphertext encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
@@ -202,7 +173,7 @@ public class AthenaTally {
             // Homomorpically reencrypt(by raising to power n) ballot and decrypt
             Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p);
 
-            // Dec(Enc(x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
+            // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
             BigInteger noncedNegatedPrivateCredentialElement = elgamal.decrypt(ci_prime, sk);
 
             if (i == 0) { // Just for debug help

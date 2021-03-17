@@ -62,8 +62,7 @@ public class Voter implements Entity {
         }
 
         counter = counter + 1;
-        Ballot ballot = athena.Vote(credentialTuple, pk_vector, vote, counter, nc);
-//         Ballot ballot = athena.Vote(credentialTuple, pk_vector, g_vector_vote, h_vector_vote, vote, counter, nc);
+         Ballot ballot = athena.Vote(credentialTuple, pk_vector, vote, counter, nc);
 //         return ballot;
     }
 }

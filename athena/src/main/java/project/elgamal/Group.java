@@ -43,18 +43,21 @@ public class Group {
     public BigInteger newGenerator(Random random) {
         BigInteger i = UTIL.getRandomElement(q, random);
         BigInteger generator = g.modPow(i, p);
-
-        assert generator.modPow(q, p).equals(BigInteger.ONE);
+        assert generator.modPow(q, p).equals(BigInteger.ONE) : "(g^i)^q mod p != 1";
 
         return generator;
     }
 
     public List<BigInteger> newGenerators(int n, Random random) {
+        assert BigInteger.valueOf(n).compareTo(q) < 0 : "n should be less then q";
         ArrayList<BigInteger> generators = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) {
-            generators.add(newGenerator(random));
-        }
         
+        do {
+            BigInteger newGen = newGenerator(random);
+            if (! generators.contains(newGen)) {
+                generators.add(newGen);
+            }
+        }while (generators.size() != n);
         return generators;
     }
 

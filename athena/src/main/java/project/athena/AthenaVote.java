@@ -87,11 +87,7 @@ public class AthenaVote {
         // Create encryption of vote,
         BigInteger voteAsBigInteger = BigInteger.valueOf(vote);
         BigInteger randomness_t = UTIL.getRandomElement(q, random);
-
-
         Ciphertext encryptedVote = elgamal.exponentialEncrypt(voteAsBigInteger, pk, randomness_t);
-
-        
 
 
         // Get public values from bb.
@@ -110,8 +106,8 @@ public class AthenaVote {
         BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
 
         int rangeBitlengthOfVote = bb.retrieveRangeBitLengthOfVote();
-        List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote(); // TODO: get this from parameter instead
-        List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote(); // TODO: get this from parameter instead
+        List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
+        List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
 
 
         // Prove that vote v resides in [0,nc-1] (this is defined using n)

@@ -37,12 +37,14 @@ public class TestAthenaVote {
     @BeforeEach
     void setUp() {
         msFactory = new MainAthenaFactory();
+
+        this.elgamal = new ElGamal(kappa, CONSTANTS.MSG_SPACE_LENGTH, msFactory.getRandom());
+
         athena = new AthenaImpl(msFactory);
         ElectionSetup setup = athena.Setup(kappa, nc);
 
         pkv = setup.pkv;
         sk = setup.sk;
-        elgamal = setup.elgamal;
 
         RegisterStruct register = athena.Register(pkv);
         dv = register.d;
@@ -61,11 +63,11 @@ public class TestAthenaVote {
         assertNotNull("Should not be null", ballot.getEncryptedVote());
         assertNotNull("Should not be null", ballot.getProofNegatedPrivateCredential());
         assertNotNull("Should not be null", ballot.getProofVote());
-        assertNotEquals("Should not be 0",0, ballot.getCounter());
+        assertEquals("Should be 0",0, ballot.getCounter());
     }
 
     @Test
-    void TestBallotConstuction() {
+    void TestBallotConstruction() {
         int vote = 7;
         int cnt = 0;
         int nc = 10;
@@ -76,18 +78,9 @@ public class TestAthenaVote {
         BigInteger m = elgamal.decrypt(combinedCredential, sk);
         assertEquals(BigInteger.ONE, m);
 
-        BigInteger decryptedVote = elgamal.decrypt(ballot.encryptedVote, sk);
-        assertEquals(vote, decryptedVote.intValueExact());
+        Integer decryptedVote = elgamal.exponentialDecrypt(ballot.encryptedVote, sk);
+        assertEquals(vote, decryptedVote.intValue());
     }
-    @Test
-    void TestBallotConstuction2_0() {
 
-        int vote = 4;
-        int cnt = 0;
-        int nc = 10;
-        Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc);
-
-
-    }
 
 }

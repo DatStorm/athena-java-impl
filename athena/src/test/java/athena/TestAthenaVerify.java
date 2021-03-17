@@ -79,7 +79,6 @@ public class TestAthenaVerify {
         boolean verify = athena.Verify(pkv, nc, b, pf);
         System.out.println("--> Verify done ");
         assertTrue("should return 1", verify);
-
-
+        
     }
 }

@@ -31,7 +31,6 @@ public class Tallier implements Entity {
     private ElectionSetup electionSetup;
     private ElGamalPK pk;
     private ElGamalSK sk;
-    private ElGamal elGamal;
 
     public Tallier(Athena athena, BulletinBoard bulletinBoard, int kappa,  int nc) {
         this.kappa = kappa;
@@ -46,14 +45,8 @@ public class Tallier implements Entity {
         electionSetup = athena.Setup(kappa, nc);
         sk = electionSetup.sk;
         pk = electionSetup.pkv.pk;
-        elGamal = electionSetup.elgamal;
     }
 
-//     public ElGamal getElGamal(){
-//         return elGamal;
-//     }
-
-//     public Map<BigInteger, Integer> tallyVotes() {
     public void tallyVotes() {
         // Run Tally()
         if (sk == null){
@@ -61,7 +54,6 @@ public class Tallier implements Entity {
         }
         
         TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc);
-//         return tallyStruct.tallyOfVotes;
     }
 
 }

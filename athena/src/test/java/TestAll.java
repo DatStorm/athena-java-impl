@@ -4,13 +4,13 @@ import org.junit.platform.suite.api.IncludeTags;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.runner.RunWith;
 
-
 @RunWith(JUnitPlatform.class)
 @SelectPackages("")
 @IncludeTags({
         "TestElgamal",
-//        "TestsSigma1", // FIXME: add when done!
-        "TestsSigma2BulletProof",
+        // FIXME: add when done!
+//        "TestsSigma1",
+//        "TestsSigma2BulletProof",
         "TestsSigma3",
         "TestsSigma4",
         "TestsMixnets",
@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
         "TestsAthenaTally",
         "TestsAthenaVerify",
 })
-@ExcludeTags({""})
+//@ExcludeTags({""})
 public class TestAll {
 }
+

@@ -61,7 +61,7 @@ public class AthenaImpl implements Athena {
         ElGamalSK sk = gen.generate();
         ElGamalPK pk = sk.pk;
         Group group = pk.group;
-        this.elgamal = gen.getElGamal(); // TODO: HER!!!! Return this in the setupstruct
+        this.elgamal = gen.getElGamal();
 
         this.mixnet = athenaFactory.getMixnet(elgamal, pk);
 
@@ -69,10 +69,16 @@ public class AthenaImpl implements Athena {
         Randomness randR = new Randomness(this.random.nextLong());
         ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
 
-        this.rangeBitLengthOfVote = 4;                          // This is a function of nc. TODO: FIX THESE VALUES             log_2(nc)
-        this.rangeBitLengthOfNegatedPrivateCredential = kappa;      // This is a function of q. TODO: FIX THESE VALUES       log_2(q)
-        int mb = 100;                             // TODO: FIX THESE VALUES
-        this.mc = BigInteger.valueOf(11);                // TODO: Practical: must be of reasonable size. Theoretical: This needs to be within Z_q, i.e. v \in [0,..,nc-1] then mc =< q.
+        this.rangeBitLengthOfVote = 4;                          // This is a function of nc. TODO: FIX THESE VALUES
+        this.rangeBitLengthOfNegatedPrivateCredential = kappa;  // This is a function of q. TODO: FIX THESE VALUES
+
+
+        // Practical: must be of reasonable size. Theoretical: This needs to be within Z_q, i.e. v \in [0,..,nc-1] then mc =< q.
+        // mc is upper-bound by a polynomial in the security parameter
+        // i.e kappa^2 = 2048^2 = 4194304 candidates.
+        // TODO: FIX THESE VALUES
+        int mb = (int) Math.pow(kappa, 2.0);
+        this.mc = BigInteger.valueOf(kappa).pow(2);
 
         List<BigInteger> g_vector_vote = group.newGenerators(rangeBitLengthOfVote, random);
         List<BigInteger> h_vector_vote = group.newGenerators(rangeBitLengthOfVote, random);
@@ -80,23 +86,19 @@ public class AthenaImpl implements Athena {
         List<BigInteger> h_vector_negatedPrivateCredential = group.newGenerators(rangeBitLengthOfNegatedPrivateCredential, random);
 
         bb.publishNumberOfCandidates(nc);
-
         bb.publishRangeNumberVote(rangeBitLengthOfVote);
-
         bb.publishRangeNumberNegatedPrivCred(rangeBitLengthOfNegatedPrivateCredential);
-
 
         bb.publish_G_VectorVote(g_vector_vote);
         bb.publish_H_VectorVote(h_vector_vote);
         bb.publish_G_VectorNegPrivCred(g_vector_negatedPrivateCredential);
         bb.publish_H_VectorNegPrivCred(h_vector_negatedPrivateCredential);
 
-
         PK_Vector pkv = new PK_Vector(pk, rho);
         bb.publishPKV(pkv);
 
         this.initialised = true;
-        return new ElectionSetup(pkv, sk, mb, mc, nc, elgamal);
+        return new ElectionSetup(pkv, sk, mb, mc, nc);
     }
 
 

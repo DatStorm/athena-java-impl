@@ -240,14 +240,9 @@ public class AthenaVerify {
             tally.put(candidate, 0);
         }
 
-
         List<Integer> countedBallotIndices = new ArrayList<>();
-
-
         // Find and count valid ballots
         for (Integer i : uncountedBallotIndices) {
-
-            //TODO: Skal vi ikke switche på om m=1 eller m!= 1 ??
 
             // Get relevant data
             MixBallot mixBallot = B.get(i);
@@ -261,7 +256,7 @@ public class AthenaVerify {
             // Verify homo combination
             boolean veri_comb = sigma4.verifyCombination(pk, c_prime, combinedCredential, proofCombination, kappa);
             if (!veri_comb) {
-                System.out.println(i + "AthenaVerify:=> ERROR: Sigma4.verifyCombination(c', c1)");
+                System.out.println(i + ": AthenaVerify:=> ERROR: Sigma4.verifyCombination(c', c1)");
                 continue;
             }
 
@@ -269,21 +264,16 @@ public class AthenaVerify {
             Sigma3Proof proofDecryptionOfCombination = verificationInfo.proofDecryptionOfCombination;
             boolean veri_dec_1 = sigma3.verifyDecryption(c_prime, BigInteger.ONE, pk, proofDecryptionOfCombination, kappa);
             if (!veri_dec_1) {
-                System.out.println(i + "AthenaVerify:=> ERROR: Sigma3.verifyDecryption(c', 1)");
+                System.out.println(i + ": AthenaVerify:=> ERROR: Sigma3.verifyDecryption(c', 1)");
                 continue;
             }
 
             // Verify decryption of vote
-            Integer vote = verificationInfo.plaintext.intValueExact();
+            int vote = verificationInfo.plaintext.intValueExact();
             Sigma3Proof proofDecryptionVote = verificationInfo.proofDecryptionVote;
             boolean veri_dec_v = sigma3.verifyDecryption(encryptedVote, g.pow(vote).mod(p), pk, proofDecryptionVote, kappa);
             if (!veri_dec_v) {
-                System.out.println(i + " -------------------- HERE ----------------");
                 System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption(encryptedVote, vote)");
-                System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption    encryptedVote=   " + encryptedVote.toOneLineString());
-                System.out.println(i + " AthenaVerify:=> ERROR: Sigma3.verifyDecryption             vote=   " + g.pow(vote).mod(p));
-                System.out.println(i + " -------------------- DONE ----------------");
-
                 continue;
             }
 
@@ -296,21 +286,15 @@ public class AthenaVerify {
 
         // Check that our tally matches talliers tally
         for (int candidate = 0; candidate < nc; candidate++) {
-            BigInteger key = BigInteger.valueOf(candidate);
-            if (tally.get(candidate).equals(officialTally.get(key))) {
-                System.out.println("AthenaVerify: Tallier did not count valid votes correctly");
+            if (tally.get(candidate).equals(officialTally.get(candidate))) {
+                System.out.println(candidate + ": AthenaVerify: Tallier did not count valid votes correctly");
                 return false;
             }
         }
 
 
-        assert countedBallotIndices.size() == 2 : "WE SHOULD FIND 2 ballots here";
-        System.out.println("SIZE OF UNCOUNTED BEFORE: " + uncountedBallotIndices.size());
-
         // Remove the indices from 'countedBallotIndices' from 'uncountedBallotIndices'
         uncountedBallotIndices.removeAll(countedBallotIndices);
-
-        System.out.println("SIZE OF UNCOUNTED AFTER: " + uncountedBallotIndices.size());
 
         // and for each remaining integer i \in {1,..., |B|}
         for (int j : uncountedBallotIndices) {
@@ -330,24 +314,21 @@ public class AthenaVerify {
                     proofCombination,
                     kappa);
             if (!veri_comb) {
-                System.err.println("AthenaVerify:=> ERROR: Sigma4.verifyCombination(c', c1)");
+                System.err.println(j + ": AthenaVerify:=> ERROR: Sigma4.verifyCombination(c', c1)");
                 return false;
             }
 
             // Verify decryption of homo combination into m != 1
             BigInteger m = pfd_data.plaintext;
             Sigma3Proof proofDecryptionOfCombination = pfd_data.proofDecryptionOfCombination;
-            System.out.println("-------------------- BELOW ----------------");
-            System.out.println(pfd_data.toString());
             boolean veri_dec_m = sigma3.verifyDecryption(c_prime, m, pk, proofDecryptionOfCombination, kappa);
             if (!veri_dec_m) {
-                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption(c', m)");
-                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption: c'= " + c_prime);
-                System.err.println("AthenaVerify:=> ERROR: Sigma3.verifyDecryption:  m= " + m);
+                System.err.println(j + ": AthenaVerify:=> ERROR: Sigma3.verifyDecryption(c', m)");
                 return false;
             }
 
-            if (!m.equals(BigInteger.ONE)) {
+            // if m != 1 then output false
+            if (m.equals(BigInteger.ONE)) {
                 System.err.println(j + ": AthenaVerify:=> ERROR: m == 1");
                 return false;
             }
@@ -411,9 +392,10 @@ public class AthenaVerify {
                             sigma3 == null ||
                             sigma4 == null ||
                             mixnet == null ||
-                            bb == null
+                            bb == null ||
+                            mc == null
             ) {
-                throw new IllegalArgumentException("Not all fields have been set");
+                throw new IllegalArgumentException("AthenaVerify.Builder: Not all fields have been set");
             }
 
             //Construct Object

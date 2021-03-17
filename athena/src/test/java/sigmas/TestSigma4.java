@@ -15,6 +15,7 @@ import project.factory.MainFactory;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -160,26 +161,26 @@ public class TestSigma4 {
 
 
 
-
-    @Test
-    void TestSigma4_step2_Tally() {
-        //(c1,c2) = (b1^n,b2^n)
-
-        BigInteger c1 = BigInteger.ONE;
+//
+//    @Test
+//    void TestSigma4_step2_Tally() {
+//        //(c1,c2) = (b1^n,b2^n)
+//
+//        BigInteger c1 = BigInteger.ONE;
 //        BigInteger c2 = BigInteger.TWO;
 //
-//        CipherText c0 = new CipherText(c1, c2);
-//        CipherText c1 = new CipherText(c1, c2);
+//        Ciphertext cipher0 = new Ciphertext(c1, c2);
+//        Ciphertext cipher1 = new Ciphertext(c1, c2);
 //
-//        CipherText b0 = new CipherText(c1, c2);
-//        CipherText b1 = new CipherText(c1, c2);
+//        Ciphertext cipher_b0 = new Ciphertext(c1, c2);
+//        Ciphertext cipher_b1 = new Ciphertext(c1, c2);
 //        int nonce_n = new Random(CONSTANTS.RANDOM_SEED).nextInt();
 //
-//        List<CipherText> c_list = Arrays.asList(c0, c1);
-//        List<CipherText> b_list = Arrays.asList(b0, b1);
-//        Sigma4Proof omega = sigma4.proveCombination(sk, c_list, b_list, nonce_n,kappa);
+//        List<Ciphertext> c_list = Arrays.asList(cipher0, cipher1);
+//        List<Ciphertext> b_list = Arrays.asList(cipher_b0, cipher_b1);
+//        Sigma4Proof omega = sigma4.proveCombination(sk, c_list, b_list, BigInteger.valueOf(nonce_n),kappa);
 //        boolean verification = sigma4.verifyCombination(pk, c_list, b_list, omega, kappa);
 //        assertTrue("VerComb(...)=1", verification);
-
-    }
+//
+//    }
 }

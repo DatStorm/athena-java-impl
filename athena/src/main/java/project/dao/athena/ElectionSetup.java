@@ -11,16 +11,14 @@ public class ElectionSetup {
     public final ElGamalSK sk;
     public final int mb;
     public final BigInteger mc;
-    public final ElGamal elgamal;
     public final int nc;
 
-    public ElectionSetup(PK_Vector pkv, ElGamalSK sk, int mb, BigInteger mc, int nc, ElGamal elgamal) {
+    public ElectionSetup(PK_Vector pkv, ElGamalSK sk, int mb, BigInteger mc, int nc) {
 
         this.pkv = pkv;
         this.sk = sk;
         this.mb = mb;
         this.mc = mc;
         this.nc = nc;
-        this.elgamal = elgamal;
     }
 }

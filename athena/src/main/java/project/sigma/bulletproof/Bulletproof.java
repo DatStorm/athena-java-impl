@@ -38,9 +38,10 @@ public class Bulletproof {
         BigInteger g = statement.pk.getGroup().g;
         BigInteger h = statement.pk.getH();
 
-        List<BigInteger> g_vector = statement.g_vector; // generateConstList(g
-        // , n); // FIXME: the g element might need to be different to maintain binding, put in statement
-        List<BigInteger> h_vector = statement.h_vector; // generateConstList(h, n); // FIXME: the h element might need to be different to maintain binding, put in statement
+        List<BigInteger> g_vector = statement.g_vector; // generateConstList(g,n)
+        List<BigInteger> h_vector = statement.h_vector; // generateConstList(h, n);
+
+
         List<BigInteger> _1n_vector = generateList(BigInteger.ONE, n, q);
         List<BigInteger> _2n_vector = generateList(BigInteger.TWO, n, q);
 
@@ -286,7 +287,7 @@ public class Bulletproof {
 
 
         // Second check equation (66-67), see line 44 and 47 for the provers role in this
-        // FIXME: TODO: this has to be a vector according to the completeness
+        // Fixed their mistake as z needs to be a vector according to the completeness
         List<BigInteger> z_vector_negated = generateConstList(z.negate().mod(q).add(q).mod(q), n);
 
         // g^{-z} * (h^prime)^{z * y^n +z^2 * 2^n}

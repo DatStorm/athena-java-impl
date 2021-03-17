@@ -19,19 +19,15 @@ public class CONSTANTS {
      * Security parameters
      */
     public static final int KAPPA = ELGAMAL_BIT_LENGTH;
-
-    /**
-     * TODO: FIX THIS!!! Should be nc
-     */
-    public static final int MSG_SPACE_LENGTH = -1;
+    public static final int MSG_SPACE_LENGTH = 1000; // for testing purposes only. Needed when testing individual aspects of Athena
 
 
     public static class ELGAMAL_CURRENT {
-        public static final BigInteger ELGAMAL_P = ELGAMAL_32_BITS.ELGAMAL_P;
-        public static final BigInteger ELGAMAL_Q = ELGAMAL_32_BITS.ELGAMAL_Q;
-        public static final BigInteger ELGAMAL_G = ELGAMAL_32_BITS.ELGAMAL_G;
-        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_32_BITS.ELGAMAL_BIT_LENGTH;
-        public static final BigInteger FAKE_SK = ELGAMAL_32_BITS.FAKE_SK;
+        public static final BigInteger ELGAMAL_P = ELGAMAL_1024_BITS.ELGAMAL_P;
+        public static final BigInteger ELGAMAL_Q = ELGAMAL_1024_BITS.ELGAMAL_Q;
+        public static final BigInteger ELGAMAL_G = ELGAMAL_1024_BITS.ELGAMAL_G;
+        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_1024_BITS.ELGAMAL_BIT_LENGTH;
+//        public static final BigInteger FAKE_SK = ELGAMAL_1024_BITS.FAKE_SK;
     }
 
 
