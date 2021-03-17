@@ -45,8 +45,9 @@ public class Mixnet {
             BigInteger si = UTIL.getRandomElement(BigInteger.ONE, q, random);
 
             //Make reencryption ciphertets
-            Ciphertext reencryptRi = elgamal.encrypt(BigInteger.ZERO, pk, ri);
-            Ciphertext reencryptSi = elgamal.encrypt(BigInteger.ZERO, pk, si);
+            BigInteger e = ElGamal.getNeutralElement();
+            Ciphertext reencryptRi = elgamal.encrypt(e, pk, ri);
+            Ciphertext reencryptSi = elgamal.encrypt(e, pk, si);
 
             //Reencrypt
             Ciphertext m1 = ballot.getCombinedCredential().multiply(reencryptRi, p);
@@ -217,12 +218,14 @@ public class Mixnet {
             MixBallot sourceBallot = sourceMix.get(i); //Mixed original ballot
             MixBallot destinationBallot = destinationMix.get(i);
 
+            BigInteger e = elgamal.getNeutralElement();
+
             //c1 * Enc(1,R)
-            Ciphertext reencryptionFactorR = this.elgamal.encrypt(BigInteger.ZERO, pk, randomnessR.get(i));
+            Ciphertext reencryptionFactorR = this.elgamal.encrypt(e, pk, randomnessR.get(i));
             Ciphertext c1 = destinationBallot.getCombinedCredential().multiply(reencryptionFactorR, p);
 
             //c2 * Enc(1,S)
-            Ciphertext reencryptionFactorS = this.elgamal.encrypt(BigInteger.ZERO, pk, randomnessS.get(i));
+            Ciphertext reencryptionFactorS = this.elgamal.encrypt(e, pk, randomnessS.get(i));
             Ciphertext c2 = destinationBallot.getEncryptedVote().multiply(reencryptionFactorS, p);
 
             reencryptedSourceMix.add(new MixBallot(c1, c2));

@@ -45,7 +45,7 @@ public class AthenaRegister {
 
         //Generate nonce. aka private credential
         BigInteger privateCredential = UTIL.getRandomElement(BigInteger.ONE, q, random);
-        Ciphertext publicCredential = elGamal.encrypt(privateCredential, pkv.pk);
+        Ciphertext publicCredential = elGamal.exponentialEncrypt(privateCredential, pkv.pk);
 
         // bold{d} = (pd, d) = (Enc_pk(g^d), d)
         CredentialTuple credentialTuple = new CredentialTuple(publicCredential, privateCredential);

@@ -49,12 +49,13 @@ public class AthenaTally {
         BigInteger p = pk.getGroup().p;
         BigInteger q = pk.getGroup().q;
 
-        List<BigInteger> res2 = Arrays.asList(BigInteger.valueOf(7), BigInteger.valueOf(3));
+        List<Integer> res2 = Arrays.asList(7, 3);
         int i = 0;
         for (Ballot ballot : this.bb.retrievePublicBallots()) {
             Ciphertext encryptedVote = ballot.getEncryptedVote();
-            BigInteger dec = elgamal.decrypt(encryptedVote, sk);
-            assert dec.equals(res2.get(i)) : "Det fejler....";
+            BigInteger voteElement = elgamal.decrypt(encryptedVote, sk);
+            Integer vote = elgamal.lookup(voteElement);
+            assert vote.equals(res2.get(i)) : "Det fejler....";
             i++;
         }
 
@@ -79,18 +80,17 @@ public class AthenaTally {
 
         assert A.values().stream()
                 .map(MapAValue::getCombinedCredential)
-                .map(combinedCredential -> elgamal.decryptWithoutLookup(combinedCredential, sk))
+                .map(combinedCredential -> elgamal.decrypt(combinedCredential, sk))
                 .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1 before mixing";
 
 
         // voter 1 votes  => 7
         // voter 2 votes  => 3
-        List<BigInteger> res = Arrays.asList(BigInteger.valueOf(3), BigInteger.valueOf(7));
-        int i2 = 0;
+        List<Integer> res = Arrays.asList(3,7);
         for (MapAValue value : A.values()) {
-            BigInteger dec = elgamal.decrypt(value.getEncryptedVote(), sk);
-            assert res.contains(dec) : "Det fejler3....";
-            i2++;
+            BigInteger voteElement = elgamal.decrypt(value.getEncryptedVote(), sk);
+            Integer vote = elgamal.lookup(voteElement);
+            assert res.contains(vote) : "Det fejler3....";
         }
 
 
@@ -101,15 +101,16 @@ public class AthenaTally {
 
 
         for (MixBallot value : mixedBallots) {
-            BigInteger dec = elgamal.decrypt(value.getEncryptedVote(), sk);
-            System.out.println("AthenaTally.Tally Dec_sk(..) = " + dec);
-            assert res.contains(dec) : "Det fejler4....";
+            BigInteger voteElement = elgamal.decrypt(value.getEncryptedVote(), sk);
+            Integer vote = elgamal.lookup(voteElement);
+            System.out.println("AthenaTally.Tally Dec_sk(..) = " + vote);
+            assert res.contains(vote) : "Det fejler4....";
         }
 
 
         assert mixedBallots.stream()
                 .map(MixBallot::getCombinedCredential)
-                .map(combCred -> elgamal.decryptWithoutLookup(combCred, sk))
+                .map(combCred -> elgamal.decrypt(combCred, sk))
                 .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1 after mixing";
 
 
@@ -202,7 +203,7 @@ public class AthenaTally {
             Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p);
 
             // Dec(Enc(x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = elgamal.decryptWithoutLookup(ci_prime, sk);
+            BigInteger noncedNegatedPrivateCredentialElement = elgamal.decrypt(ci_prime, sk);
 
             if (i == 0) { // Just for debug help
                 System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce Ni: " + noncedNegatedPrivateCredentialElement);
@@ -301,7 +302,7 @@ public class AthenaTally {
             Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
 
             // Decrypt nonced combinedCredential
-            BigInteger m = elgamal.decryptWithoutLookup(c_prime, sk);
+            BigInteger m = elgamal.decrypt(c_prime, sk);
 
             // Prove that c' is a homomorphic combination of combinedCredential
             Sigma4Proof combinationProof = sigma4.proveCombination(
@@ -319,8 +320,8 @@ public class AthenaTally {
                 System.out.println("AthenaTally.revealEligibleVotes CASE: M=1  ");
 
                 // Decrypt vote
-                Integer vote = elgamal.decrypt(encryptedVote, sk).intValueExact();
-                BigInteger voteElement = elgamal.decryptWithoutLookup(encryptedVote, sk);
+                BigInteger voteElement = elgamal.decrypt(encryptedVote, sk);
+                Integer vote = elgamal.lookup(voteElement);
 
                 // Tally the vote
                 if (officialTally.containsKey(vote)) { // Check that map already has some votes for that candidate.

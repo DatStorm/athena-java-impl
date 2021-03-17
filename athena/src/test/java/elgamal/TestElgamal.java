@@ -69,7 +69,7 @@ public class TestElgamal {
         BigInteger expected = pk.getGroup().g.modPow(msg,pk.getGroup().p);
 
         // Enc_pk(m)=(g^r, g^m*h^r)
-        Ciphertext c = elGamal.encrypt(msg, pk);
+        Ciphertext c = elGamal.exponentialEncrypt(msg, pk);
 
         // g^m = Dec_sk(c)
         BigInteger result = elGamal.decrypt(c, sk);
@@ -89,7 +89,7 @@ public class TestElgamal {
         BigInteger expected = pk.getGroup().g.modPow(msg,pk.getGroup().p);
 
         // Enc_pk(m)=(g^r, g^m*h^r)
-        Ciphertext c = elGamal.encrypt(msg, pk);
+        Ciphertext c = elGamal.exponentialEncrypt(msg, pk);
         BigInteger result = elGamal.decrypt(c, sk);
 
         assertEquals(expected, result);
@@ -117,7 +117,7 @@ public class TestElgamal {
         BigInteger expected = pk.getGroup().g.modPow(msg,pk.getGroup().p);
 
         // Enc_pk(m)=(g^r, g^m*h^r)
-        Ciphertext c = elGamal1.encrypt(msg, pk);
+        Ciphertext c = elGamal1.exponentialEncrypt(msg, pk);
 
         // g^m = Dec_sk(c)
         BigInteger result = elGamal2.decrypt(c, sk);
@@ -134,8 +134,8 @@ public class TestElgamal {
 
         // Combined d with -d. Should yeild an encryption of 1
         BigInteger d = UTIL.getRandomElement(q, random);
-        Ciphertext publicCredential = elGamal.encrypt(d, pk);
-        Ciphertext encryptedNegatedPrivateCredential = elGamal.encrypt(d.negate().mod(q).add(q).mod(q), pk);
+        Ciphertext publicCredential = elGamal.exponentialEncrypt(d, pk);
+        Ciphertext encryptedNegatedPrivateCredential = elGamal.exponentialEncrypt(d.negate().mod(q).add(q).mod(q), pk);
         Ciphertext combinedCredential = publicCredential.multiply(encryptedNegatedPrivateCredential, p);
 
         // Nonce
@@ -144,7 +144,7 @@ public class TestElgamal {
 
         // Decrypt
         BigInteger expected = BigInteger.ONE;
-        BigInteger result = elGamal.decryptWithoutLookup(noncedCombinedCredential, sk);
+        BigInteger result = elGamal.decrypt(noncedCombinedCredential, sk);
 
 
 

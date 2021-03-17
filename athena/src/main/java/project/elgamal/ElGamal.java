@@ -5,7 +5,6 @@ import project.CONSTANTS;
 import project.UTIL;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.*;
 
 public class ElGamal {
@@ -13,7 +12,7 @@ public class ElGamal {
     private Random random;
 
     private int messageSpaceLength;
-    private Map<BigInteger, BigInteger> lookupTable;
+    private Map<BigInteger, Integer> lookupTable;
 
     public ElGamal(Group group, int messageSpaceLength, Random random) {
 
@@ -30,7 +29,7 @@ public class ElGamal {
         BigInteger p = group.p;
         lookupTable = new HashMap<>();
         for(int i = 0; i < messageSpaceLength; i++) {
-            lookupTable.put(g.pow(i).mod(p), BigInteger.valueOf(i));
+            lookupTable.put(g.pow(i).mod(p), i);
         }
     }
 
@@ -75,18 +74,33 @@ public class ElGamal {
         return group;
     }
 
-    /**
-     * Generating El Gamal encryption on a message msg using public key pk
-     *
-     * @param msg bigint in range [0; 2^bitlength -1]
-     */
-    public Ciphertext encrypt(BigInteger msg, ElGamalPK pk) {
+    public Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk){
         BigInteger r = UTIL.getRandomElement(BigInteger.ZERO, group.q, this.random);
-        return encrypt(msg, pk, r);
+        return exponentialEncrypt(messageElement, pk, r);
+    }
+
+    public Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk, BigInteger r){
+        BigInteger p = pk.group.p;
+        BigInteger q = pk.group.q;
+        r = r.mod(q).add(q).mod(q);
+
+        //TODO: Check that messageElement is a group element
+
+        // Extract public key
+        BigInteger g = pk.group.g;
+        BigInteger h = pk.h;
+
+        // C = (g^r, g^m·h^r)
+        return new Ciphertext(g.modPow(r, p), h.modPow(r, p).multiply(messageElement).mod(p));
+    }
+
+    public Ciphertext exponentialEncrypt(BigInteger msg, ElGamalPK pk) {
+        BigInteger r = UTIL.getRandomElement(BigInteger.ZERO, group.q, this.random);
+        return exponentialEncrypt(msg, pk, r);
     }
 
     // Exponential ElGamal
-    public Ciphertext encrypt(BigInteger msg, ElGamalPK pk, BigInteger r) {
+    public Ciphertext exponentialEncrypt(BigInteger msg, ElGamalPK pk, BigInteger r) {
         BigInteger p = pk.group.p;
         BigInteger q = pk.group.q;
         r = r.mod(q).add(q).mod(q);
@@ -103,35 +117,25 @@ public class ElGamal {
 
         // Extract public key
         BigInteger g = pk.group.g;
-        BigInteger h = pk.h;
 
         // C = (g^r, g^m·h^r)
-        BigInteger expMsg = g.modPow(msg, p);
-        return new Ciphertext(g.modPow(r, p), expMsg.multiply(h.modPow(r, p)).mod(p));
+        BigInteger messageElement = g.modPow(msg, p);
+        return encrypt(messageElement, pk, r);
     }
+
+    public static BigInteger getNeutralElement() {
+        return BigInteger.ONE;
+    }
+
+
+    public Integer exponentialDecrypt(Ciphertext cipherText, ElGamalSK sk) {
+        return lookup(decrypt(cipherText, sk));
+    }
+
 
 
     // Decrypting El Gamal encryption using secret key
     public BigInteger decrypt(Ciphertext cipherText, ElGamalSK sk) {
-
-        BigInteger element = localDecrypt(cipherText, sk);
-
-        if(!lookupTable.containsKey(element)){
-            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
-            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
-
-            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength);
-        } else {
-            return lookupTable.get(element);
-        }
-    }
-
-    // Decrypting El Gamal encryption using secret key
-    public BigInteger decryptWithoutLookup(Ciphertext cipherText, ElGamalSK sk) {
-        return localDecrypt(cipherText, sk);
-    }
-
-    private BigInteger localDecrypt(Ciphertext cipherText, ElGamalSK sk) {
         BigInteger c1 = cipherText.c1;
         BigInteger c2 = cipherText.c2;
         BigInteger p = sk.getPK().getGroup().getP();
@@ -143,11 +147,22 @@ public class ElGamal {
     }
 
 
+    public Integer lookup(BigInteger big) {
+        if(!lookupTable.containsKey(big)){
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + big + CONSTANTS.ANSI_RESET);
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
+            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength);
+        } else {
+            return lookupTable.get(big);
+        }
+    }
+
     // Generate random sk
     public ElGamalSK generateSK() {
         if (this.group == null) {
             System.out.println("group = null");
         }
+
         BigInteger q = this.group.getQ();
 //        BigInteger sk = UTIL.getRandomElement(q, random);
 

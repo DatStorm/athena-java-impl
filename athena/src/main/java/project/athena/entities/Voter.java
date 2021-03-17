@@ -7,6 +7,9 @@ import project.dao.athena.Ballot;
 import project.dao.athena.CredentialTuple;
 import project.dao.athena.PK_Vector;
 
+import java.math.BigInteger;
+import java.util.List;
+
 
 /**
  * The role of the Voter in Athena is the following:
@@ -21,6 +24,8 @@ public class Voter implements Entity {
     private CredentialTuple credentialTuple;
     private PK_Vector pk_vector;
     private int nc;
+    private List<BigInteger> g_vector_vote;
+    private List<BigInteger> h_vector_vote;
     private int counter;
 
     public Voter(Athena athena, BulletinBoard bulletinBoard) {
@@ -30,10 +35,11 @@ public class Voter implements Entity {
 
 
     public void init() {
-        // Fetch pk and nc from bulletin board
+        // Fetch pk, nc and g_vector and h_vector from bulletin board
         pk_vector = bulletinBoard.retrievePK_vector();
-//         g,h = bulletinBoard // TODO: retrieve g and h vector
         nc = bulletinBoard.retrieveNumberOfCandidates();
+        g_vector_vote = bulletinBoard.retrieve_G_VectorVote();
+        h_vector_vote = bulletinBoard.retrieve_H_VectorVote();
         counter = 0;
     }
 
@@ -57,6 +63,7 @@ public class Voter implements Entity {
 
         counter = counter + 1;
         Ballot ballot = athena.Vote(credentialTuple, pk_vector, vote, counter, nc);
+//         Ballot ballot = athena.Vote(credentialTuple, pk_vector, g_vector_vote, h_vector_vote, vote, counter, nc);
 //         return ballot;
     }
 }

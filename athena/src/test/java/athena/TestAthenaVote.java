@@ -73,7 +73,7 @@ public class TestAthenaVote {
 
         // Enc_pk(d) * Enc_pk(-d) = g^0
         Ciphertext combinedCredential = ballot.publicCredential.multiply(ballot.encryptedNegatedPrivateCredential, sk.pk.group.p);
-        BigInteger m = elgamal.decryptWithoutLookup(combinedCredential, sk);
+        BigInteger m = elgamal.decrypt(combinedCredential, sk);
         assertEquals(BigInteger.ONE, m);
 
         BigInteger decryptedVote = elgamal.decrypt(ballot.encryptedVote, sk);

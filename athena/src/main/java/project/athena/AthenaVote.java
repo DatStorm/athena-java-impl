@@ -82,24 +82,16 @@ public class AthenaVote {
 
         // Create encryption of negated private credential
         BigInteger randomness_s = UTIL.getRandomElement(q, random);
-        Ciphertext encryptedNegatedPrivateCredential = elgamal.encrypt(negatedPrivateCredential, pk, randomness_s);
+        Ciphertext encryptedNegatedPrivateCredential = elgamal.exponentialEncrypt(negatedPrivateCredential, pk, randomness_s);
 
         // Create encryption of vote,
         BigInteger voteAsBigInteger = BigInteger.valueOf(vote);
         BigInteger randomness_t = UTIL.getRandomElement(q, random);
 
 
-        Ciphertext encryptedVote = elgamal.encrypt(voteAsBigInteger, pk, randomness_t);
+        Ciphertext encryptedVote = elgamal.exponentialEncrypt(voteAsBigInteger, pk, randomness_t);
 
-        // is this the sk the same??? :D
-        ElGamalSK sk__ = new ElGamalSK(pk.group, CONSTANTS.ELGAMAL_CURRENT.FAKE_SK);
-        BigInteger decrypted = elgamal.decrypt(encryptedVote, sk__);
-
-
-        assert decrypted.equals(voteAsBigInteger) : "AEFAEKF";
-
-
-
+        
 
 
         // Get public values from bb.
@@ -118,8 +110,8 @@ public class AthenaVote {
         BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
 
         int rangeBitlengthOfVote = bb.retrieveRangeBitLengthOfVote();
-        List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
-        List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
+        List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote(); // TODO: get this from parameter instead
+        List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote(); // TODO: get this from parameter instead
 
 
         // Prove that vote v resides in [0,nc-1] (this is defined using n)

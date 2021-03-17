@@ -38,7 +38,7 @@ public class TestSigma3 {
 
         plain_msg_m = new BigInteger("491");
 
-        cipher = elGamal.encrypt(plain_msg_m, pk);
+        cipher = elGamal.exponentialEncrypt(plain_msg_m, pk);
         statement = sigma3.createStatement(pk, cipher, plain_msg_m);
     }
 
