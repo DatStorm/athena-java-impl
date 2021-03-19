@@ -44,7 +44,11 @@ public class AthenaRegister {
         BigInteger q = pkv.pk.group.q;
 
         //Generate nonce. aka private credential
-        BigInteger privateCredential = UTIL.getRandomElement(BigInteger.ONE, q, random);
+        int n = q.bitLength() - 1;
+        BigInteger endRange = BigInteger.TWO.modPow(BigInteger.valueOf(n), q).subtract(BigInteger.ONE); // [0; 2^n-1]
+        BigInteger privateCredential = UTIL.getRandomElement(BigInteger.ZERO, endRange, random); // a nonce in [0,2^{\lfloor \log_2 q \rfloor} -1]
+
+        // Enc^{exp}_pk(d)  
         Ciphertext publicCredential = elGamal.exponentialEncrypt(privateCredential, pkv.pk);
 
         // bold{d} = (pd, d) = (Enc_pk(g^d), d)

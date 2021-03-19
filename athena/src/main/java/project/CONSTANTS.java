@@ -21,6 +21,10 @@ public class CONSTANTS {
     public static final int KAPPA = ELGAMAL_BIT_LENGTH;
     public static final int MSG_SPACE_LENGTH = 1000; // for testing purposes only. Needed when testing individual aspects of Athena
 
+    
+    public static final BigInteger BULLET_PROOF_R = BigInteger.ZERO;
+
+
 
     public static class ELGAMAL_CURRENT {
         public static final BigInteger ELGAMAL_P = ELGAMAL_1024_BITS.ELGAMAL_P;

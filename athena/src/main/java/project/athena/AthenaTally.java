@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import project.CONSTANTS;
 import project.UTIL;
 import project.dao.athena.*;
+import project.dao.bulletproof.BulletproofExtensionStatement;
 import project.dao.bulletproof.BulletproofStatement;
 import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixProof;
@@ -118,38 +119,42 @@ public class AthenaTally {
 
 
             // TODO: Fix the bulletproof range stuff into two proofs.
-//            // Verify that the negated private credential is in the valid range
-//            // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersens' commitment of (-d) using randomness s
-//            Ciphertext encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
-//            BulletproofStatement stmnt_1 = new BulletproofStatement(
-//                    n_vote,
-//                    encryptedNegatedPrivateCredential.c2,
-//                    pk,
-//                    g_vector_negatedPrivateCredential,
-//                    h_vector_negatedPrivateCredential);
-//            boolean verify_encryptedNegatedPrivateCredential = bulletProof.verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
-//
-//
-//            // remove invalid ballots.
-//            if (!verify_encryptedNegatedPrivateCredential) {
-//                finalBallots.remove(ballot);
-//            }
-//
-//            // Verify that the vote is in the valid range
-//            // ElGamal ciphertext (c1,c2) => use c2=g^(v) h^t as Pedersens' commitment of vote v using randomness t
-//            Ciphertext encryptedVote = ballot.getEncryptedVote();
-//            BulletproofStatement stmnt_2 = new BulletproofStatement(
-//                    n_negatedPrivateCredential,
-//                    encryptedVote.c2,
-//                    pk,
-//                    g_vector_vote,
-//                    h_vector_vote);
-//            boolean verify_encryptedVote = bulletProof.verifyStatement(stmnt_2, ballot.getProofVote());
-//
-//            // remove invalid ballots.
-//            if (!verify_encryptedVote) {
-//                finalBallots.remove(ballot);
-//            }
+            // Verify that the negated private credential is in the valid range
+            // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersens' commitment of (-d) using randomness s
+            Ciphertext encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
+            BulletproofStatement _stmnt_1 = new BulletproofStatement(
+                    n_vote,
+                    encryptedNegatedPrivateCredential.c2,
+                    pk,
+                    g_vector_negatedPrivateCredential,
+                    h_vector_negatedPrivateCredential);
+
+            BulletproofExtensionStatement stmnt_1 = new BulletproofExtensionStatement(H,V,pk,g_vector,h_vector);
+
+
+            boolean verify_encryptedNegatedPrivateCredential = bulletProof.verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
+
+
+            // remove invalid ballots.
+            if (!verify_encryptedNegatedPrivateCredential) {
+                finalBallots.remove(ballot);
+            }
+
+            // Verify that the vote is in the valid range
+            // ElGamal ciphertext (c1,c2) => use c2=g^(v) h^t as Pedersens' commitment of vote v using randomness t
+            Ciphertext encryptedVote = ballot.getEncryptedVote();
+            BulletproofStatement stmnt_2 = new BulletproofStatement(
+                    n_negatedPrivateCredential,
+                    encryptedVote.c2,
+                    pk,
+                    g_vector_vote,
+                    h_vector_vote);
+            boolean verify_encryptedVote = bulletProof.verifyStatement(stmnt_2, ballot.getProofVote());
+
+            // remove invalid ballots.
+            if (!verify_encryptedVote) {
+                finalBallots.remove(ballot);
+            }
         }
 
         return finalBallots;

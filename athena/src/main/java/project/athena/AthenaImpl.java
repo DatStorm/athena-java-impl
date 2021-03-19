@@ -37,21 +37,17 @@ public class AthenaImpl implements Athena {
 
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
-
         this.sigma1 = athenaFactory.getSigma1();
         this.bulletProof = athenaFactory.getBulletProof();
         this.sigma3 = athenaFactory.getSigma3();
         this.sigma4 = athenaFactory.getSigma4();
         this.random = athenaFactory.getRandom();
         this.bb = athenaFactory.getBulletinBoard();
-
         this.initialised = false;
     }
 
     @Override
     public ElectionSetup Setup(int kappa, int nc) {
-
-
         if (this.initialised) {
             System.err.println("AthenaImpl.Setup => ERROR: System not initialised call .Setup before hand");
             return null;
@@ -76,9 +72,8 @@ public class AthenaImpl implements Athena {
         // Practical: must be of reasonable size. Theoretical: This needs to be within Z_q, i.e. v \in [0,..,nc-1] then mc =< q.
         // mc is upper-bound by a polynomial in the security parameter
         // i.e kappa^2 = 2048^2 = 4194304 candidates.
-        // TODO: FIX THESE VALUES
-        int mb = (int) Math.pow(kappa, 2.0);
-        this.mc = BigInteger.valueOf(kappa).pow(2);
+        int mb = (int) Math.pow(kappa, 2.0); // TODO: FIX THESE VALUES
+        this.mc = BigInteger.valueOf(kappa).pow(2); // TODO: FIX THESE VALUES        
 
         List<BigInteger> g_vector_vote = group.newGenerators(rangeBitLengthOfVote, random);
         List<BigInteger> h_vector_vote = group.newGenerators(rangeBitLengthOfVote, random);

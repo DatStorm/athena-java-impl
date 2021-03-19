@@ -1,12 +1,14 @@
 package sigmas;
 
 
+import kotlin.jvm.Throws;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.*;
 import project.UTIL;
+import project.dao.bulletproof.BulletproofExtensionStatement;
 import project.dao.bulletproof.BulletproofProof;
 import project.dao.bulletproof.BulletproofSecret;
 import project.dao.bulletproof.BulletproofStatement;
-import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
 import project.elgamal.Group;
 import project.factory.Factory;
@@ -18,14 +20,16 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static project.UTIL.getRandomElement;
 
 @Tag("TestsSigma2BulletProof")
 @DisplayName("Test Sigma2 BulletProof")
 public class TestSigma2BulletProof {
     private ElGamalPK pk;
-    private Bulletproof sigma2;
+    private Bulletproof bulletproof;
     private Random random;
 
     private Group group;
@@ -46,7 +50,7 @@ public class TestSigma2BulletProof {
         p = pk.getGroup().getP();
         q = pk.getGroup().getQ();
         h = pk.getH();
-        sigma2 = new Bulletproof(factory.getHash(), factory.getRandom());
+        bulletproof = new Bulletproof(factory.getHash(), factory.getRandom());
     }
 
     @Test
@@ -74,12 +78,12 @@ public class TestSigma2BulletProof {
 
         BigInteger two = BigInteger.TWO;
         BigInteger order = BigInteger.valueOf(100L);
-        List<BigInteger> list = sigma2.generateList(two, n, order);
+        List<BigInteger> list = bulletproof.generateList(two, n, order);
         assertArrayEquals("should be the same", Stream.of(1, 2, 4, 8, 16).map(BigInteger::valueOf).toArray(), list.toArray());
 
         BigInteger val = BigInteger.valueOf(5);
         BigInteger order2 = BigInteger.valueOf(100L);
-        List<BigInteger> list2 = sigma2.generateList(val, n, order2);
+        List<BigInteger> list2 = bulletproof.generateList(val, n, order2);
         assertArrayEquals("should be the same", Stream.of(1, 5, 25, 25, 25).map(BigInteger::valueOf).toArray(), list2.toArray());
     }
 
@@ -129,9 +133,9 @@ public class TestSigma2BulletProof {
         BulletproofStatement stmnt = new BulletproofStatement(n, V, pk, g_vector, h_vector);
 
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
-        BulletproofProof proof = sigma2.proveStatement(stmnt, secret);
+        BulletproofProof proof = bulletproof.proveStatement(stmnt, secret);
 
-        boolean verification = sigma2.verifyStatement(stmnt, proof);
+        boolean verification = bulletproof.verifyStatement(stmnt, proof);
         assertFalse("Should return 0", verification);
     }
 
@@ -150,12 +154,82 @@ public class TestSigma2BulletProof {
         BulletproofStatement stmnt = new BulletproofStatement(n, V, pk, g_vector, h_vector);
 
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
-        BulletproofProof proof = sigma2.proveStatement(stmnt, secret);
+        BulletproofProof proof = bulletproof.proveStatement(stmnt, secret);
 
-        boolean verification = sigma2.verifyStatement(stmnt, proof);
+        boolean verification = bulletproof.verifyStatement(stmnt, proof);
 
         assertTrue("Should return 1", verification);
 
+    }
+
+    @Test
+    void TestSigma2BulletProofArbitraryRange() {
+        // Choose [0;H<<q]
+        BigInteger H = BigInteger.valueOf(102);
+        BigInteger m = BigInteger.valueOf(31);
+        BigInteger gamma = getRandomElement(BigInteger.ZERO, q, random);
+        BigInteger V = PedersenCommitment.commit(g,m,h,gamma,p);
+
+
+        int n = Bulletproof.getN(H);
+        List<BigInteger> g_vector = group.newGenerators(n, random);
+        List<BigInteger> h_vector = group.newGenerators(n, random);
+
+        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(H, V, pk, g_vector, h_vector);
+        BulletproofSecret secret = new BulletproofSecret(m, gamma);
+        Pair<BulletproofProof, BulletproofProof> proofPair = bulletproof.proveStatementArbitraryRange(stmnt, secret);
+
+        boolean verification = bulletproof.verifyStatementArbitraryRange(stmnt, proofPair);
+
+        assertThat("Should be 1", verification, is(true));
+    }
+
+    @Test()
+    void TestSigma2BulletProofArbitraryRangeOutsideInterval() {
+        // Choose [0;H<<q]
+        BigInteger H = BigInteger.valueOf(102);
+        BigInteger m = BigInteger.valueOf(103);
+        BigInteger gamma = getRandomElement(BigInteger.ZERO, q, random);
+        BigInteger V = PedersenCommitment.commit(g,m,h,gamma,p);
+
+
+        int n = Bulletproof.getN(H);
+        List<BigInteger> g_vector = group.newGenerators(n, random);
+        List<BigInteger> h_vector = group.newGenerators(n, random);
+
+        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(H, V, pk, g_vector, h_vector);
+        BulletproofSecret secret = new BulletproofSecret(m, gamma);
+
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            Pair<BulletproofProof, BulletproofProof> proofPair = bulletproof.proveStatementArbitraryRange(stmnt, secret);
+            boolean verification = bulletproof.verifyStatementArbitraryRange(stmnt, proofPair);
+        });
+
+        assertEquals("m is outside the range", exception.getMessage());
+
+        }
+
+        @Test
+        void TestSigma2BulletProofArbitraryRangeLimitAtEndOfInterval() {
+        // Choose [0;H<<q]
+        BigInteger H = BigInteger.valueOf(128-1);
+        BigInteger m = BigInteger.valueOf(128-1);
+        BigInteger gamma = getRandomElement(BigInteger.ZERO, q, random);
+        BigInteger V = PedersenCommitment.commit(g,m,h,gamma,p);
+
+
+        int n = Bulletproof.getN(H);
+        List<BigInteger> g_vector = group.newGenerators(n, random);
+        List<BigInteger> h_vector = group.newGenerators(n, random);
+
+        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(H, V, pk, g_vector, h_vector);
+        BulletproofSecret secret = new BulletproofSecret(m, gamma);
+        Pair<BulletproofProof, BulletproofProof> proofPair = bulletproof.proveStatementArbitraryRange(stmnt, secret);
+
+        boolean verification = bulletproof.verifyStatementArbitraryRange(stmnt, proofPair);
+
+        assertThat("Should be 1", verification, is(true));
     }
 
 

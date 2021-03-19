@@ -2,9 +2,13 @@ package project.sigma.bulletproof;
 
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Bytes;
+import org.apache.commons.lang3.tuple.Pair;
+import project.CONSTANTS;
 import project.UTIL;
 import project.dao.bulletproof.*;
+import project.elgamal.ElGamalPK;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.*;
@@ -23,15 +27,78 @@ public class Bulletproof {
     }
 
 
-    /**
-    * Note that when proving range of neg priv cred -d we use range of Z_q = [0,q-1] = [0,2^{1024}-1] => n=1024 as q is 1024 bits
-    * Note that when proving range of vote v we use range of [0,nc-1] = [0,2^{log_2(nc)}-1] => n= log_2(nc)
-    **/
+    // Returns a number n such that H <= 2^n-1
+    public static int getN(BigInteger H) {
+        return H.bitLength();
+    }
+
+    // Prove that secret m is in [0, H]
+    public Pair<BulletproofProof, BulletproofProof> proveStatementArbitraryRange(BulletproofExtensionStatement statement, BulletproofSecret secret) {
+        // This is done by prooveing both that m in [0, 2^n-1] and that q-m in [0, 2^n-1].
+        // Thus prooving that m in [0, H]
+
+        BigInteger H = statement.H;
+
+        // V = g^m * h^gamma mod p
+        BigInteger V = statement.V;
+        BigInteger q = statement.pk.group.q;
+        BigInteger p = statement.pk.group.p;
+        BigInteger g = statement.pk.group.g;
+        BigInteger h = statement.pk.h;
+
+
+        // 2^n-1 <= q-1
+        // n is the bulletproof bitlength. 2^n-1 is <= than q-1
+        int n = statement.n;
+
+
+        // q.bitlength >=  n
+        if (q.bitLength() < n) {
+            throw new IllegalArgumentException(String.format("q=%d must be larger or equal than 2^n - 1=%d", q.bitLength(), n));
+        }
+
+        // H.bitlength <= n
+        if (H.bitLength() > n) {
+            throw new IllegalArgumentException(String.format("H=%d must be larger or equal than 2^n - 1=%d", H.bitLength(), n));
+        }
+
+        // First we prove that m in [0, 2^n-1]
+        BulletproofStatement leftStatement = new BulletproofStatement(n, V, statement.pk, statement.g_vector, statement.h_vector);
+        BulletproofProof leftProof = proveStatement(leftStatement, secret);
+
+
+        // Then we prove that q-m is also in [0, 2^n-1]
+        // Commit to q
+        // qCom = g^H * h^r mod p
+        //BigInteger r = UTIL.getRandomElement(q, random);
+        BigInteger HCommitment = PedersenCommitment.commit(g, H, h, CONSTANTS.BULLET_PROOF_R, p);
+
+        // Commit to H-m
+        // HCom * V^{-1} mod p
+        BigInteger H_minus_v_commitment = HCommitment.multiply(V.modInverse(p)).mod(p);
+
+        BulletproofStatement rightStatement = new BulletproofStatement(n, H_minus_v_commitment, statement.pk, statement.g_vector, statement.h_vector);
+
+        // (m = H - m, gamma = r - gamma)
+        BulletproofSecret rightSecret = new BulletproofSecret(H.subtract(secret.m).mod(q).add(q).mod(q), CONSTANTS.BULLET_PROOF_R.subtract(secret.gamma).mod(q).add(q).mod(q));
+        BulletproofProof rightProof = proveStatement(rightStatement, rightSecret);
+
+
+        // (m in [0, 2^n-1], H-m in [0, 2^n-1])
+        return Pair.of(leftProof, rightProof);
+    }
+
+
     public BulletproofProof proveStatement(BulletproofStatement statement, BulletproofSecret secret) {
+        int n = statement.n;
+
         BigInteger m = secret.m;
+        if (m.bitLength() > statement.n) {
+            throw new IllegalArgumentException("m is outside the range");
+        }
+
         BigInteger gamma = secret.gamma;
         BigInteger V = statement.V;
-        int n = statement.n;
 
         BigInteger p = statement.pk.getGroup().p;
         BigInteger q = statement.pk.getGroup().q;
@@ -98,16 +165,14 @@ public class Bulletproof {
         BigInteger tau_2 = getRandomElement(q, random);
 
 
-
         // Generate y^n
         List<BigInteger> yn_vector = generateList(y, n, q);
 
         // t1, t2 \in Z_q
-        List<BigInteger> compute_ts = compute_t0_t1_t2(n,a_L,a_R,s_L,s_R,q,z, y, yn_vector,_2n_vector );
+        List<BigInteger> compute_ts = compute_t0_t1_t2(n, a_L, a_R, s_L, s_R, q, z, y, yn_vector, _2n_vector);
         BigInteger t0 = compute_ts.get(0);
         BigInteger t1 = compute_ts.get(1);
         BigInteger t2 = compute_ts.get(2);
-
 
 
         // in G, i.e. subgroup of Z_p^*
@@ -140,7 +205,6 @@ public class Bulletproof {
         // mu = alpha + rho * x mod q
         BigInteger rho_mult_x = rho.multiply(x).mod(q);
         BigInteger mu = alpha.add(rho_mult_x).mod(q);
-
 
 
         // Equation (38) -> <a_L, a_R o y^n> = 0
@@ -188,10 +252,10 @@ public class Bulletproof {
 
             t2 = t2.add(yn_vector.get(i).multiply(sLi).multiply(sRi).mod(q)).mod(q); // y^i * sLi * sRi
 
-            t0 = t0.add(yn_vector.get(i).multiply(aLi.multiply(aRi.add(z)).subtract(z.multiply(aRi)).subtract(z.pow(2))).add( _2n_vector.get(i).multiply(aLi.multiply(z.pow(2)).subtract(z.pow(3)))));
+            t0 = t0.add(yn_vector.get(i).multiply(aLi.multiply(aRi.add(z)).subtract(z.multiply(aRi)).subtract(z.pow(2))).add(_2n_vector.get(i).multiply(aLi.multiply(z.pow(2)).subtract(z.pow(3)))));
             t0 = t0.mod(q);
         }
-        return Arrays.asList(t0,t1,t2);
+        return Arrays.asList(t0, t1, t2);
     }
 
 
@@ -223,6 +287,59 @@ public class Bulletproof {
     }
 
 
+    public boolean verifyStatementArbitraryRange(BulletproofExtensionStatement statement, Pair<BulletproofProof, BulletproofProof> proofs) {
+        // Verifying both that m in [0, 2^n-1] and that q-m in [0, 2^n-1].
+        // Thus verifying that m in [0, H]
+
+        // V = g^m * h^gamma mod p
+        BigInteger H = statement.H;
+        BigInteger V = statement.V;
+        BigInteger q = statement.pk.group.q;
+        BigInteger p = statement.pk.group.p;
+        BigInteger g = statement.pk.group.g;
+        BigInteger h = statement.pk.h;
+        int n = statement.n;
+
+        // q.bitlength>=  n
+        if (q.bitLength() < n) {
+            throw new IllegalArgumentException(String.format("q=%d must be larger or equal than 2^n - 1=%d", q.bitLength(), n));
+        }
+
+        // H.bitlength <= n
+        if (n < H.bitLength()) {
+            throw new IllegalArgumentException(String.format("H=%d must be larger or equal than 2^n - 1=%d", H.bitLength(), n));
+        }
+
+        // First we verify that m in [0, 2^n-1]
+        BulletproofStatement leftStatement = new BulletproofStatement(n, V, statement.pk, statement.g_vector, statement.h_vector);
+        boolean leftProofVeri = verifyStatement(leftStatement, proofs.getLeft());
+
+        if (!leftProofVeri) {
+            System.err.println("Bulletproof.verifyStatementArbitraryRange CHECK FAILED for left statement.");
+            return false;
+        }
+
+
+        // Then we verify that H-m is also in [0, 2^n-1]
+        // Commit to H
+        // HCom = g^H * h^r mod p
+        BigInteger HCommitment = PedersenCommitment.commit(g, H, h, CONSTANTS.BULLET_PROOF_R, p);
+
+        // Commit to H-m
+        // HCom * V^{-1} mod p
+        BigInteger H_minus_v_commitment = HCommitment.multiply(V.modInverse(p)).mod(p);
+        BulletproofStatement rightStatement = new BulletproofStatement(n, H_minus_v_commitment, statement.pk, statement.g_vector, statement.h_vector);
+        boolean rightProofVeri = verifyStatement(rightStatement, proofs.getRight());
+
+        if (!rightProofVeri) {
+            System.err.println("Bulletproof.verifyStatementArbitraryRange CHECK FAILED for right statement.");
+            return false;
+        }
+
+        // proved (m in [0, 2^n-1], q-m in [0, 2^n-1])
+        return true;
+    }
+
     public boolean verifyStatement(BulletproofStatement statement, BulletproofProof proof) {
         // Get the publicly known info
         int n = statement.n;
@@ -250,7 +367,6 @@ public class Bulletproof {
 
         List<BigInteger> yn_vector = generateList(y, n, q);
 
-        
 
         // k^{-n}= (k^{-1})^{n}= [k^0, k^{-1}, k^{-2},..., k^{-n+1}]
         BigInteger y_inv = y.modInverse(q);
@@ -264,7 +380,7 @@ public class Bulletproof {
             BigInteger hi_prime = h_vector.get(i).modPow(y_i_1, p);
             h_prime.add(hi_prime);
         }
-        assert Arrays.deepEquals(UTIL.generateListExponentVectors(h_prime, yn_vector,p).toArray(), h_vector.toArray()) : "h' definition is not correct";
+        assert Arrays.deepEquals(UTIL.generateListExponentVectors(h_prime, yn_vector, p).toArray(), h_vector.toArray()) : "h' definition is not correct";
 
         // g^{t_hat} h^{tau_x}
         BigInteger g_t_hat_mult_h_tau_x = PedersenCommitment.commit(g, t_hat, h, tau_x, p);
@@ -305,8 +421,8 @@ public class Bulletproof {
         boolean check2 = commitVectorP_left.equals(commitVectorP_right);
         if (!check2) {
             System.err.println("Bulletproof.verifyStatement CHECK 2 FAILED");
-            System.out.println("Bulletproof.verifyStatement         left: "+  commitVectorP_left);
-            System.out.println("Bulletproof.verifyStatement        right: "+  commitVectorP_right);
+            System.out.println("Bulletproof.verifyStatement         left: " + commitVectorP_left);
+            System.out.println("Bulletproof.verifyStatement        right: " + commitVectorP_right);
             return false;
         }
 
@@ -390,8 +506,8 @@ public class Bulletproof {
     public List<BigInteger> extractBits(BigInteger m, int n) {
         String bitsString = m.toString(2);
 
-        if(bitsString.length() > n) {
-            throw new IllegalArgumentException("Cannot extract bits. m takes more than n bits bitsString.length()=" + bitsString.length() + " >n=" + n);
+        if (bitsString.length() > n) {
+            throw new IllegalArgumentException(String.format("Cannot extract bits. m(%d) takes more than n bits m.bitLength()=" + bitsString.length() + ">" + n + "=n", m));
         }
 
         //Extract bits
@@ -416,10 +532,10 @@ public class Bulletproof {
 
         List<Integer> powers = new ArrayList<>();
         // While bitstring != 000000
-            //bitstring++
-            //Find highest i where bitstring[i]=1
-            //bitstring[i]=0
-            //powers.add(i)
+        //bitstring++
+        //Find highest i where bitstring[i]=1
+        //bitstring[i]=0
+        //powers.add(i)
         //return powers;
         return null;
     }
