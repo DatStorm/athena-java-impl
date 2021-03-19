@@ -46,7 +46,7 @@ public class Verifier implements Entity {
         }
 
         if (tally == null){
-            System.err.println("Verifier.verifyElection => tally is null! Please run Verifier.init()");
+            System.err.println("Verifier.verifyElection => tally is null! Please run Verifier.init() || tally on bulletin board is empty");
             return false;
         }
 

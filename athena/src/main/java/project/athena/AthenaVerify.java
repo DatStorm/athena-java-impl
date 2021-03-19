@@ -264,7 +264,7 @@ public class AthenaVerify {
             Sigma3Proof proofDecryptionOfCombination = verificationInfo.proofDecryptionOfCombination;
             boolean veri_dec_1 = sigma3.verifyDecryption(c_prime, BigInteger.ONE, pk, proofDecryptionOfCombination, kappa);
             if (!veri_dec_1) {
-                System.out.println(i + ": AthenaVerify:=> ERROR: Sigma3.verifyDecryption(c', 1)");
+                System.out.println(i + ": AthenaVerify:=> Caught wrong ballot in: Sigma3.verifyDecryption(c', 1). Skipping ballot");
                 continue;
             }
 
@@ -281,13 +281,15 @@ public class AthenaVerify {
             // https://stackoverflow.com/a/42648785
             tally.merge(vote, 1, Integer::sum);
             countedBallotIndices.add(i);
-
         }
 
         // Check that our tally matches talliers tally
         for (int candidate = 0; candidate < nc; candidate++) {
-            if (tally.get(candidate).equals(officialTally.get(candidate))) {
-                System.out.println(candidate + ": AthenaVerify: Tallier did not count valid votes correctly");
+
+            if (!tally.get(candidate).equals(officialTally.get(candidate))) {
+                System.err.println(candidate + ": AthenaVerify: Tallier did not count valid votes correctly");
+                System.out.println(candidate + ": tally.get(candidate)        =" + tally.get(candidate));
+                System.out.println(candidate + ": officialTally.get(candidate)=" + officialTally.get(candidate));
                 return false;
             }
         }

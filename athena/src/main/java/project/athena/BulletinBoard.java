@@ -18,8 +18,6 @@ public class BulletinBoard {
     private List<Ballot> ballots;
     private ElectoralRoll electoralRoll;
     private int nc;
-    private int numberOfVotes;
-    private int n_negatedPrivateCredential;
     private List<BigInteger> g_vector_vote;
     private List<BigInteger> h_vector_vote;
     private List<BigInteger>  g_vector_negatedPrivateCredential;
@@ -55,8 +53,6 @@ public class BulletinBoard {
     public List<BigInteger> retrieve_H_VectorNegPrivCred() { return this.getH_vector_negatedPrivateCredential(); }
     public List<BigInteger> retrieve_G_VectorVote() { return this.getG_vector_vote(); }
     public List<BigInteger> retrieve_H_VectorVote() { return this.getH_vector_vote(); }
-    public int retrieveRangeBitLengthOfVote() { return this.getRangeNumberVote(); }
-    public int retrieveRangeBitLengthOfNegatedPrivateCredential() { return this.getRangeNumberNegatedPrivCred(); }
     public List<Ballot> retrievePublicBallots() { return this.getBallots(); }
     public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
     public void addPublicCredentitalToL(Ciphertext publicCredential_pd) { d();this.electoralRoll.add(publicCredential_pd); }
@@ -71,8 +67,6 @@ public class BulletinBoard {
     public void publishNumberOfCandidates(int nc) { this.setNc(nc); }
     public void publish_G_VectorVote(List<BigInteger> g_vector_vote) { this.setG_vector_vote(g_vector_vote); }
     public void publishBallot(Ballot ballot) { this.addBallot(ballot); }
-    public void publishRangeNumberVote(int n_vote) { this.setRangeNumberVote(n_vote); }
-    public void publishRangeNumberNegatedPrivCred(int n_negatedPrivateCredential) { this.setRangeNumberNegatedPrivCred(n_negatedPrivateCredential); }
     public void publish_H_VectorVote(List<BigInteger> h_vector_vote) { this.setH_vector_vote(h_vector_vote); }
     public void publish_G_VectorNegPrivCred(List<BigInteger> g_vector_negatedPrivateCredential) { this.setG_vector_negatedPrivateCredential(g_vector_negatedPrivateCredential); }
     public void publish_H_VectorNegPrivCred(List<BigInteger> h_vector_negatedPrivateCredential) { this.setH_vector_negatedPrivateCredential(h_vector_negatedPrivateCredential); }
@@ -143,8 +137,6 @@ public class BulletinBoard {
      */
     private ElectoralRoll getElectoralRoll() { return electoralRoll; }
     private List<Ballot> getBallots() { return ballots; }
-    private int getRangeNumberVote() { return numberOfVotes; }
-    private int getRangeNumberNegatedPrivCred() { return n_negatedPrivateCredential; }
     private List<BigInteger> getG_vector_negatedPrivateCredential() { return g_vector_negatedPrivateCredential; }
     private List<BigInteger> getG_vector_vote() { return g_vector_vote; }
     private List<BigInteger> getH_vector_vote() { return h_vector_vote; }
@@ -160,8 +152,6 @@ public class BulletinBoard {
      * Private set methods
      */
     private void addBallot(Ballot toAddBallot) { d();this.ballots.add(toAddBallot); }
-    private void setRangeNumberVote(int numberOfVotes) { this.numberOfVotes = numberOfVotes; }
-    private void setRangeNumberNegatedPrivCred(int n_negatedPrivateCredential) { this.n_negatedPrivateCredential = n_negatedPrivateCredential; }
     private void setH_vector_vote(List<BigInteger> h_vector_vote) { this.h_vector_vote = h_vector_vote; }
     private void setG_vector_vote(List<BigInteger> g_vector_vote) { this.g_vector_vote = g_vector_vote; }
     private void setG_vector_negatedPrivateCredential(List<BigInteger> g_vector_negatedPrivateCredential) { this.g_vector_negatedPrivateCredential = g_vector_negatedPrivateCredential; }

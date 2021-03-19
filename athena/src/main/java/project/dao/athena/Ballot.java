@@ -1,5 +1,6 @@
 package project.dao.athena;
 
+import org.apache.commons.lang3.tuple.Pair;
 import project.CONSTANTS;
 import project.athena.AthenaVerify;
 import project.athena.BulletinBoard;
@@ -17,11 +18,12 @@ public class Ballot {
     public Ciphertext publicCredential;
     public Ciphertext encryptedNegatedPrivateCredential;
     public Ciphertext encryptedVote;
-    public BulletproofProof proofVote;
+    public Pair<BulletproofProof, BulletproofProof> proofVotePair;
     public BulletproofProof proofNegatedPrivateCredential;
     public int counter;
 
-    private Ballot() {}
+    private Ballot() {
+    }
 
     // b[1] = pd
     public Ciphertext getPublicCredential() {
@@ -44,8 +46,8 @@ public class Ballot {
     }
 
     // b[5] = sigma_2
-    public BulletproofProof getProofVote() {
-        return proofVote;
+    public Pair<BulletproofProof, BulletproofProof> getProofVotePair() {
+        return proofVotePair;
     }
 
     // b[6] = counter
@@ -72,7 +74,7 @@ public class Ballot {
         private Ciphertext publicCredential;
         private Ciphertext encryptedNegatedPrivateCredential;
         private Ciphertext encryptedVote;
-        private BulletproofProof proofVote;
+        private Pair<BulletproofProof, BulletproofProof> proofVotePair;
         private BulletproofProof proofNegatedPrivateCredential;
         private int counter;
 
@@ -92,8 +94,8 @@ public class Ballot {
         }
 
 
-        public Builder setProofVote(BulletproofProof proofVote) {
-            this.proofVote = proofVote;
+        public Builder setProofVotePair(Pair<BulletproofProof, BulletproofProof> proofVotePair) {
+            this.proofVotePair = proofVotePair;
             return this;
         }
 
@@ -111,10 +113,10 @@ public class Ballot {
         public Ballot build() {
             //Check that all fields are set
             if (publicCredential == null ||
-                encryptedNegatedPrivateCredential == null ||
-                encryptedVote == null ||
-                proofVote == null ||
-                proofNegatedPrivateCredential == null
+                    encryptedNegatedPrivateCredential == null ||
+                    encryptedVote == null ||
+                    proofVotePair == null ||
+                    proofNegatedPrivateCredential == null
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
@@ -124,7 +126,7 @@ public class Ballot {
             ballot.publicCredential = publicCredential;
             ballot.encryptedNegatedPrivateCredential = encryptedNegatedPrivateCredential;
             ballot.encryptedVote = encryptedVote;
-            ballot.proofVote = proofVote;
+            ballot.proofVotePair = proofVotePair;
             ballot.proofNegatedPrivateCredential = proofNegatedPrivateCredential;
             return ballot;
         }

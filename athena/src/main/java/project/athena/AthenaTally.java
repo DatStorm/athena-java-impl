@@ -118,41 +118,59 @@ public class AthenaTally {
             }
 
 
-            // TODO: Fix the bulletproof range stuff into two proofs.
             // Verify that the negated private credential is in the valid range
             // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersens' commitment of (-d) using randomness s
             Ciphertext encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
-            BulletproofStatement _stmnt_1 = new BulletproofStatement(
-                    n_vote,
-                    encryptedNegatedPrivateCredential.c2,
+
+
+            List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
+            List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
+
+            int n = Bulletproof.getN(pk.group.q) - 1; //q.bitlength()-1
+            BulletproofStatement stmnt_1 = new BulletproofStatement(
+                    n,
+                    encryptedNegatedPrivateCredential.c2.modInverse(pk.group.p), // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
                     pk,
                     g_vector_negatedPrivateCredential,
                     h_vector_negatedPrivateCredential);
 
-            BulletproofExtensionStatement stmnt_1 = new BulletproofExtensionStatement(H,V,pk,g_vector,h_vector);
-
-
-            boolean verify_encryptedNegatedPrivateCredential = bulletProof.verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
+            boolean verify_encryptedNegatedPrivateCredential = bulletProof
+                    .verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
 
 
             // remove invalid ballots.
             if (!verify_encryptedNegatedPrivateCredential) {
+                System.err.println("AthenaImpl.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
                 finalBallots.remove(ballot);
             }
 
             // Verify that the vote is in the valid range
             // ElGamal ciphertext (c1,c2) => use c2=g^(v) h^t as Pedersens' commitment of vote v using randomness t
             Ciphertext encryptedVote = ballot.getEncryptedVote();
-            BulletproofStatement stmnt_2 = new BulletproofStatement(
-                    n_negatedPrivateCredential,
+
+            int nc = bb.retrieveNumberOfCandidates();
+            List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
+            List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
+
+            BigInteger H = BigInteger.valueOf(nc - 1);
+            BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
+                    H,
                     encryptedVote.c2,
                     pk,
                     g_vector_vote,
-                    h_vector_vote);
-            boolean verify_encryptedVote = bulletProof.verifyStatement(stmnt_2, ballot.getProofVote());
+                    h_vector_vote
+            );
+
+            boolean verify_encVote = bulletProof
+                    .verifyStatementArbitraryRange(
+                            stmnt_2,
+                            ballot.getProofVotePair()
+                    );
+
 
             // remove invalid ballots.
-            if (!verify_encryptedVote) {
+            if (!verify_encVote) {
+                System.err.println("AthenaImpl.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(v), proof_{v}) = 0");
                 finalBallots.remove(ballot);
             }
         }
@@ -180,10 +198,7 @@ public class AthenaTally {
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
             BigInteger noncedNegatedPrivateCredentialElement = elgamal.decrypt(ci_prime, sk);
-
-            if (i == 0) { // Just for debug help
-                System.out.println(i + "--> AthenaTally.filterReVotesAndProveSameNonce Ni: " + noncedNegatedPrivateCredentialElement);
-            }
+            
 
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);
@@ -196,7 +211,7 @@ public class AthenaTally {
 
             // Proove that the same nonce was used for all ballots.
             if (pfr.size() > 0) {
-                // Prove c0 i−1 and c0 i are derived by iterative homomorphic combination wrt nonce n
+                // Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
                 List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
                 List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
                 Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCiphertexts, nonce_n, kappa);
@@ -223,7 +238,6 @@ public class AthenaTally {
 
             Ciphertext combinedCredential = ballot.getPublicCredential().multiply(ballot.getEncryptedNegatedPrivateCredential(), p);
 
-            System.out.println("AthenaTally.getHighestCounterEntry combCred: " + combinedCredential.toFormattedString());
             MapAValue updatedValue = new MapAValue(counter, combinedCredential, ballot.getEncryptedVote());
 
             return updatedValue;

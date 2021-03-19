@@ -15,7 +15,7 @@ import project.factory.MainAthenaFactory;
 
 import java.math.BigInteger;
 
-public class ManualTestAthenaTallierFails {
+public class ManualTestAthenaTallierEvilVoter {
     private static int kappa = CONSTANTS.KAPPA;
 
 
@@ -59,7 +59,10 @@ public class ManualTestAthenaTallierFails {
 
         //Malious voter steals public credential of voter2
         BigInteger q = bb.retrievePK_vector().pk.getGroup().getQ();
-        BigInteger fakedPrivCred = UTIL.getRandomElement(q,athenaFactory.getRandom());
+        int n = q.bitLength() - 1;
+        BigInteger endRange = BigInteger.TWO.modPow(BigInteger.valueOf(n), q).subtract(BigInteger.ONE); // [0; 2^n-1]
+        BigInteger fakedPrivCred = UTIL.getRandomElement(BigInteger.ZERO, endRange, athenaFactory.getRandom()); // a nonce in [0,2^{\lfloor \log_2 q \rfloor} -1]
+
         CredentialTuple fakedCredential = new CredentialTuple(registrar.sendCredentials(1).publicCredential, fakedPrivCred);
         voterEvil.retrieveCredentials(fakedCredential);
 
@@ -75,9 +78,9 @@ public class ManualTestAthenaTallierFails {
         // Verify tally
         Verifier verifier = new Verifier(athena, bb);
         verifier.init();
-        System.out.println("--> Verify Election fails");
-        boolean succeeds = verifier.verifyElection();
+        System.out.println("--> Verify Election:");
 
-        System.out.println("We should FAIL: do we?: " + (!succeeds ? "YES" : "NO"));
+        boolean succeeds = verifier.verifyElection();
+        System.out.println("Did we successfully avoid counting the Evil Vote?: " + (succeeds ?  "Yes" : "No"));
     }
 }

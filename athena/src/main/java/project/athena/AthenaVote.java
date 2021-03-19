@@ -1,10 +1,12 @@
 package project.athena;
 
+import org.apache.commons.lang3.tuple.Pair;
 import project.CONSTANTS;
 import project.UTIL;
 import project.dao.athena.Ballot;
 import project.dao.athena.CredentialTuple;
 import project.dao.athena.PK_Vector;
+import project.dao.bulletproof.BulletproofExtensionStatement;
 import project.dao.bulletproof.BulletproofProof;
 import project.dao.bulletproof.BulletproofSecret;
 import project.dao.bulletproof.BulletproofStatement;
@@ -71,6 +73,7 @@ public class AthenaVote {
         Ciphertext publicCredential = credentialTuple.publicCredential;
         ElGamalPK pk = pkv.pk;
         BigInteger q = pk.group.q;
+        BigInteger p = pk.group.p;
 
 
         // Make negated private credential
@@ -90,41 +93,40 @@ public class AthenaVote {
         Ciphertext encryptedVote = elgamal.exponentialEncrypt(voteAsBigInteger, pk, randomness_t);
 
 
-        // Get public values from bb.
-        int rangeBitlengthOfNegatedPrivateCredential = bb.retrieveRangeBitLengthOfNegatedPrivateCredential();
+        // Prove that for negated private credential -d that d is in [0, 2^{\lfloor log_2 q \rfloor} -1]
         List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
         List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
-
-        // Prove that negated private credential -d resides in Z_q (this is defined using n)
+        int n = Bulletproof.getN(q) - 1; //q.bitlength()-1
         BulletproofStatement stmnt_1 = new BulletproofStatement(
-                rangeBitlengthOfNegatedPrivateCredential,
-                encryptedNegatedPrivateCredential.c2,
+                n,
+                encryptedNegatedPrivateCredential.c2.modInverse(p), // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
                 pk,
                 g_vector_negatedPrivateCredential,
                 h_vector_negatedPrivateCredential);
-        BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential, randomness_s);
-        BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
 
-        int rangeBitlengthOfVote = bb.retrieveRangeBitLengthOfVote();
-        List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
-        List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
+        // negate since we take the inverse of the commitment
+        BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential.negate().mod(q).add(q).mod(q), randomness_s.negate().mod(q).add(q).mod(q));
+        BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
 
 
         // Prove that vote v resides in [0,nc-1] (this is defined using n)
-        BulletproofStatement stmnt_2 = new BulletproofStatement(
-                rangeBitlengthOfVote,
-                encryptedVote.c2,
+        List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
+        List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
+        BigInteger H = BigInteger.valueOf(nc - 1);
+        BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
+                H,
+                encryptedVote.c2, // g^v h^t
                 pk,
                 g_vector_vote,
                 h_vector_vote);
         BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
-        BulletproofProof proofRangeOfVote = bulletProof.proveStatement(stmnt_2, secret_2);
+        Pair<BulletproofProof, BulletproofProof> proofRangeOfVotePair = bulletProof.proveStatementArbitraryRange(stmnt_2, secret_2);
 
         Ballot ballot = new Ballot.Builder()
                 .setPublicCredential(publicCredential)
                 .setEncryptedNegatedPrivateCredential(encryptedNegatedPrivateCredential)
                 .setEncryptedVote(encryptedVote)
-                .setProofVote(proofRangeOfVote)
+                .setProofVotePair(proofRangeOfVotePair)
                 .setProofNegatedPrivateCredential(proofRangeOfNegatedPrivateCredential)
                 .setCounter(cnt)
                 .build();
@@ -171,10 +173,10 @@ public class AthenaVote {
         public AthenaVote build() {
             //Check that all fields are set
             if (bb == null ||
-                random == null ||
-                sigma1 == null ||
-                bulletProof == null ||
-                elgamal == null
+                    random == null ||
+                    sigma1 == null ||
+                    bulletProof == null ||
+                    elgamal == null
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }

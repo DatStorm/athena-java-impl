@@ -29,8 +29,6 @@ public class AthenaImpl implements Athena {
 
     private boolean initialised;
     private BigInteger mc;
-    private int rangeBitLengthOfVote;
-    private int rangeBitLengthOfNegatedPrivateCredential;
 
     private final AthenaFactory athenaFactory;
 
@@ -65,24 +63,21 @@ public class AthenaImpl implements Athena {
         Randomness randR = new Randomness(this.random.nextLong());
         ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
 
-        this.rangeBitLengthOfVote = 4;                          // This is a function of nc. TODO: FIX THESE VALUES
-        this.rangeBitLengthOfNegatedPrivateCredential = kappa;  // This is a function of q. TODO: FIX THESE VALUES
+        BigInteger H = BigInteger.valueOf(nc-1); // H = nc - 1
+        int n1 = Bulletproof.getN(H);
+        int n2 = Bulletproof.getN(group.q) - 1; //q.bitlength()-1
 
-
-        // Practical: must be of reasonable size. Theoretical: This needs to be within Z_q, i.e. v \in [0,..,nc-1] then mc =< q.
         // mc is upper-bound by a polynomial in the security parameter
         // i.e kappa^2 = 2048^2 = 4194304 candidates.
         int mb = (int) Math.pow(kappa, 2.0); // TODO: FIX THESE VALUES
-        this.mc = BigInteger.valueOf(kappa).pow(2); // TODO: FIX THESE VALUES        
+        this.mc = BigInteger.valueOf(kappa).pow(2); // TODO: FIX THESE VALUES
 
-        List<BigInteger> g_vector_vote = group.newGenerators(rangeBitLengthOfVote, random);
-        List<BigInteger> h_vector_vote = group.newGenerators(rangeBitLengthOfVote, random);
-        List<BigInteger> g_vector_negatedPrivateCredential = group.newGenerators(rangeBitLengthOfNegatedPrivateCredential, random);
-        List<BigInteger> h_vector_negatedPrivateCredential = group.newGenerators(rangeBitLengthOfNegatedPrivateCredential, random);
+        List<BigInteger> g_vector_vote = group.newGenerators(n1, random);
+        List<BigInteger> h_vector_vote = group.newGenerators(n1, random);
+        List<BigInteger> g_vector_negatedPrivateCredential = group.newGenerators(n2, random);
+        List<BigInteger> h_vector_negatedPrivateCredential = group.newGenerators(n2, random);
 
         bb.publishNumberOfCandidates(nc);
-        bb.publishRangeNumberVote(rangeBitLengthOfVote);
-        bb.publishRangeNumberNegatedPrivCred(rangeBitLengthOfNegatedPrivateCredential);
 
         bb.publish_G_VectorVote(g_vector_vote);
         bb.publish_H_VectorVote(h_vector_vote);

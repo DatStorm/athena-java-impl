@@ -57,6 +57,6 @@ public class ManualTestAthenaTallier {
         System.out.println("--> Verify Election");
         boolean success = verifier.verifyElection();
 
-        System.out.println("DOES WE SUCCED? " + (success ? "YES" : "NO"));
+        System.out.println("DOES WE SUCCEED? " + (success ? "YES" : "NO"));
     }
 }

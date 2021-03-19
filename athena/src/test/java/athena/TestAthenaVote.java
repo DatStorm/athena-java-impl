@@ -62,7 +62,7 @@ public class TestAthenaVote {
         assertNotNull("Should not be null", ballot.getEncryptedNegatedPrivateCredential());
         assertNotNull("Should not be null", ballot.getEncryptedVote());
         assertNotNull("Should not be null", ballot.getProofNegatedPrivateCredential());
-        assertNotNull("Should not be null", ballot.getProofVote());
+        assertNotNull("Should not be null", ballot.getProofVotePair());
         assertEquals("Should be 0",0, ballot.getCounter());
     }
 
