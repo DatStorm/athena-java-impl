@@ -23,6 +23,7 @@ public class ManualTestAthenaTallierEvilVoter {
     public static void main(String[] args) {
         int nc = 10;
 
+
         // Vote
         int vote1 = 4;
         int vote2 = 2;
