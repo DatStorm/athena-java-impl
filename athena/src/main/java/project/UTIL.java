@@ -213,8 +213,8 @@ public class UTIL {
         return true;
     }
 
+  
     public static MessageDigest GET_HASH_FUNCTION() {
-
         MessageDigest sha3_256 = null;
         try {
             sha3_256 = MessageDigest.getInstance(CONSTANTS.ALGORITHM_SHA3_256);

@@ -1,6 +1,5 @@
 package project.athena;
 
-import project.CONSTANTS;
 import project.UTIL;
 import project.dao.athena.CredentialTuple;
 import project.dao.athena.PK_Vector;
@@ -13,30 +12,27 @@ import java.math.BigInteger;
 import java.util.Random;
 
 public class AthenaRegister {
-    private static final int kappa = CONSTANTS.KAPPA;
-    
-    
-    private final BulletinBoard bb;
-    private final Random random;
-    private final Sigma1 sigma1;
-    private final ElGamal elGamal;
 
 
-    private AthenaRegister(BulletinBoard bb, Random random, Sigma1 sigma1, ElGamal elGamal) {
-        this.bb = bb;
-        this.random = random;
-        this.sigma1 = sigma1;
-        this.elGamal = elGamal;
-    }
+    private BulletinBoard bb;
+    private Random random;
+    private Sigma1 sigma1;
+    private ElGamal elGamal;
+    private int kappa;
+
+
+    private AthenaRegister() {}
 
 
     public RegisterStruct Register(PK_Vector pkv) {
+
+
         if (!AthenaCommon.parsePKV(pkv)) {
             System.err.println("AthenaImpl.Register => ERROR: pkv null");
             return null;
         }
 
-        if (!AthenaCommon.verifyKey(sigma1, pkv, kappa)) {
+        if (!AthenaCommon.verifyKey(this.sigma1, pkv, this.kappa)) {
             System.err.println("AthenaImpl.Register => ERROR: VerifyKey(...) => false");
             return null;
         }
@@ -46,26 +42,28 @@ public class AthenaRegister {
         //Generate nonce. aka private credential
         int n = q.bitLength() - 1;
         BigInteger endRange = BigInteger.TWO.modPow(BigInteger.valueOf(n), q).subtract(BigInteger.ONE); // [0; 2^n-1]
-        BigInteger privateCredential = UTIL.getRandomElement(BigInteger.ZERO, endRange, random); // a nonce in [0,2^{\lfloor \log_2 q \rfloor} -1]
+        BigInteger privateCredential = UTIL.getRandomElement(BigInteger.ZERO, endRange, this.random); // a nonce in [0,2^{\lfloor \log_2 q \rfloor} -1]
 
         // Enc^{exp}_pk(d)  
-        Ciphertext publicCredential = elGamal.exponentialEncrypt(privateCredential, pkv.pk);
+        Ciphertext publicCredential = this.elGamal.exponentialEncrypt(privateCredential, pkv.pk);
 
         // bold{d} = (pd, d) = (Enc_pk(g^d), d)
         CredentialTuple credentialTuple = new CredentialTuple(publicCredential, privateCredential);
 
 
-        bb.addPublicCredentitalToL(publicCredential);
+        this.bb.addPublicCredentitalToL(publicCredential);
         return new RegisterStruct(publicCredential, credentialTuple);
     }
-
 
 
     public static class Builder {
         private BulletinBoard bb;
         private Random random;
         private Sigma1 sigma1;
-        private ElGamal elgamal;
+        private ElGamal elGamal;
+        private Integer kappa;
+
+
         public Builder setBB(BulletinBoard bb) {
             this.bb = bb;
             return this;
@@ -82,7 +80,12 @@ public class AthenaRegister {
         }
 
         public Builder setElGamal(ElGamal elgamal) {
-            this.elgamal = elgamal;
+            this.elGamal = elgamal;
+            return this;
+        }
+
+        public Builder setKappa(Integer kappa) {
+            this.kappa = kappa;
             return this;
         }
 
@@ -90,18 +93,26 @@ public class AthenaRegister {
 
         public AthenaRegister build() {
             //Check that all fields are set
-            if (
-                    bb == null ||
-                    random == null ||
-                    sigma1 == null ||
-                    elgamal == null
+            if (bb == null ||
+                random == null ||
+                sigma1 == null ||
+                kappa == null ||
+                elGamal == null
 
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
 
+
             //Construct Object
-            return new AthenaRegister(bb, random, sigma1, elgamal);
+            AthenaRegister obj = new AthenaRegister();
+
+            obj.bb = this.bb;
+            obj.random = this.random;
+            obj.sigma1 = this.sigma1;
+            obj.elGamal = this.elGamal;
+            obj.kappa = this.kappa;
+            return obj;
         }
     }
 }

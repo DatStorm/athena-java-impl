@@ -21,31 +21,17 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class AthenaVerify {
-    private static final int kappa = CONSTANTS.KAPPA;
 
-    private final Sigma1 sigma1;
-    private final Bulletproof bulletproof;
-    private final Sigma3 sigma3;
-    private final Sigma4 sigma4;
-    private final Mixnet mixnet;
-    private final BulletinBoard bb;
+    private Sigma1 sigma1;
+    private Bulletproof bulletproof;
+    private Sigma3 sigma3;
+    private Sigma4 sigma4;
+    private Mixnet mixnet;
+    private BulletinBoard bb;
     private BigInteger mc;
+    private Integer kappa;
 
-    private AthenaVerify(Sigma1 sigma1,
-                         Bulletproof bulletproof,
-                         Sigma3 sigma3,
-                         Sigma4 sigma4,
-                         Mixnet mixnet,
-                         BulletinBoard bb,
-                         BigInteger mc) {
-
-        this.sigma1 = sigma1;
-        this.bulletproof = bulletproof;
-        this.sigma3 = sigma3;
-        this.sigma4 = sigma4;
-        this.mixnet = mixnet;
-        this.bb = bb;
-        this.mc = mc;
+    private AthenaVerify() {
     }
 
 
@@ -66,7 +52,7 @@ public class AthenaVerify {
         }
 
         // Verify that the ElGamal keys are constructed correctly
-        if (!AthenaCommon.verifyKey(sigma1, pkv, kappa)) {
+        if (!AthenaCommon.verifyKey(sigma1, pkv, this.kappa)) {
             System.err.println("AthenaVerify:=> ERROR: VerifyKey(...) => false");
             return false;
         }
@@ -110,7 +96,7 @@ public class AthenaVerify {
 
 
         // Verify that filtering of ballots(only keeping highest counter) and mixnet is valid
-        boolean mixIsValid = checkMix(mixnet, validBallots, pf, pk);
+        boolean mixIsValid = checkMix(mixnet, validBallots, pf, pk, this.kappa);
         if (!mixIsValid) {
             return false;
         }
@@ -122,7 +108,7 @@ public class AthenaVerify {
         return this.checkRevelation(pf.mixBallotList, pf.pfd, tallyOfVotes, pk, nc);
     }
 
-    private static boolean checkMix(Mixnet mixnet, List<Ballot> validBallots, PFStruct pf, ElGamalPK pk) {
+    private static boolean checkMix(Mixnet mixnet, List<Ballot> validBallots, PFStruct pf, ElGamalPK pk, int kappa) {
         int ell = validBallots.size();
         List<PFRStruct> pfr = pf.pfr;
         List<MixBallot> B = pf.mixBallotList;
@@ -348,6 +334,7 @@ public class AthenaVerify {
         private Mixnet mixnet;
         private BulletinBoard bb;
         private BigInteger mc;
+        private Integer kappa;
 
         public Builder setSigma1(Sigma1 sigma1) {
             this.sigma1 = sigma1;
@@ -386,6 +373,11 @@ public class AthenaVerify {
             return this;
         }
 
+        public Builder setKappa(Integer kappa) {
+            this.kappa = kappa;
+            return this;
+        }
+
         public AthenaVerify build() {
             //Check that all fields are set
             if (
@@ -395,13 +387,25 @@ public class AthenaVerify {
                             sigma4 == null ||
                             mixnet == null ||
                             bb == null ||
+                            kappa == null ||
                             mc == null
             ) {
                 throw new IllegalArgumentException("AthenaVerify.Builder: Not all fields have been set");
             }
 
+            AthenaVerify athenaVerify = new AthenaVerify();
+
+            athenaVerify.sigma1 = this.sigma1;
+            athenaVerify.bulletproof = this.bulletproof;
+            athenaVerify.sigma3 = this.sigma3;
+            athenaVerify.sigma4 = this.sigma4;
+            athenaVerify.mixnet = this.mixnet;
+            athenaVerify.bb = this.bb;
+            athenaVerify.mc = this.mc;
+            athenaVerify.kappa = this.kappa;
+
             //Construct Object
-            return new AthenaVerify(sigma1, bulletproof, sigma3, sigma4, mixnet, bb, mc);
+            return athenaVerify;
         }
 
 

@@ -3,6 +3,7 @@ package athena;
 
 import org.junit.jupiter.api.*;
 import project.CONSTANTS;
+import project.athena.Athena;
 import project.athena.AthenaImpl;
 import project.athena.BulletinBoard;
 import project.dao.athena.*;
@@ -26,7 +27,7 @@ public class TestAthenaTally {
     private PK_Vector pkv;
     private ElGamalSK sk;
 
-    private AthenaImpl athena;
+    private Athena athena;
     private BulletinBoard bb;
 
 
@@ -34,11 +35,11 @@ public class TestAthenaTally {
     void setUp() {
         msFactory = new MainAthenaFactory();
         athena = new AthenaImpl(msFactory);
-        ElectionSetup setup = athena.Setup(kappa, nc);
+        ElectionSetup setup = athena.Setup(nc, this.kappa);
 
         sk = setup.sk;
         pkv = setup.pkv;
-        RegisterStruct register = athena.Register(pkv);
+        RegisterStruct register = athena.Register(pkv, this.kappa);
         dv = register.d;
         bb = msFactory.getBulletinBoard();
 
@@ -52,14 +53,14 @@ public class TestAthenaTally {
 
         int vote1_1 = 4;
         int cnt1_1 = 0;
-        Ballot ballot_1 = athena.Vote(dv, pkv, vote1_1, cnt1_1, nc);
-        
+        Ballot ballot_1 = athena.Vote(dv, pkv, vote1_1, cnt1_1, nc, this.kappa);
+
 
         int vote2_1 = 2;
         int cnt2_1 = 0;
-        Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc);
-        
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk),  nc);
+        Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
+
+        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc, this.kappa);
         assertNotNull("Should not be null", tallyStruct.pf.mixBallotList);
         assertNotNull("Should not be null", tallyStruct.pf.pfd);
         assertNotNull("Should not be null", tallyStruct.pf.pfr);

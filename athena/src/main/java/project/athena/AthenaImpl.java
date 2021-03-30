@@ -16,21 +16,18 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class AthenaImpl implements Athena {
-
+    private final AthenaFactory athenaFactory;
     private final Sigma1 sigma1;
     private final Bulletproof bulletProof;
     private final Sigma3 sigma3;
     private final Sigma4 sigma4;
-    private Mixnet mixnet;
-
     private final BulletinBoard bb;
     private final Random random;
     private ElGamal elgamal;
-
-    private boolean initialised;
+    private Mixnet mixnet;
     private BigInteger mc;
+    private boolean initialised;
 
-    private final AthenaFactory athenaFactory;
 
 
     public AthenaImpl(AthenaFactory athenaFactory) {
@@ -45,13 +42,15 @@ public class AthenaImpl implements Athena {
     }
 
     @Override
-    public ElectionSetup Setup(int kappa, int nc) {
+    public ElectionSetup Setup(int nc, int kappa) {
+
         if (this.initialised) {
             System.err.println("AthenaImpl.Setup => ERROR: System not initialised call .Setup before hand");
             return null;
         }
 
-        Gen gen = new Gen(random, nc, kappa);
+        int bitlength = kappa * 8;
+        Gen gen = new Gen(random, nc, bitlength); // Because elgamal needs a larger security param
         ElGamalSK sk = gen.generate();
         ElGamalPK pk = sk.pk;
         Group group = pk.group;
@@ -63,14 +62,14 @@ public class AthenaImpl implements Athena {
         Randomness randR = new Randomness(this.random.nextLong());
         ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
 
-        BigInteger H = BigInteger.valueOf(nc-1); // H = nc - 1
+        BigInteger H = BigInteger.valueOf(nc - 1); // H = nc - 1
         int n1 = Bulletproof.getN(H);
         int n2 = Bulletproof.getN(group.q) - 1; //q.bitlength()-1
 
         // mc is upper-bound by a polynomial in the security parameter
         // i.e kappa^2 = 2048^2 = 4194304 candidates.
-        int mb = (int) Math.pow(kappa, 2.0); // TODO: FIX THESE VALUES
-        this.mc = BigInteger.valueOf(kappa).pow(2); // TODO: FIX THESE VALUES
+        int mb = (int) Math.pow(kappa * 8, 2.0); // TODO: FIX THESE VALUES
+        this.mc = BigInteger.valueOf(kappa * 8).pow(2); // TODO: FIX THESE VALUES
 
         List<BigInteger> g_vector_vote = group.newGenerators(n1, random);
         List<BigInteger> h_vector_vote = group.newGenerators(n1, random);
@@ -78,7 +77,6 @@ public class AthenaImpl implements Athena {
         List<BigInteger> h_vector_negatedPrivateCredential = group.newGenerators(n2, random);
 
         bb.publishNumberOfCandidates(nc);
-
         bb.publish_G_VectorVote(g_vector_vote);
         bb.publish_H_VectorVote(h_vector_vote);
         bb.publish_G_VectorNegPrivCred(g_vector_negatedPrivateCredential);
@@ -93,7 +91,7 @@ public class AthenaImpl implements Athena {
 
 
     @Override
-    public RegisterStruct Register(PK_Vector pkv) {
+    public RegisterStruct Register(PK_Vector pkv, int kappa) {
         if (!initialised) {
             System.err.println("AthenaImpl.Register => ERROR: System not initialised call .Setup before hand");
             return null;
@@ -103,13 +101,14 @@ public class AthenaImpl implements Athena {
                 .setRandom(this.random)
                 .setSigma1(this.sigma1)
                 .setElGamal(this.elgamal)
+                .setKappa(kappa)
                 .build()
                 .Register(pkv);
     }
 
 
     @Override
-    public Ballot Vote(CredentialTuple credentialTuple, PK_Vector pkv, int vote, int cnt, int nc) {
+    public Ballot Vote(CredentialTuple credentialTuple, PK_Vector pkv, int vote, int cnt, int nc, int kappa) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Vote => ERROR: System not initialised call .Setup before hand");
             return null;
@@ -120,13 +119,14 @@ public class AthenaImpl implements Athena {
                 .setRandom(this.random)
                 .setElGamal(this.elgamal)
                 .setBB(this.bb)
+                .setKappa(kappa)
                 .build()
                 .Vote(credentialTuple, pkv, vote, cnt, nc);
     }
 
 
     @Override
-    public TallyStruct Tally(SK_Vector skv, int nc) {
+    public TallyStruct Tally(SK_Vector skv, int nc, int kappa) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Tally => ERROR: System not initialised call .Setup before hand");
             return null;
@@ -140,12 +140,13 @@ public class AthenaImpl implements Athena {
                 .setSigma3(this.sigma3)
                 .setSigma4(this.sigma4)
                 .setMixnet(this.mixnet)
+                .setKappa(kappa)
                 .build()
-                .Tally(skv,nc);
+                .Tally(skv, nc);
     }
 
     @Override
-    public boolean Verify(PK_Vector pkv, int nc, Map<Integer, Integer> tallyOfVotes, PFStruct pf) {
+    public boolean Verify(PK_Vector pkv, int nc, Map<Integer, Integer> tallyOfVotes, PFStruct pf, int kappa) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Verify => ERROR: System not initialised call .Setup before hand");
             return false;
@@ -158,6 +159,7 @@ public class AthenaImpl implements Athena {
                 .setMixnet(this.mixnet)
                 .setBB(this.bb)
                 .setMc(this.mc)
+                .setKappa(kappa)
                 .build()
                 .Verify(pkv, nc, tallyOfVotes, pf);
     }

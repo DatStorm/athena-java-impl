@@ -43,15 +43,15 @@ public class ManualTestAthenaTallierEvilVoter {
         System.out.println("--> Setup done");
 
 
-        Voter voter1 = new Voter(athena, bb);
-        Voter voter2 = new Voter(athena, bb);
-        Voter voterEvil = new Voter(athena, bb);
+        Voter voter1 = new Voter(athena, bb,kappa);
+        Voter voter2 = new Voter(athena, bb,kappa);
+        Voter voterEvil = new Voter(athena, bb,kappa);
         voter1.init();
         voter2.init();
         voterEvil.init();
 
         // Construct and distribute credential to voters
-        Registrar registrar = new Registrar(athena, bb);
+        Registrar registrar = new Registrar(athena, bb,kappa);
         registrar.init();
 
         registrar.generateCredentials(numVoters);
@@ -77,7 +77,7 @@ public class ManualTestAthenaTallierEvilVoter {
         tallier.tallyVotes();
 
         // Verify tally
-        Verifier verifier = new Verifier(athena, bb);
+        Verifier verifier = new Verifier(athena, bb,kappa);
         verifier.init();
         System.out.println("--> Verify Election:");
 

@@ -4,10 +4,7 @@ import org.junit.jupiter.api.*;
 import project.CONSTANTS;
 import project.UTIL;
 import project.athena.AthenaCommon;
-import project.elgamal.Ciphertext;
-import project.elgamal.ElGamal;
-import project.elgamal.ElGamalPK;
-import project.elgamal.ElGamalSK;
+import project.elgamal.*;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -22,17 +19,23 @@ public class TestElgamal {
     private ElGamal elGamal;
     private ElGamalSK sk;
     private ElGamalPK pk;
+    private int bitlength;
 
-    private int nbits;
 
 
     @BeforeEach
     void setUp() {
-        nbits = 32 * Byte.SIZE;
-//        nbits = 32;
-
+        bitlength = 32 * Byte.SIZE; // = 32*8 = 256
         random = new SecureRandom();
-        elGamal = new ElGamal(nbits, CONSTANTS.MSG_SPACE_LENGTH,  random);
+
+
+        // Current version is 32 bits....
+        BigInteger p = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_P;
+        BigInteger q = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_Q;
+        BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G;
+
+        Group group = new Group(p, q, g);
+        elGamal = new ElGamal(group, CONSTANTS.MSG_SPACE_LENGTH, random);
         sk = elGamal.generateSK();
         pk = elGamal.generatePk(sk);
 
@@ -80,7 +83,7 @@ public class TestElgamal {
 
     @Test
     void TestElGamalLarge() {
-        BigInteger msg = BigInteger.TWO.pow(nbits).subtract(BigInteger.ONE); //2^nbits-1
+        BigInteger msg = BigInteger.TWO.pow(bitlength).subtract(BigInteger.ONE); //2^nbits-1
 
         ElGamalSK sk = elGamal.generateSK();
         ElGamalPK pk = elGamal.generatePk(sk);
@@ -150,5 +153,15 @@ public class TestElgamal {
 
         assertEquals(expected, result, "should be the same, 1 == 1" );
 
+    }
+
+
+    @Test
+    void TestExponentialElGamal() {
+        BigInteger expected = BigInteger.TEN;
+        Ciphertext ciphertext = elGamal.exponentialEncrypt(expected, pk);
+        Integer result = elGamal.exponentialDecrypt(ciphertext, sk);
+
+        assertEquals(expected.intValueExact(), result.intValue());
     }
 }

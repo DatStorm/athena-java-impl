@@ -8,29 +8,29 @@ public class CONSTANTS {
     public static final String ALGORITHM_SHA3_256 = "SHA3-256";
     public static final int NUMBER_OF_CANDIDATES_DEFAULT = 10;
 
-
-    /**
-     * Elgamal bit length specify how big values to use.
-     */
-    public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_CURRENT.ELGAMAL_BIT_LENGTH;
-
+   
 
     /**
      * Security parameters
      */
-    public static final int KAPPA = ELGAMAL_BIT_LENGTH;
+    public static final int KAPPA =  ELGAMAL_CURRENT.ELGAMAL_BIT_LENGTH / 8;
+
+    // Note that nc = MSG_SPACE_LENGTH
     public static final int MSG_SPACE_LENGTH = 1000; // for testing purposes only. Needed when testing individual aspects of Athena
 
     
     public static final BigInteger BULLET_PROOF_R = BigInteger.ZERO;
-
-
+    
 
     public static class ELGAMAL_CURRENT {
-        public static final BigInteger ELGAMAL_P = ELGAMAL_32_BITS.ELGAMAL_P;
-        public static final BigInteger ELGAMAL_Q = ELGAMAL_32_BITS.ELGAMAL_Q;
-        public static final BigInteger ELGAMAL_G = ELGAMAL_32_BITS.ELGAMAL_G;
-        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_32_BITS.ELGAMAL_BIT_LENGTH;
+        public static final BigInteger ELGAMAL_P = ELGAMAL_64_BITS.ELGAMAL_P;
+        public static final BigInteger ELGAMAL_Q = ELGAMAL_64_BITS.ELGAMAL_Q;
+        public static final BigInteger ELGAMAL_G = ELGAMAL_64_BITS.ELGAMAL_G;
+
+        /**
+         * Elgamal bit length specify how big values to use.
+         */
+        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_64_BITS.ELGAMAL_BIT_LENGTH;
 //        public static final BigInteger FAKE_SK = ELGAMAL_1024_BITS.FAKE_SK;
     }
 

@@ -42,7 +42,7 @@ public class Tallier implements Entity {
 
     public void init() {
         // Run Setup()
-        electionSetup = athena.Setup(kappa, nc);
+        electionSetup = athena.Setup(this.nc,this.kappa);
         sk = electionSetup.sk;
         pk = electionSetup.pkv.pk;
     }
@@ -53,7 +53,7 @@ public class Tallier implements Entity {
             System.err.println("Tallier.tallyVotes => sk is null! Please run Tallier.init()");
         }
         
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc);
+        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc, this.kappa);
     }
 
 }

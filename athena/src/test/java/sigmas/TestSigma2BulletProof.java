@@ -134,10 +134,8 @@ public class TestSigma2BulletProof {
         // \gamma \in Z_q =[0,q-1]
         BigInteger gamma = UTIL.getRandomElement(q, random);
         BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
-
         List<BigInteger> g_vector = group.newGenerators(n, random);
         List<BigInteger> h_vector = group.newGenerators(n, random);
-
 
         BulletproofStatement stmnt = new BulletproofStatement.Builder()
                 .setN(n)

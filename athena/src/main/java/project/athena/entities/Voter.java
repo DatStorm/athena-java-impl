@@ -1,6 +1,7 @@
 package project.athena.entities;
 
 
+import project.CONSTANTS;
 import project.athena.Athena;
 import project.athena.BulletinBoard;
 import project.dao.athena.Ballot;
@@ -21,16 +22,16 @@ import java.util.List;
 public class Voter implements Entity {
     private final Athena athena;
     private final BulletinBoard bulletinBoard;
+    private final int kappa;
     private CredentialTuple credentialTuple;
     private PK_Vector pk_vector;
     private int nc;
-    private List<BigInteger> g_vector_vote;
-    private List<BigInteger> h_vector_vote;
     private int counter;
 
-    public Voter(Athena athena, BulletinBoard bulletinBoard) {
+    public Voter(Athena athena, BulletinBoard bulletinBoard, int kappa) {
         this.athena = athena;
         this.bulletinBoard = bulletinBoard;
+        this.kappa = kappa;
     }
 
 
@@ -38,9 +39,7 @@ public class Voter implements Entity {
         // Fetch pk, nc and g_vector and h_vector from bulletin board
         pk_vector = bulletinBoard.retrievePK_vector();
         nc = bulletinBoard.retrieveNumberOfCandidates();
-        g_vector_vote = bulletinBoard.retrieve_G_VectorVote();
-        h_vector_vote = bulletinBoard.retrieve_H_VectorVote();
-        counter = 0;
+        counter = 0; // TODO: use a timestamp perhaps
     }
 
     // Fetch credentials from Registrar
@@ -61,8 +60,11 @@ public class Voter implements Entity {
             return;
         }
 
-        counter = counter + 1;
-         Ballot ballot = athena.Vote(credentialTuple, pk_vector, vote, counter, nc);
+         counter = counter + 1; // TODO: use a timestamp perhaps
+         Ballot ballot = athena.Vote(credentialTuple, pk_vector, vote, counter, nc, kappa);
+
+         // publish the ballot
+         bulletinBoard.publishBallot(ballot);
 //         return ballot;
     }
 }

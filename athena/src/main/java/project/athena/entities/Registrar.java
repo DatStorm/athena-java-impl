@@ -21,10 +21,12 @@ public class Registrar implements Entity {
     private Athena athena;
     private BulletinBoard bulletinBoard;
     private PK_Vector pkVector;
+    private int kappa;
 
-    public Registrar(Athena athena, BulletinBoard bulletinBoard) {
+    public Registrar(Athena athena, BulletinBoard bulletinBoard, int kappa) {
         this.athena = athena;
         this.bulletinBoard = bulletinBoard;
+        this.kappa = kappa;
     }
 
     // Fetch the pk and proof ProveKey
@@ -41,7 +43,7 @@ public class Registrar implements Entity {
         credentialList = new ArrayList<>();
 
         // Run Register(numVoters)
-        credentialList = IntStream.range(0, numVoters).mapToObj(i -> athena.Register(pkVector).d).collect(Collectors.toList());
+        credentialList = IntStream.range(0, numVoters).mapToObj(i -> athena.Register(pkVector,kappa).d).collect(Collectors.toList());
         boolean success = credentialList.size() == numVoters;
         assert success : "credentialList.size() != numVoters";
         return success;

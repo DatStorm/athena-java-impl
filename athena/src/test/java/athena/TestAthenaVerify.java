@@ -38,7 +38,7 @@ public class TestAthenaVerify {
     void setUp() {
         msFactory = new MainAthenaFactory();
         athena = new AthenaImpl(msFactory);
-        ElectionSetup setup = athena.Setup(kappa, nc);
+        ElectionSetup setup = athena.Setup(nc, kappa);
 
         sk = setup.sk;
         pkv = setup.pkv;
@@ -50,33 +50,40 @@ public class TestAthenaVerify {
 
     @Test
     void TestAthenaVerify() {
-        int nc = 7;
 
-        RegisterStruct register1 = athena.Register(pkv);
+        RegisterStruct register1 = athena.Register(pkv,kappa);
         CredentialTuple dv1  = register1.d;
         int vote1_1 = 4;
         int cnt1_1 = 0;
         System.out.println("--> Voter 1: ");
-        Ballot ballot_1 = athena.Vote(dv1, pkv, vote1_1, cnt1_1, nc);
+        Ballot ballot_1 = athena.Vote(dv1, pkv, vote1_1, cnt1_1, nc,kappa);
+
+        // Voter is now responsible for publishing.
+        bb.publishBallot(ballot_1);
         System.out.println("--> Voter 1 done ");
 
         int vote2_1 = 2;
         int cnt2_1 = 0;
-        RegisterStruct register2 = athena.Register(pkv);
+        RegisterStruct register2 = athena.Register(pkv,kappa);
         CredentialTuple dv2  = register2.d;
         System.out.println("--> Voter 2: ");
-        Ballot ballot_2 = athena.Vote(dv2, pkv, vote2_1, cnt2_1, nc);
+
+
+        Ballot ballot_2 = athena.Vote(dv2, pkv, vote2_1, cnt2_1, nc,kappa);
         System.out.println("--> Voter 2 done ");
+        // Voter is now responsible for publishing.
+        bb.publishBallot(ballot_2);
+
 
         System.out.println("--> Tally: ");
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc);
+        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc, kappa);
         System.out.println("--> Tally done ");
 
         Map<Integer, Integer> b = tallyStruct.tallyOfVotes;
         PFStruct pf = tallyStruct.pf;
 
         System.out.println("--> Verify: ");
-        boolean verify = athena.Verify(pkv, nc, b, pf);
+        boolean verify = athena.Verify(pkv, nc, b, pf, kappa);
         System.out.println("--> Verify done ");
         assertTrue("should return 1", verify);
         

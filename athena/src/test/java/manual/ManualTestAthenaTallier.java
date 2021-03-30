@@ -28,13 +28,13 @@ public class ManualTestAthenaTallier {
 
         // Create voters
         int numVoters = 2;
-        Voter voter1 = new Voter(athena, bb);
-        Voter voter2 = new Voter(athena, bb);
+        Voter voter1 = new Voter(athena, bb,kappa);
+        Voter voter2 = new Voter(athena, bb,kappa);
         voter1.init();
         voter2.init();
 
         // Construct and distribute credential to voters
-        Registrar registrar = new Registrar(athena, bb);
+        Registrar registrar = new Registrar(athena, bb, kappa);
         registrar.init();
 
         registrar.generateCredentials(numVoters);
@@ -52,7 +52,7 @@ public class ManualTestAthenaTallier {
 
 
         // Verify tally
-        Verifier verifier = new Verifier(athena, bb);
+        Verifier verifier = new Verifier(athena, bb, kappa);
         verifier.init();
         System.out.println("--> Verify Election");
         boolean success = verifier.verifyElection();

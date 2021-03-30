@@ -22,27 +22,15 @@ import java.util.List;
 import java.util.Random;
 
 public class AthenaVote {
-    private static final int kappa = CONSTANTS.KAPPA;
+    private Sigma1 sigma1;
+    private Bulletproof bulletProof;
+    private Random random;
+    private ElGamal elgamal;
+    private int kappa;
+    private BulletinBoard bb;
 
-    private final Sigma1 sigma1;
-    private final Bulletproof bulletProof;
-    private final Random random;
-    private final ElGamal elgamal;
-    private final BulletinBoard bb;
-
-    private AthenaVote(Sigma1 sigma1,
-                       Bulletproof bulletProof,
-                       Random random,
-                       ElGamal elgamal,
-                       BulletinBoard bb) {
-
-        this.sigma1 = sigma1;
-        this.bulletProof = bulletProof;
-        this.random = random;
-        this.elgamal = elgamal;
-        this.bb = bb;
+    private AthenaVote() {
     }
-
 
     public Ballot Vote(
             CredentialTuple credentialTuple,
@@ -141,15 +129,25 @@ public class AthenaVote {
                 .setCounter(cnt)
                 .build();
 
-        bb.publishBallot(ballot);
+        // returns the vote.
         return ballot;
     }
+
+
+
+
+
+
+
+
+
 
     public static class Builder {
         private Sigma1 sigma1;
         private Bulletproof bulletProof;
         private Random random;
         private ElGamal elgamal;
+        private int kappa;
         private BulletinBoard bb;
 
 
@@ -173,6 +171,10 @@ public class AthenaVote {
             return this;
         }
 
+        public Builder setKappa(int kappa) {
+            this.kappa = kappa;
+            return this;
+        }
 
         public Builder setBB(BulletinBoard bb) {
             this.bb = bb;
@@ -183,16 +185,26 @@ public class AthenaVote {
         public AthenaVote build() {
             //Check that all fields are set
             if (bb == null ||
-                    random == null ||
-                    sigma1 == null ||
-                    bulletProof == null ||
-                    elgamal == null
+                random == null ||
+                sigma1 == null ||
+                bulletProof == null ||
+                elgamal == null ||
+                kappa == 0
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
 
             //Construct Object
-            return new AthenaVote(sigma1, bulletProof, random, elgamal, bb);
+            AthenaVote athenaVote = new AthenaVote();
+            athenaVote.sigma1 = this.sigma1;
+            athenaVote.bulletProof = this.bulletProof;
+            athenaVote.random = this.random;
+            athenaVote.elgamal = this.elgamal;
+            athenaVote.bb = this.bb;
+            athenaVote.kappa = this.kappa;
+
+            return athenaVote;
+
         }
     }
 

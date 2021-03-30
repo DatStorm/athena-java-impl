@@ -33,9 +33,9 @@ public class TestAthenaRegister {
     @Test
     void TestAthenaImplRegister() {
         AthenaImpl athena = new AthenaImpl(msFactory);
-        ElectionSetup setup = athena.Setup(kappa, nc);
+        ElectionSetup setup = athena.Setup(nc,kappa);
 
-        RegisterStruct register = athena.Register(setup.pkv);
+        RegisterStruct register = athena.Register(setup.pkv, kappa);
 
         assertNotNull("Should not be null", register.pd);
         assertNotNull("Should not be null", register.d);

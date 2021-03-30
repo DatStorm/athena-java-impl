@@ -1,7 +1,6 @@
 package project.athena;
 
 import org.apache.commons.lang3.tuple.Pair;
-import project.CONSTANTS;
 import project.UTIL;
 import project.dao.athena.*;
 import project.dao.bulletproof.BulletproofExtensionStatement;
@@ -27,8 +26,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AthenaTally {
-    private static final int kappa = CONSTANTS.KAPPA;
-
     private Random random;
     private ElGamal elgamal;
     private BulletinBoard bb;
@@ -38,10 +35,10 @@ public class AthenaTally {
     private Sigma3 sigma3;
     private Sigma4 sigma4;
     private Mixnet mixnet;
+    private int kappa;
 
     // Construct using builder
-    private AthenaTally() {
-    }
+    private AthenaTally() {}
 
     public TallyStruct Tally(SK_Vector skv, int nc) {
         ElGamalSK sk = skv.sk;
@@ -93,6 +90,11 @@ public class AthenaTally {
         // Tally eligible votes and prove computations
         Pair<Map<Integer, Integer>, List<PFDStruct>> revealPair = revealEligibleVotes(sk, mixedBallots, nc, kappa);
         Map<Integer, Integer> officialTally = revealPair.getLeft();
+
+        if (officialTally == null) {
+            System.out.println("AthenaTally.Tally -----------------> officialTally");
+        }
+
         List<PFDStruct> pfd = revealPair.getRight();
 
         // Post (b, (pfr, B, pfd) ) to bullitin board
@@ -347,6 +349,23 @@ public class AthenaTally {
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public static class Builder {
         private Random random;
         private ElGamal elgamal;
@@ -357,6 +376,7 @@ public class AthenaTally {
         private Sigma3 sigma3;
         private Sigma4 sigma4;
         private Mixnet mixnet;
+        private int kappa;
 
         public AthenaTally build() {
             //Check that all fields are set
@@ -367,7 +387,8 @@ public class AthenaTally {
                     bulletProof == null ||
                     sigma3 == null ||
                     sigma4 == null ||
-                    mixnet == null
+                    mixnet == null ||
+                    kappa == 0
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
@@ -382,6 +403,7 @@ public class AthenaTally {
             obj.sigma3 = sigma3;
             obj.sigma4 = sigma4;
             obj.mixnet = mixnet;
+            obj.kappa = kappa;
 
             return obj;
         }
@@ -424,6 +446,11 @@ public class AthenaTally {
 
         public Builder setMixnet(Mixnet mixnet) {
             this.mixnet = mixnet;
+            return this;
+        }
+
+        public Builder setKappa(int kappa) {
+            this.kappa = kappa;
             return this;
         }
     }

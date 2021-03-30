@@ -11,6 +11,7 @@ import project.dao.athena.*;
 import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalSK;
+import project.elgamal.Group;
 import project.factory.MainAthenaFactory;
 
 import java.io.IOException;
@@ -38,26 +39,26 @@ public class TestAthenaVote {
     void setUp() {
         msFactory = new MainAthenaFactory();
 
-        this.elgamal = new ElGamal(kappa, CONSTANTS.MSG_SPACE_LENGTH, msFactory.getRandom());
 
         athena = new AthenaImpl(msFactory);
-        ElectionSetup setup = athena.Setup(kappa, nc);
+        ElectionSetup setup = athena.Setup(nc, this.kappa);
+        Group group = setup.pkv.pk.group;
+
+        this.elgamal = new ElGamal(group, nc, msFactory.getRandom());
 
         pkv = setup.pkv;
         sk = setup.sk;
 
-        RegisterStruct register = athena.Register(pkv);
+        RegisterStruct register = athena.Register(pkv, this.kappa);
         dv = register.d;
 
     }
 
     @Test
     void TestAthenaVote() {
-
         int vote = 4;
         int cnt = 0;
-        int nc = 10;
-        Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc);
+        Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc, this.kappa);
         assertNotNull("Should not be null", ballot.getPublicCredential());
         assertNotNull("Should not be null", ballot.getEncryptedNegatedPrivateCredential());
         assertNotNull("Should not be null", ballot.getEncryptedVote());
@@ -70,14 +71,15 @@ public class TestAthenaVote {
     void TestBallotConstruction() {
         int vote = 7;
         int cnt = 0;
-        int nc = 10;
-        Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc);
+        Ballot ballot = athena.Vote(this.dv, this.pkv, vote, cnt, this.nc, this.kappa);
 
         // Enc_pk(d) * Enc_pk(-d) = g^0
         Ciphertext combinedCredential = ballot.publicCredential.multiply(ballot.encryptedNegatedPrivateCredential, sk.pk.group.p);
         BigInteger m = elgamal.decrypt(combinedCredential, sk);
-        assertEquals(BigInteger.ONE, m);
+        assertEquals("m is equal to 1 ", BigInteger.ONE, m);
 
+
+        // ballot.encryptedVote = (g^t, g^v * h^t)
         Integer decryptedVote = elgamal.exponentialDecrypt(ballot.encryptedVote, sk);
         assertEquals(vote, decryptedVote.intValue());
     }

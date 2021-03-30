@@ -35,7 +35,7 @@ public class TestAthenaSetup {
     void TestAthenaSetup() {
 
         AthenaImpl athena = new AthenaImpl(maFactory);
-        ElectionSetup setup = athena.Setup(kappa, nc);
+        ElectionSetup setup = athena.Setup(nc,kappa);
 
         assertNotEquals("Should not be 0", 0, setup.mb);
         assertNotEquals("Should not be 0", 0, setup.mc);

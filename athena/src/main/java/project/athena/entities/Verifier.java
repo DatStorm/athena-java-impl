@@ -22,10 +22,12 @@ public class Verifier implements Entity {
     private PFStruct pf;
     private int nc;
     private Map<Integer, Integer> tally;
+    private int kappa;
 
-    public Verifier(Athena athena, BulletinBoard bulletinBoard) {
+    public Verifier(Athena athena, BulletinBoard bulletinBoard, int kappa) {
         this.athena = athena;
         this.bulletinBoard = bulletinBoard;
+        this.kappa = kappa;
     }
 
 
@@ -55,7 +57,7 @@ public class Verifier implements Entity {
             return false;
         }
 
-        boolean success = athena.Verify(pk_vector, nc, tally, pf);
+        boolean success = athena.Verify(pk_vector, nc, tally, pf, kappa);
         return success;
     }
 }

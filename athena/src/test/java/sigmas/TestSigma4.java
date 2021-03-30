@@ -96,7 +96,8 @@ public class TestSigma4 {
     /**
     * Test equivalent to ProveComb of Tally step2
     **/
-    @Test
+//    @Test
+    @RepeatedTest(100)
     void TestSigma4_Tally_two_ciphertexts() {
         //(c1,c2) = (b1^n,b2^n)
         BigInteger p = pk.getGroup().getP();
