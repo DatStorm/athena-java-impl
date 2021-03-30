@@ -109,12 +109,10 @@ public class AthenaVote {
                 .set_H_Vector(h_vector_negatedPrivateCredential)
                 .setUVector(uVector)
                 .build();
-        
 
         // negate since we take the inverse of the commitment
         BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential.negate().mod(q).add(q).mod(q), randomness_s.negate().mod(q).add(q).mod(q));
         BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
-
 
         // Prove that vote v resides in [0,nc-1] (this is defined using n)
         List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
@@ -122,10 +120,15 @@ public class AthenaVote {
         BigInteger H = BigInteger.valueOf(nc - 1);
         BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
                 H,
-                encryptedVote.c2, // g^v h^t
-                pk,
-                g_vector_vote,
-                h_vector_vote);
+                new BulletproofStatement.Builder()
+                        .setN(Bulletproof.getN(H))
+                        .setV(encryptedVote.c2) // g^v h^t
+                        .setPK(pk)
+                        .set_G_Vector(g_vector_vote)
+                        .set_H_Vector(h_vector_vote)
+                        .setUVector(uVector)
+                        .build());
+
         BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
         Pair<BulletproofProof, BulletproofProof> proofRangeOfVotePair = bulletProof.proveStatementArbitraryRange(stmnt_2, secret_2);
 

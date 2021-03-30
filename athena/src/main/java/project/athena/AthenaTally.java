@@ -131,7 +131,7 @@ public class AthenaTally {
             List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
 
             int n = Bulletproof.getN(pk.group.q) - 1; //q.bitlength()-1
-            BulletproofStatement stmnt_1 = new BulletproofStatement.Builder<>()
+            BulletproofStatement stmnt_1 = new BulletproofStatement.Builder()
                     .setN(n)
                     .setV(encryptedNegatedPrivateCredential.c2.modInverse(pk.group.p)) // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
                     .setPK(pk)
@@ -160,13 +160,17 @@ public class AthenaTally {
             List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
 
             BigInteger H = BigInteger.valueOf(nc - 1);
-            BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement.Builder()
-                .setH(H)
-                .setV(encryptedVote.c2)
-                .setPK(pk)
-                .set_G_Vector(g_vector_vote)
-                .set_H_Vector(h_vector_vote)
-                .build();
+            BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
+                    H,
+                    new BulletproofStatement.Builder()
+                            .setN(Bulletproof.getN(H))
+                            .setV(encryptedVote.c2) // g^v h^t
+                            .setPK(pk)
+                            .set_G_Vector(g_vector_vote)
+                            .set_H_Vector(h_vector_vote)
+                            .setUVector(uVector)
+                            .build()
+            );
 
 
             boolean verify_encVote = bulletProof
@@ -243,13 +247,9 @@ public class AthenaTally {
         int counter = ballot.getCounter();
         if (existingValue == null || existingValue.getCounter() < counter) {
             // Update the map if A[(bi[1]; N)] is empty, or contains a lower counter
-
             Ciphertext combinedCredential = ballot.getPublicCredential().multiply(ballot.getEncryptedNegatedPrivateCredential(), p);
-
             MapAValue updatedValue = new MapAValue(counter, combinedCredential, ballot.getEncryptedVote());
-
             return updatedValue;
-
         } else if (existingValue.getCounter() == counter) {
             // Duplicate counters are illegal. Set null entry.
             MapAValue nullValue = new MapAValue(counter, null, null);

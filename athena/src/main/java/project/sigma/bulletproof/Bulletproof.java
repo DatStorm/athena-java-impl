@@ -5,6 +5,7 @@ import com.google.common.primitives.Bytes;
 import org.apache.commons.lang3.tuple.Pair;
 import project.CONSTANTS;
 import project.UTIL;
+import project.dao.athena.UVector;
 import project.dao.bulletproof.*;
 import project.elgamal.ElGamalPK;
 
@@ -34,22 +35,25 @@ public class Bulletproof {
 
     // Prove that secret m is in [0, H]
     public Pair<BulletproofProof, BulletproofProof> proveStatementArbitraryRange(BulletproofExtensionStatement statement, BulletproofSecret secret) {
+        BulletproofStatement bfStatement = statement.bulletproofStatement;
+        ElGamalPK pk = bfStatement.pk;
+
         // This is done by prooveing both that m in [0, 2^n-1] and that q-m in [0, 2^n-1].
         // Thus prooving that m in [0, H]
-
         BigInteger H = statement.H;
+        UVector uVector = bfStatement.uVector;
 
         // V = g^m * h^gamma mod p
-        BigInteger V = statement.V;
-        BigInteger q = statement.pk.group.q;
-        BigInteger p = statement.pk.group.p;
-        BigInteger g = statement.pk.group.g;
-        BigInteger h = statement.pk.h;
+        BigInteger V = bfStatement.V;
+        BigInteger q = pk.group.q;
+        BigInteger p = pk.group.p;
+        BigInteger g = pk.group.g;
+        BigInteger h = pk.h;
 
 
         // 2^n-1 <= q-1
         // n is the bulletproof bitlength. 2^n-1 is <= than q-1
-        int n = statement.n;
+        int n = bfStatement.n;
 
 
         // q.bitlength >=  n
@@ -63,7 +67,16 @@ public class Bulletproof {
         }
 
         // First we prove that m in [0, 2^n-1]
-        BulletproofStatement leftStatement = new BulletproofStatement(n, V, statement.pk, statement.g_vector, statement.h_vector);
+        BulletproofStatement leftStatement = new BulletproofStatement.Builder()
+                .setN(n)
+                .setV(V)
+                .setPK(pk)
+                .set_G_Vector(bfStatement.g_vector)
+                .set_H_Vector(bfStatement.h_vector)
+                .setUVector(uVector)
+                .build();
+
+
         BulletproofProof leftProof = proveStatement(leftStatement, secret);
 
 
@@ -77,7 +90,14 @@ public class Bulletproof {
         // HCom * V^{-1} mod p
         BigInteger H_minus_v_commitment = HCommitment.multiply(V.modInverse(p)).mod(p);
 
-        BulletproofStatement rightStatement = new BulletproofStatement(n, H_minus_v_commitment, statement.pk, statement.g_vector, statement.h_vector);
+        BulletproofStatement rightStatement = new BulletproofStatement.Builder()
+                .setN(n)
+                .setV(H_minus_v_commitment)
+                .setPK(pk)
+                .set_G_Vector(bfStatement.g_vector)
+                .set_H_Vector(bfStatement.h_vector)
+                .setUVector(uVector)
+                .build();
 
         // (m = H - m, gamma = r - gamma)
         BulletproofSecret rightSecret = new BulletproofSecret(H.subtract(secret.m).mod(q).add(q).mod(q), CONSTANTS.BULLET_PROOF_R.subtract(secret.gamma).mod(q).add(q).mod(q));
@@ -99,6 +119,8 @@ public class Bulletproof {
 
         BigInteger gamma = secret.gamma;
         BigInteger V = statement.V;
+        UVector vectorU = statement.uVector;
+
 
         BigInteger p = statement.pk.getGroup().p;
         BigInteger q = statement.pk.getGroup().q;
@@ -151,10 +173,10 @@ public class Bulletproof {
 
         // Step 2: Send A,S => Hash(A,S)
         // Step 3: Generate y,z \in_R Z_q \ 0
-        Random hashRandom = new Random(hash(A, S));
+        Random hashRandom = new Random(hash(vectorU, A, S)); //TODO: hash should also take vector u
 
         BigInteger y = generateChallenge(q, hashRandom);
-        Random hashRandom2 = new Random(hash(A, S, y));
+        Random hashRandom2 = new Random(hash(vectorU, A, S, y));  //TODO: hash should also take vector u
         BigInteger z = generateChallenge(q, hashRandom2);
 
 
@@ -184,7 +206,7 @@ public class Bulletproof {
          * Step 5: Send T1,T2 => x = Hash(A,S,T1,T2)  [all communication so far]
          *********/
         // Construct challenge x.
-        Random hashRandom3 = new Random(hash(A, S, T_1, T_2));
+        Random hashRandom3 = new Random(hash(vectorU, A, S, T_1, T_2, y, z));
         BigInteger x = generateChallenge(q, hashRandom3);
 
 
@@ -288,17 +310,20 @@ public class Bulletproof {
 
 
     public boolean verifyStatementArbitraryRange(BulletproofExtensionStatement statement, Pair<BulletproofProof, BulletproofProof> proofs) {
+        BulletproofStatement bfStatement = statement.bulletproofStatement;
+
         // Verifying both that m in [0, 2^n-1] and that q-m in [0, 2^n-1].
         // Thus verifying that m in [0, H]
+        UVector uVector = bfStatement.uVector;
 
         // V = g^m * h^gamma mod p
         BigInteger H = statement.H;
-        BigInteger V = statement.V;
-        BigInteger q = statement.pk.group.q;
-        BigInteger p = statement.pk.group.p;
-        BigInteger g = statement.pk.group.g;
-        BigInteger h = statement.pk.h;
-        int n = statement.n;
+        BigInteger V = bfStatement.V;
+        BigInteger q = bfStatement.pk.group.q;
+        BigInteger p = bfStatement.pk.group.p;
+        BigInteger g = bfStatement.pk.group.g;
+        BigInteger h = bfStatement.pk.h;
+        int n = bfStatement.n;
 
         // q.bitlength>=  n
         if (q.bitLength() < n) {
@@ -311,7 +336,16 @@ public class Bulletproof {
         }
 
         // First we verify that m in [0, 2^n-1]
-        BulletproofStatement leftStatement = new BulletproofStatement(n, V, statement.pk, statement.g_vector, statement.h_vector);
+        BulletproofStatement leftStatement = new BulletproofStatement.Builder()
+                .setN(n)
+                .setV(V)
+                .setPK(bfStatement.pk)
+                .set_G_Vector(bfStatement.g_vector)
+                .set_H_Vector(bfStatement.h_vector)
+                .setUVector(uVector)
+                .build();
+
+
         boolean leftProofVeri = verifyStatement(leftStatement, proofs.getLeft());
 
         if (!leftProofVeri) {
@@ -328,7 +362,16 @@ public class Bulletproof {
         // Commit to H-m
         // HCom * V^{-1} mod p
         BigInteger H_minus_v_commitment = HCommitment.multiply(V.modInverse(p)).mod(p);
-        BulletproofStatement rightStatement = new BulletproofStatement(n, H_minus_v_commitment, statement.pk, statement.g_vector, statement.h_vector);
+
+        BulletproofStatement rightStatement = new BulletproofStatement.Builder()
+                .setN(n)
+                .setV(H_minus_v_commitment)
+                .setPK(bfStatement.pk)
+                .set_G_Vector(bfStatement.g_vector)
+                .set_H_Vector(bfStatement.h_vector)
+                .setUVector(uVector)
+                .build();
+
         boolean rightProofVeri = verifyStatement(rightStatement, proofs.getRight());
 
         if (!rightProofVeri) {
@@ -470,11 +513,17 @@ public class Bulletproof {
         return vector;
     }
 
-    private long hash(BigInteger... values) {
+    private long hash(UVector vectorU, BigInteger... values) {
         byte[] concatenated = new byte[]{};
+
+
+        concatenated = Bytes.concat(concatenated, vectorU.toByteArray());
+
         for (BigInteger bigInt : values) {
             concatenated = Bytes.concat(concatenated, bigInt.toByteArray());
         }
+
+
         byte[] hashed = this.hashH.digest(concatenated);
 
         // create positive long value.

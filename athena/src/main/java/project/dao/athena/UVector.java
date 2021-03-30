@@ -15,8 +15,7 @@ public class UVector {
     private final BigInteger cnt;
 
 
-
-    public UVector(Ciphertext publicCredential, Ciphertext encryptedNegatedPrivateCredential,Ciphertext encryptedVote, BigInteger cnt) {
+    public UVector(Ciphertext publicCredential, Ciphertext encryptedNegatedPrivateCredential, Ciphertext encryptedVote, BigInteger cnt) {
         this.pudCred_c1 = publicCredential.c1;
         this.pudCred_c2 = publicCredential.c2;
         this.encNegPrivCred_c1 = encryptedNegatedPrivateCredential.c1;
@@ -27,18 +26,29 @@ public class UVector {
     }
 
 
-
     public byte[] toByteArray() {
         byte[] res = new byte[]{};
-        
-        res = Bytes.concat(res,  this.pudCred_c1.toByteArray());
-        res = Bytes.concat(res,  this.pudCred_c2.toByteArray());
-        res = Bytes.concat(res,  this.encNegPrivCred_c1.toByteArray());
-        res = Bytes.concat(res,  this.encNegPrivCred_c2.toByteArray());
-        res = Bytes.concat(res,  this.encVote_c1.toByteArray());
-        res = Bytes.concat(res,  this.encVote_c2.toByteArray());
-        res = Bytes.concat(res,  this.cnt.toByteArray());
-        
+
+        res = Bytes.concat(res, this.pudCred_c1.toByteArray());
+        res = Bytes.concat(res, this.pudCred_c2.toByteArray());
+        res = Bytes.concat(res, this.encNegPrivCred_c1.toByteArray());
+        res = Bytes.concat(res, this.encNegPrivCred_c2.toByteArray());
+        res = Bytes.concat(res, this.encVote_c1.toByteArray());
+        res = Bytes.concat(res, this.encVote_c2.toByteArray());
+        res = Bytes.concat(res, this.cnt.toByteArray());
+
         return res;
-    };
+    }
+
+    public BigInteger[] toBigInteger() {
+
+        return new BigInteger[]{this.pudCred_c1, this.pudCred_c2,
+                this.encNegPrivCred_c1,
+                this.encNegPrivCred_c2,
+                this.encVote_c1,
+                this.encVote_c2,
+                this.cnt};
+    }
+
+
 }

@@ -5,10 +5,12 @@ import kotlin.jvm.Throws;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.*;
 import project.UTIL;
+import project.dao.athena.UVector;
 import project.dao.bulletproof.BulletproofExtensionStatement;
 import project.dao.bulletproof.BulletproofProof;
 import project.dao.bulletproof.BulletproofSecret;
 import project.dao.bulletproof.BulletproofStatement;
+import project.elgamal.Ciphertext;
 import project.elgamal.ElGamalPK;
 import project.elgamal.Group;
 import project.factory.Factory;
@@ -37,6 +39,7 @@ public class TestSigma2BulletProof {
     private BigInteger q;
     private BigInteger p;
     private BigInteger h;
+    private UVector fakeUVector;
 
 
     @BeforeEach
@@ -51,6 +54,12 @@ public class TestSigma2BulletProof {
         q = pk.getGroup().getQ();
         h = pk.getH();
         bulletproof = new Bulletproof(factory.getHash(), factory.getRandom());
+
+
+        // As we are not in Athena, we do not have vector u. so just choose random values.
+        Ciphertext fake = new Ciphertext(BigInteger.ONE, BigInteger.ONE);
+        BigInteger fakeCnt = BigInteger.ONE;
+        fakeUVector = new UVector(fake, fake, fake, fakeCnt);
     }
 
     @Test
@@ -62,7 +71,7 @@ public class TestSigma2BulletProof {
 
     }
 
-//    @Test
+    //    @Test
     @RepeatedTest(100)
     void TestSigma2GenerateGVector() {
         int n = 10;
@@ -126,11 +135,19 @@ public class TestSigma2BulletProof {
         BigInteger gamma = UTIL.getRandomElement(q, random);
         BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
 
-        List<BigInteger> g_vector = group.newGenerators(n,  random);
+        List<BigInteger> g_vector = group.newGenerators(n, random);
         List<BigInteger> h_vector = group.newGenerators(n, random);
 
 
-        BulletproofStatement stmnt = new BulletproofStatement(n, V, pk, g_vector, h_vector);
+        BulletproofStatement stmnt = new BulletproofStatement.Builder()
+                .setN(n)
+                .setV(V) // g^v h^t
+                .setPK(pk)
+                .set_G_Vector(g_vector)
+                .set_H_Vector(h_vector)
+                .setUVector(fakeUVector)
+                .build();
+
 
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         BulletproofProof proof = bulletproof.proveStatement(stmnt, secret);
@@ -150,8 +167,16 @@ public class TestSigma2BulletProof {
 
         List<BigInteger> g_vector = group.newGenerators(n, random);
         List<BigInteger> h_vector = group.newGenerators(n, random);
-        
-        BulletproofStatement stmnt = new BulletproofStatement(n, V, pk, g_vector, h_vector);
+
+
+        BulletproofStatement stmnt = new BulletproofStatement.Builder()
+                .setN(n)
+                .setV(V) // g^v h^t
+                .setPK(pk)
+                .set_G_Vector(g_vector)
+                .set_H_Vector(h_vector)
+                .setUVector(fakeUVector)
+                .build();
 
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         BulletproofProof proof = bulletproof.proveStatement(stmnt, secret);
@@ -168,14 +193,25 @@ public class TestSigma2BulletProof {
         BigInteger H = BigInteger.valueOf(102);
         BigInteger m = BigInteger.valueOf(31);
         BigInteger gamma = getRandomElement(BigInteger.ZERO, q, random);
-        BigInteger V = PedersenCommitment.commit(g,m,h,gamma,p);
+        BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
 
 
         int n = Bulletproof.getN(H);
         List<BigInteger> g_vector = group.newGenerators(n, random);
         List<BigInteger> h_vector = group.newGenerators(n, random);
 
-        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(H, V, pk, g_vector, h_vector);
+        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(
+                H,
+                new BulletproofStatement.Builder()
+                        .setN(Bulletproof.getN(H))
+                        .setV(V) // g^v h^t
+                        .setPK(pk)
+                        .set_G_Vector(g_vector)
+                        .set_H_Vector(h_vector)
+                        .setUVector(fakeUVector)
+                        .build()
+        );
+
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         Pair<BulletproofProof, BulletproofProof> proofPair = bulletproof.proveStatementArbitraryRange(stmnt, secret);
 
@@ -190,16 +226,25 @@ public class TestSigma2BulletProof {
         BigInteger H = BigInteger.valueOf(102);
         BigInteger m = BigInteger.valueOf(103);
         BigInteger gamma = getRandomElement(BigInteger.ZERO, q, random);
-        BigInteger V = PedersenCommitment.commit(g,m,h,gamma,p);
+        BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
 
 
         int n = Bulletproof.getN(H);
         List<BigInteger> g_vector = group.newGenerators(n, random);
         List<BigInteger> h_vector = group.newGenerators(n, random);
 
-        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(H, V, pk, g_vector, h_vector);
+        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(
+                H,
+                new BulletproofStatement.Builder()
+                        .setN(Bulletproof.getN(H))
+                        .setV(V) // g^v h^t
+                        .setPK(pk)
+                        .set_G_Vector(g_vector)
+                        .set_H_Vector(h_vector)
+                        .setUVector(fakeUVector)
+                        .build()
+        );
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
-
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             Pair<BulletproofProof, BulletproofProof> proofPair = bulletproof.proveStatementArbitraryRange(stmnt, secret);
@@ -208,22 +253,31 @@ public class TestSigma2BulletProof {
 
         assertEquals("m is outside the range", exception.getMessage());
 
-        }
+    }
 
-        @Test
-        void TestSigma2BulletProofArbitraryRangeLimitAtEndOfInterval() {
+    @Test
+    void TestSigma2BulletProofArbitraryRangeLimitAtEndOfInterval() {
         // Choose [0;H<<q]
-        BigInteger H = BigInteger.valueOf(128-1);
-        BigInteger m = BigInteger.valueOf(128-1);
+        BigInteger H = BigInteger.valueOf(128 - 1);
+        BigInteger m = BigInteger.valueOf(128 - 1);
         BigInteger gamma = getRandomElement(BigInteger.ZERO, q, random);
-        BigInteger V = PedersenCommitment.commit(g,m,h,gamma,p);
-
+        BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
 
         int n = Bulletproof.getN(H);
         List<BigInteger> g_vector = group.newGenerators(n, random);
         List<BigInteger> h_vector = group.newGenerators(n, random);
 
-        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(H, V, pk, g_vector, h_vector);
+        BulletproofExtensionStatement stmnt = new BulletproofExtensionStatement(
+                H,
+                new BulletproofStatement.Builder()
+                        .setN(Bulletproof.getN(H))
+                        .setV(V) // g^v h^t
+                        .setPK(pk)
+                        .set_G_Vector(g_vector)
+                        .set_H_Vector(h_vector)
+                        .setUVector(fakeUVector)
+                        .build()
+        );
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         Pair<BulletproofProof, BulletproofProof> proofPair = bulletproof.proveStatementArbitraryRange(stmnt, secret);
 
@@ -231,7 +285,6 @@ public class TestSigma2BulletProof {
 
         assertThat("Should be 1", verification, is(true));
     }
-
 
 
 }
