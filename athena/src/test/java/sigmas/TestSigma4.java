@@ -93,9 +93,14 @@ public class TestSigma4 {
 
 
 
-    /**
+    /*********************************************
     * Test equivalent to ProveComb of Tally step2
-    **/
+    *
+    * -------------------------------------------
+    * -DO NOT RUN WITH LOW VALUES ELGAMAL VALUES-
+    * -------------------------------------------
+    *
+    *********************************************/
 //    @Test
     @RepeatedTest(100)
     void TestSigma4_Tally_two_ciphertexts() {
