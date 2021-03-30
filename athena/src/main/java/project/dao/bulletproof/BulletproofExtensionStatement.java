@@ -7,16 +7,40 @@ import java.math.BigInteger;
 import java.util.List;
 
 public class BulletproofExtensionStatement extends BulletproofStatement {
-    public final BigInteger H;
+    public BigInteger H;
 
-    public BulletproofExtensionStatement(BigInteger H, BigInteger V, ElGamalPK pk, List<BigInteger> g_vector, List<BigInteger> h_vector) {
-        super(Bulletproof.getN(H), V, pk, g_vector, h_vector);
-        this.H = H; // represents the range [0;H]
+    private BulletproofExtensionStatement(Builder builder) {
+        super(builder);
+        this.H = builder.H;
+    }
+    
+//    private BulletproofExtensionStatement(BigInteger H, BulletproofStatement bulletproofStatement) {
+//        super(builder);
+//        this.H = H;
+//    }
+//    
 
 
-        int n = Bulletproof.getN(H);
-        assert g_vector.size() == n;
-        assert h_vector.size() == n;
+    public static class Builder extends BulletproofStatement.Builder<Builder> {
+        private BigInteger H;
+
+/*
+        @Override
+        public Builder setN(Integer n) {
+            throw new UnsupportedOperationException("This should be set internally");
+        }
+*/
+        public Builder setH(BigInteger H) {
+            this.H = H;
+            return this;
+        }
+
+        public BulletproofExtensionStatement build(){
+            int n = Bulletproof.getN(this.H);
+            super.setN(n);
+
+            return new BulletproofExtensionStatement(this);
+        }
     }
 
 

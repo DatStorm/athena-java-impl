@@ -88,7 +88,7 @@ public class Bulletproof {
         return Pair.of(leftProof, rightProof);
     }
 
-
+    // prove that m \in [0, 2^n -1]
     public BulletproofProof proveStatement(BulletproofStatement statement, BulletproofSecret secret) {
         int n = statement.n;
 

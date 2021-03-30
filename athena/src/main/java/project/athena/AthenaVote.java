@@ -6,6 +6,7 @@ import project.UTIL;
 import project.dao.athena.Ballot;
 import project.dao.athena.CredentialTuple;
 import project.dao.athena.PK_Vector;
+import project.dao.athena.UVector;
 import project.dao.bulletproof.BulletproofExtensionStatement;
 import project.dao.bulletproof.BulletproofProof;
 import project.dao.bulletproof.BulletproofSecret;
@@ -13,7 +14,6 @@ import project.dao.bulletproof.BulletproofStatement;
 import project.elgamal.Ciphertext;
 import project.elgamal.ElGamal;
 import project.elgamal.ElGamalPK;
-import project.elgamal.ElGamalSK;
 import project.sigma.Sigma1;
 import project.sigma.bulletproof.Bulletproof;
 
@@ -92,17 +92,24 @@ public class AthenaVote {
         BigInteger randomness_t = UTIL.getRandomElement(q, random);
         Ciphertext encryptedVote = elgamal.exponentialEncrypt(voteAsBigInteger, pk, randomness_t);
 
+        // message/vector u used to make ballot proofs specific to the given ballot
+        //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)
+        UVector uVector = new UVector(publicCredential, encryptedNegatedPrivateCredential, encryptedVote, BigInteger.valueOf(cnt));
 
         // Prove that for negated private credential -d that d is in [0, 2^{\lfloor log_2 q \rfloor} -1]
         List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
         List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
         int n = Bulletproof.getN(q) - 1; //q.bitlength()-1
-        BulletproofStatement stmnt_1 = new BulletproofStatement(
-                n,
-                encryptedNegatedPrivateCredential.c2.modInverse(p), // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
-                pk,
-                g_vector_negatedPrivateCredential,
-                h_vector_negatedPrivateCredential);
+
+        BulletproofStatement stmnt_1 = new BulletproofStatement.Builder()
+                .setN(n)
+                .setV(encryptedNegatedPrivateCredential.c2.modInverse(p)) // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
+                .setPK(pk)
+                .set_G_Vector(g_vector_negatedPrivateCredential)
+                .set_H_Vector(h_vector_negatedPrivateCredential)
+                .setUVector(uVector)
+                .build();
+        
 
         // negate since we take the inverse of the commitment
         BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential.negate().mod(q).add(q).mod(q), randomness_s.negate().mod(q).add(q).mod(q));

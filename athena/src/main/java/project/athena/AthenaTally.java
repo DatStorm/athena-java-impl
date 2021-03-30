@@ -123,16 +123,23 @@ public class AthenaTally {
             Ciphertext encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
 
 
+            // message/vector u used to make ballot proofs specific to the given ballot
+            //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)
+            UVector uVector = new UVector(publicCredential, encryptedNegatedPrivateCredential, ballot.getEncryptedVote(), BigInteger.valueOf(ballot.getCounter()));
+
             List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
             List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
 
             int n = Bulletproof.getN(pk.group.q) - 1; //q.bitlength()-1
-            BulletproofStatement stmnt_1 = new BulletproofStatement(
-                    n,
-                    encryptedNegatedPrivateCredential.c2.modInverse(pk.group.p), // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
-                    pk,
-                    g_vector_negatedPrivateCredential,
-                    h_vector_negatedPrivateCredential);
+            BulletproofStatement stmnt_1 = new BulletproofStatement.Builder<>()
+                    .setN(n)
+                    .setV(encryptedNegatedPrivateCredential.c2.modInverse(pk.group.p)) // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
+                    .setPK(pk)
+                    .set_G_Vector(g_vector_negatedPrivateCredential)
+                    .set_H_Vector(h_vector_negatedPrivateCredential)
+                    .setUVector(uVector)
+                    .build();
+
 
             boolean verify_encryptedNegatedPrivateCredential = bulletProof
                     .verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
@@ -153,13 +160,14 @@ public class AthenaTally {
             List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
 
             BigInteger H = BigInteger.valueOf(nc - 1);
-            BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
-                    H,
-                    encryptedVote.c2,
-                    pk,
-                    g_vector_vote,
-                    h_vector_vote
-            );
+            BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement.Builder()
+                .setH(H)
+                .setV(encryptedVote.c2)
+                .setPK(pk)
+                .set_G_Vector(g_vector_vote)
+                .set_H_Vector(h_vector_vote)
+                .build();
+
 
             boolean verify_encVote = bulletProof
                     .verifyStatementArbitraryRange(
@@ -198,7 +206,7 @@ public class AthenaTally {
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
             BigInteger noncedNegatedPrivateCredentialElement = elgamal.decrypt(ci_prime, sk);
-            
+
 
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);
