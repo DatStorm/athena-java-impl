@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ElectoralRoll {
-    private List<Ciphertext> listOfPublicCredentials;
+    private final List<Ciphertext> listOfPublicCredentials;
 
     public ElectoralRoll() {
         this.listOfPublicCredentials = new ArrayList<>();
@@ -29,7 +29,6 @@ public class ElectoralRoll {
         for (Ciphertext pd : listOfPublicCredentials) {
             res.append(pd.toShortString()).append(", ");
         }
-
         return "[" + res.toString() + ']';
     }
 }
