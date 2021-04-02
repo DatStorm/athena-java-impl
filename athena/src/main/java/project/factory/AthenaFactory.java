@@ -23,6 +23,5 @@ public interface AthenaFactory {
     Mixnet getMixnet(ElGamal elgamal, ElGamalPK pk);
     Random getRandom();
 
-    MessageDigest getHash();
     BulletinBoard getBulletinBoard();
 }

@@ -164,4 +164,18 @@ public class TestElgamal {
 
         assertEquals(expected.intValueExact(), result.intValue());
     }
+
+    @Test
+    void TestLookupTableComputationTime() {
+         // Version 1024 bits....
+        BigInteger p = CONSTANTS.ELGAMAL_2048_BITS.ELGAMAL_P;
+        BigInteger q = CONSTANTS.ELGAMAL_2048_BITS.ELGAMAL_Q;
+        BigInteger g = CONSTANTS.ELGAMAL_2048_BITS.ELGAMAL_G;
+
+        Group group = new Group(p, q, g);
+        int messageSpaceLength = (int) Math.pow(2, 10); // 1.000.000
+        elGamal = new ElGamal(group, messageSpaceLength, random);
+    }
+
+
 }

@@ -26,10 +26,6 @@ public class MainFactory implements Factory {
     }
 
 
-    @Override
-    public MessageDigest getHash() {
-        return UTIL.GET_HASH_FUNCTION();
-    }
 
     @Override
     public ElGamal getElgamal() {

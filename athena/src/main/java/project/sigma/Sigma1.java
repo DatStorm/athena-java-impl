@@ -3,7 +3,7 @@ package project.sigma;
 
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Longs;
-import project.CONSTANTS;
+import project.HASH;
 import project.UTIL;
 import project.dao.sigma1.PublicInfoSigma1;
 import project.dao.Randomness;
@@ -11,20 +11,15 @@ import project.dao.sigma1.CoinFlipInfo;
 import project.dao.sigma1.ProveKeyInfo;
 import project.elgamal.ElGamalSK;
 
-import java.io.IOException;
 import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
 public class Sigma1 {
-    private MessageDigest hashFunctionH;
 
-    public Sigma1(MessageDigest hashFunctionH) {
-        this.hashFunctionH = hashFunctionH;
-    }
+    public Sigma1() {}
 
     //input pk, sk,
     public ProveKeyInfo ProveKey(PublicInfoSigma1 publicInfoSigma1, ElGamalSK sk, Randomness r, int kappa) {
@@ -96,8 +91,8 @@ public class Sigma1 {
             boolean bA = coinRandom.nextBoolean();
             // f -> F(r,b_A)
             Randomness ri = new Randomness(hashRandom.nextLong());
-            byte[] fi = hashF(ri, bA); // H(...) mod 2 = {0,1} => See test that it works.
-            boolean bB = hashH(fi, g, h, y1_yk).mod(BigInteger.TWO).intValueExact() == 1;
+            byte[] fi = hashF(ri, bA);
+            boolean bB = hashH(fi, g, h, y1_yk).mod(BigInteger.TWO).intValueExact() == 1; // H(...) mod 2 = {0,1} => See test that it works.
             boolean bi = bA ^ bB; // b_i = b_A \oplus b_B
             coinFlipInfo_pairs.add(new CoinFlipInfo(bA, ri, bi, fi));
         }
@@ -107,7 +102,7 @@ public class Sigma1 {
 
     public BigInteger hashH(byte[] fi, BigInteger g, BigInteger h, ArrayList<BigInteger> y1_yk)  {
         // f -> F(r,b_A)
-        byte[] hashbytes = this.hashFunctionH.digest(Bytes.concat(fi, UTIL.ARRAYLIST_TO_BYTE_ARRAY(y1_yk)));
+        byte[] hashbytes = HASH.hash(Bytes.concat(fi, UTIL.ARRAYLIST_TO_BYTE_ARRAY(y1_yk)));
 
         // BigInteger class, which have a constructor that takes a signum and a magnitude expressed as a byte[]
         return new BigInteger(1, hashbytes);
@@ -128,7 +123,7 @@ public class Sigma1 {
         byte[] bA_bytes = new byte[]{(byte) (bA ? 1 : 0)};
 
         // f -> F(r,b_A)
-        byte[] hashbytes = this.hashFunctionH.digest(Bytes.concat(rand_bytes, bA_bytes));
+        byte[] hashbytes = HASH.hash(Bytes.concat(rand_bytes, bA_bytes));
 
         return hashbytes;
     }

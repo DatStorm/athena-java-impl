@@ -34,7 +34,7 @@ public class TestSigma4 {
     @BeforeEach
     void setUp() {
         Factory factory = new MainFactory();
-        sigma4 = new Sigma4(factory.getHash());
+        sigma4 = new Sigma4();
         elgamal = factory.getElgamal();
         sk = factory.getSK();
         pk = factory.getPK();
@@ -101,8 +101,9 @@ public class TestSigma4 {
     * -------------------------------------------
     *
     *********************************************/
-//    @Test
-    @RepeatedTest(100)
+    @Test
+//    @RepeatedTest(100)
+    @Disabled
     void TestSigma4_Tally_two_ciphertexts() {
         //(c1,c2) = (b1^n,b2^n)
         BigInteger p = pk.getGroup().getP();

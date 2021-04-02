@@ -8,7 +8,6 @@ import java.security.MessageDigest;
 import java.util.Random;
 
 public interface Factory {
-    MessageDigest getHash();
     ElGamal getElgamal();
     ElGamalPK getPK();
     ElGamalSK getSK();

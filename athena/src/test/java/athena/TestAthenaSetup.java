@@ -33,13 +33,8 @@ public class TestAthenaSetup {
 
     @Test
     void TestAthenaSetup() {
-
         AthenaImpl athena = new AthenaImpl(maFactory);
         ElectionSetup setup = athena.Setup(nc,kappa);
-
-        assertNotEquals("Should not be 0", 0, setup.mb);
-        assertNotEquals("Should not be 0", 0, setup.mc);
-        assertNotNull("Should not be null", setup.pkv);
         assertNotNull("Should not be null", setup.sk);
     }
 }

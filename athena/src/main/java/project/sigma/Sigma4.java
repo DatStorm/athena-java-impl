@@ -16,11 +16,9 @@ import java.util.List;
 
 public class Sigma4 {
     private final Sigma3 sigma3;
-    private MessageDigest hashH;
 
-    public Sigma4(MessageDigest hashH) {
-        this.hashH = hashH;
-        this.sigma3 = new Sigma3(this.hashH);
+    public Sigma4() {
+        this.sigma3 = new Sigma3();
     }
 
     public Sigma4Proof proveCombination(ElGamalSK sk, Ciphertext combinedCiphertext, Ciphertext ciphertext, BigInteger nonce_n, int kappa) {
@@ -140,14 +138,3 @@ public class Sigma4 {
     }
 
 }
-
-
-//                System.out.println("PARAMS:\n " + pk + ", \ncombinedCiphertextList = " + Arrays.toString(combinedCiphertextList.toArray()) + ", \nb0_b1 = " + Arrays.toString(listOfCipherTexts.toArray()) + ", \nproof = " + proof + ", \nkappa = " + kappa);
-//                System.out.println("--------------------------");
-//                UTIL.CompareElGamalGroup(pk.getGroup(), statement.getGroup());
-//                System.out.println("Statement: " + statement + "\nproof_i=:" + proof_i + "isvalid: " + isValid);
-
-//        System.out.println("proveCombination() => group = " + sk.getPK().getGroup() + ", alpha = " + alpha + ", beta = " + beta + ", alpha_base = " + alpha_base + ", beta_base = " + beta_base);
-//
-//                System.out.println("---> alpha: " + UTIL.BigLog(alpha_base,alpha));
-//                System.out.println("---> beta: " + UTIL.BigLog(beta_base,beta));

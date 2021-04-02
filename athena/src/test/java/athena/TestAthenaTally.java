@@ -36,12 +36,12 @@ public class TestAthenaTally {
         msFactory = new MainAthenaFactory();
         athena = new AthenaImpl(msFactory);
         ElectionSetup setup = athena.Setup(nc, this.kappa);
+        bb = msFactory.getBulletinBoard();
 
         sk = setup.sk;
-        pkv = setup.pkv;
+        pkv = bb.retrievePK_vector();
         RegisterStruct register = athena.Register(pkv, this.kappa);
         dv = register.d;
-        bb = msFactory.getBulletinBoard();
 
 
     }

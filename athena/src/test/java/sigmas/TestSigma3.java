@@ -34,7 +34,7 @@ public class TestSigma3 {
         ElGamal elGamal = factory.getElgamal();
         ElGamalPK pk = factory.getPK();
         sk = factory.getSK();
-        sigma3 = new Sigma3(factory.getHash());
+        sigma3 = new Sigma3();
 
 
         plain_msg_m = new BigInteger("41");

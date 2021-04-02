@@ -4,14 +4,13 @@ import com.google.common.collect.Streams;
 import com.google.common.primitives.Bytes;
 import org.apache.commons.lang3.tuple.Pair;
 import project.CONSTANTS;
+import project.HASH;
 import project.UTIL;
 import project.dao.athena.UVector;
 import project.dao.bulletproof.*;
 import project.elgamal.ElGamalPK;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,11 +18,9 @@ import static project.UTIL.getRandomElement;
 import static project.UTIL.subtractLists;
 
 public class Bulletproof {
-    private MessageDigest hashH;
     private Random random;
 
-    public Bulletproof(MessageDigest hash, Random random) {
-        this.hashH = hash;
+    public Bulletproof(Random random) {
         this.random = random;
     }
 
@@ -524,7 +521,7 @@ public class Bulletproof {
         }
 
 
-        byte[] hashed = this.hashH.digest(concatenated);
+        byte[] hashed = HASH.hash(concatenated);
 
         // create positive long value.
         return new BigInteger(1, hashed).longValue();

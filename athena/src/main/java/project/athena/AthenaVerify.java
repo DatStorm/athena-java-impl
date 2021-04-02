@@ -1,6 +1,7 @@
 package project.athena;
 
 import project.CONSTANTS;
+import project.GENERATOR;
 import project.dao.athena.*;
 import project.dao.mixnet.MixBallot;
 import project.dao.mixnet.MixProof;
@@ -35,15 +36,18 @@ public class AthenaVerify {
     }
 
 
-    public boolean Verify(PK_Vector pkv,
-                          int nc,
-                          Map<Integer, Integer> tallyOfVotes,
-                          PFStruct pf) {
+    public boolean Verify(PK_Vector pkv) {
+
         if (!AthenaCommon.parsePKV(pkv)) {
             System.err.println("AthenaVerify:=> ERROR: pkv null");
             return false;
         }
         ElGamalPK pk = pkv.pk;
+
+        //Fetch from bulletin board
+        int nc = this.bb.retrieveNumberOfCandidates();
+        Map<Integer, Integer> tallyOfVotes = this.bb.retrieveTallyOfVotes();
+        PFStruct pf = this.bb.retrievePF();
 
         // tallyVotes length should contain at most nc elements
         if (tallyOfVotes.keySet().size() > nc) {
@@ -61,6 +65,13 @@ public class AthenaVerify {
         if (BigInteger.valueOf(nc).compareTo(this.mc) > 0) { // if nc > mc
             System.err.println("AthenaVerify:=> ERROR: nc= " + nc + " > mc=" + mc);
             return false;
+        }
+
+
+        // Verify range proof generators
+        boolean isValid = verifyRangeProofGenerators(pk, bb);
+        if(!isValid) {
+            System.out.println("AthenaTally.removeInvalidBallots: error");
         }
 
 
@@ -106,6 +117,24 @@ public class AthenaVerify {
          *********/
         // Verify that
         return this.checkRevelation(pf.mixBallotList, pf.pfd, tallyOfVotes, pk, nc);
+    }
+
+    // Verify that g,h vectors are choosen from a "random" seed.
+    private boolean verifyRangeProofGenerators(ElGamalPK pk, BulletinBoard bb){
+        List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, bb.retrieveNumberOfCandidates());
+        List<BigInteger> g_vector_vote = generators.get(0);
+        List<BigInteger> h_vector_vote = generators.get(1);
+        List<BigInteger> g_vector_negatedPrivateCredential = generators.get(2);
+        List<BigInteger> h_vector_negatedPrivateCredential = generators.get(3);
+
+        // Verify all 4 vectors
+        boolean isValid1 = g_vector_vote.equals(bb.retrieve_G_VectorVote());
+        boolean isValid2 = h_vector_vote.equals(bb.retrieve_H_VectorVote());
+        boolean isValid3 = g_vector_negatedPrivateCredential.equals(bb.retrieve_G_VectorNegPrivCred());
+        boolean isValid4 = h_vector_negatedPrivateCredential.equals(bb.retrieve_H_VectorNegPrivCred());
+        boolean isValid = isValid1 && isValid2 && isValid3 && isValid4;
+
+        return isValid;
     }
 
     private static boolean checkMix(Mixnet mixnet, List<Ballot> validBallots, PFStruct pf, ElGamalPK pk, int kappa) {

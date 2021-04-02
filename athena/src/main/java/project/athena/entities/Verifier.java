@@ -34,11 +34,6 @@ public class Verifier implements Entity {
     public void init() {
         // Fetch nc, pk, pf=(pfr, mixBallots, pfd), ballots and mixBallots from bulletin board
         pk_vector = bulletinBoard.retrievePK_vector();
-        nc = bulletinBoard.retrieveNumberOfCandidates();
-        tally = bulletinBoard.retrieveTallyOfVotes();
-        pf = bulletinBoard.retrievePF();
-
-
     }
 
     public boolean verifyElection(){
@@ -47,17 +42,7 @@ public class Verifier implements Entity {
             return false;
         }
 
-        if (tally == null){
-            System.err.println("Verifier.verifyElection => tally is null! Please run Verifier.init() || tally on bulletin board is empty");
-            return false;
-        }
-
-        if (pf == null){
-            System.err.println("Verifier.verifyElection => pf is null! Please run Verifier.init()");
-            return false;
-        }
-
-        boolean success = athena.Verify(pk_vector, nc, tally, pf, kappa);
+        boolean success = athena.Verify(pk_vector, kappa);
         return success;
     }
 }

@@ -39,25 +39,11 @@ public class TestSigma1 {
         Factory factory = new MainFactory();
         this.sk = factory.getSK();
         this.pk = factory.getPK();
-        this.sigma1 = new Sigma1(factory.getHash());
+        this.sigma1 = new Sigma1();
         this.randomness = new Randomness(123);
-
     }
 
-    /*
-    @Test
-    void TestFRAKM() {
-
-        BigInteger start = BigInteger.ONE;
-        BigInteger end = BigInteger.valueOf(100);
-        MessageSpace messageSpace = new MessageSpace(start, end);
-        assertTrue("2 should be in range [1, 100]", messageSpace.isInRange(BigInteger.TWO));
-        assertTrue("1 should be in range [1, 100]", messageSpace.isInRange(BigInteger.ONE));
-        assertTrue("100 should be in range [1, 100]", messageSpace.isInRange(BigInteger.valueOf(100)));
-        assertFalse("101 should be in range [1, 100]", messageSpace.isInRange(BigInteger.valueOf(101)));
-        assertFalse("0 should be in range [1, 100]", messageSpace.isInRange(BigInteger.ZERO));
-    }
-    */
+  
 
     @Test
     void TestBigIntegerMod2_IntValueExact() {
@@ -83,10 +69,9 @@ public class TestSigma1 {
     /**
      * Verifying the coinflip protocol.
      * f ?=? F(r,b_A)
-     * @throws IOException
      */
     @Test
-    void TestProveKey_Verify_step2() throws IOException {
+    void TestProveKey_Verify_step2()  {
         PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
@@ -95,7 +80,7 @@ public class TestSigma1 {
     }
 
     @Test
-    void TestProveKey_Verify_step3() throws IOException {
+    void TestProveKey_Verify_step3()  {
         PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
@@ -115,7 +100,7 @@ public class TestSigma1 {
     }
 
     @Test
-    void TestProveKey_Verify_step4() throws IOException {
+    void TestProveKey_Verify_step4()  {
         PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
@@ -142,25 +127,20 @@ public class TestSigma1 {
 
 
     @Test
-    void TestProveKey_Verify() throws IOException {
-
+    void TestProveKey_Verify() {
         PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, pk);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         boolean verification = sigma1.VerifyKey(publicInfoSigma1, rho, this.kappa);
-
         assertTrue("Should return 1", verification);
     }
 
 
 
-
     @Test
-    void TestSigma1() throws IOException {
-
+    void TestSigma1()  {
         PublicInfoSigma1 publicInfoSigma1 = new PublicInfoSigma1(this.kappa, this.pk);
         ProveKeyInfo rho = sigma1.ProveKey(publicInfoSigma1, this.sk, randomness, this.kappa);
         boolean verification = sigma1.VerifyKey(publicInfoSigma1, rho, this.kappa);
-
         assertTrue("Should return 1", verification);
     }
 

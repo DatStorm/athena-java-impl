@@ -6,15 +6,13 @@ import project.elgamal.Group;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.Collections;
 
 public class UTIL {
 
@@ -114,45 +112,6 @@ public class UTIL {
         return -1;
     }
 
-    /*
-    public static void CompareElGamalGroup(Group a, Group b) {
-        assert a.getP().compareTo(b.getP()) == 0 : "a.p != b.p";
-        assert a.getQ().compareTo(b.getQ()) == 0 : "a.q != a.q";
-        assert a.getG().compareTo(b.getG()) == 0 : "a.g != b.g";
-
-    }
-
-    public static double BigLog(BigInteger base, BigInteger value) {
-        /*
-         * log_alphabase alpha = n =?= n
-         */
-        // Use identity:
-        // log_b(n) = log_e(n) / log_e(b)
-        /* EXAMPLE: [find the base-2 logarithm of 256]
-            Math.log(256) / Math.log(2)
-            => 8.0
-         /
-
-        double log_e_value = Math.log(value.doubleValue());
-        double log_e_base = Math.log(base.doubleValue());
-//        System.out.println("DOUBLE_V: " + log_e_value);
-//        System.out.println("DOUBLE_B: " + log_e_base);
-
-
-        return log_e_value / log_e_base;
-    }
-    */
-
-    public static boolean CompareLists(List<?> l1, List<?> l2) {
-        // make a copy of the list so the original list is not changed, and remove() is supported
-        ArrayList<?> cp = new ArrayList<>(l1);
-        for (Object o : l2) {
-            if (!cp.remove(o)) {
-                return false;
-            }
-        }
-        return cp.isEmpty();
-    }
 
 
     // result = [obj_pi(0), obj_pi(1), ...]
@@ -214,16 +173,7 @@ public class UTIL {
     }
 
   
-    public static MessageDigest GET_HASH_FUNCTION() {
-        MessageDigest sha3_256 = null;
-        try {
-            sha3_256 = MessageDigest.getInstance(CONSTANTS.ALGORITHM_SHA3_256);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
-        return sha3_256;
-    }
+ 
 
     public static BigInteger modPowSum(BigInteger base, List<BigInteger> exponents, BigInteger modolus) {
         BigInteger sum = BigInteger.ZERO;
@@ -285,6 +235,5 @@ public class UTIL {
 
         return result;
     }
-
 
 }

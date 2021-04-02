@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.athena.AthenaImpl;
+import project.dao.athena.PK_Vector;
 import project.dao.athena.RegisterStruct;
 import project.dao.athena.ElectionSetup;
 import project.factory.MainAthenaFactory;
@@ -35,7 +36,9 @@ public class TestAthenaRegister {
         AthenaImpl athena = new AthenaImpl(msFactory);
         ElectionSetup setup = athena.Setup(nc,kappa);
 
-        RegisterStruct register = athena.Register(setup.pkv, kappa);
+        PK_Vector pkv = msFactory.getBulletinBoard().retrievePK_vector();
+
+        RegisterStruct register = athena.Register(pkv, kappa);
 
         assertNotNull("Should not be null", register.pd);
         assertNotNull("Should not be null", register.d);

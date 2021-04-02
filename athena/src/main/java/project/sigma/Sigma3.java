@@ -1,6 +1,7 @@
 package project.sigma;
 
 import com.google.common.primitives.Bytes;
+import project.HASH;
 import project.UTIL;
 import project.dao.sigma3.Sigma3Statement;
 import project.dao.sigma3.Sigma3Proof;
@@ -14,11 +15,8 @@ import java.security.SecureRandom;
 import java.util.Random;
 
 public class Sigma3 {
-    private MessageDigest hashH;
 
-    public Sigma3(MessageDigest hashH) {
-        this.hashH = hashH;
-    }
+    public Sigma3() {    }
 
     private static void d(String s) {
 //        System.out.println("Sigma3: " + s);
@@ -113,7 +111,7 @@ public class Sigma3 {
             concatenated = Bytes.concat(concatenated, integer.toByteArray());
         }
 
-        byte[] hashed = this.hashH.digest(concatenated);
+        byte[] hashed = HASH.hash(concatenated);
         return new BigInteger(1,hashed);
     }
 

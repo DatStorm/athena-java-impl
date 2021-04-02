@@ -53,7 +53,7 @@ public class TestSigma2BulletProof {
         p = pk.getGroup().getP();
         q = pk.getGroup().getQ();
         h = pk.getH();
-        bulletproof = new Bulletproof(factory.getHash(), factory.getRandom());
+        bulletproof = new Bulletproof( factory.getRandom());
 
 
         // As we are not in Athena, we do not have vector u. so just choose random values.

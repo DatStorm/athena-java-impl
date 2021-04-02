@@ -1,6 +1,8 @@
 package project.athena;
 
 import org.apache.commons.lang3.tuple.Pair;
+import project.GENERATOR;
+import project.HASH;
 import project.UTIL;
 import project.dao.athena.*;
 import project.dao.bulletproof.BulletproofExtensionStatement;
@@ -44,9 +46,6 @@ public class AthenaTally {
         ElGamalSK sk = skv.sk;
         ElGamalPK pk = sk.pk;
 
-
-
-
         /* ********
          * Step 1: Remove invalid ballots
          *********/
@@ -70,7 +69,6 @@ public class AthenaTally {
                 .map(MapAValue::getCombinedCredential)
                 .map(combinedCredential -> elgamal.decrypt(combinedCredential, sk))
                 .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1 before mixing";
-
 
         // Perform random mix
         Pair<List<MixBallot>, MixProof> mixPair = mixnet(A);
@@ -105,8 +103,11 @@ public class AthenaTally {
         return new TallyStruct(officialTally, pf);
     }
 
+
+
     // Step 1 of Tally
     public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoard bb, Bulletproof bulletProof) {
+
         List<Ballot> finalBallots = new ArrayList<>(bb.retrievePublicBallots());
 
         for (Ballot ballot : bb.retrievePublicBallots()) {
@@ -129,16 +130,13 @@ public class AthenaTally {
             //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)
             UVector uVector = new UVector(publicCredential, encryptedNegatedPrivateCredential, ballot.getEncryptedVote(), BigInteger.valueOf(ballot.getCounter()));
 
-            List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
-            List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
-
             int n = Bulletproof.getN(pk.group.q) - 1; //q.bitlength()-1
             BulletproofStatement stmnt_1 = new BulletproofStatement.Builder()
                     .setN(n)
                     .setV(encryptedNegatedPrivateCredential.c2.modInverse(pk.group.p)) // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
                     .setPK(pk)
-                    .set_G_Vector(g_vector_negatedPrivateCredential)
-                    .set_H_Vector(h_vector_negatedPrivateCredential)
+                    .set_G_Vector(bb.retrieve_G_VectorNegPrivCred())
+                    .set_H_Vector(bb.retrieve_H_VectorNegPrivCred())
                     .setUVector(uVector)
                     .build();
 
@@ -158,8 +156,7 @@ public class AthenaTally {
             Ciphertext encryptedVote = ballot.getEncryptedVote();
 
             int nc = bb.retrieveNumberOfCandidates();
-            List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
-            List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
+
 
             BigInteger H = BigInteger.valueOf(nc - 1);
             BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
@@ -168,8 +165,8 @@ public class AthenaTally {
                             .setN(Bulletproof.getN(H))
                             .setV(encryptedVote.c2) // g^v h^t
                             .setPK(pk)
-                            .set_G_Vector(g_vector_vote)
-                            .set_H_Vector(h_vector_vote)
+                            .set_G_Vector(bb.retrieve_G_VectorVote())
+                            .set_H_Vector(bb.retrieve_H_VectorVote())
                             .setUVector(uVector)
                             .build()
             );

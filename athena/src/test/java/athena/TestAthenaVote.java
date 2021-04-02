@@ -42,11 +42,12 @@ public class TestAthenaVote {
 
         athena = new AthenaImpl(msFactory);
         ElectionSetup setup = athena.Setup(nc, this.kappa);
-        Group group = setup.pkv.pk.group;
+        PK_Vector pk_vector = msFactory.getBulletinBoard().retrievePK_vector();
+        Group group = pk_vector.pk.group;
 
         this.elgamal = new ElGamal(group, nc, msFactory.getRandom());
 
-        pkv = setup.pkv;
+        pkv = pk_vector;
         sk = setup.sk;
 
         RegisterStruct register = athena.Register(pkv, this.kappa);

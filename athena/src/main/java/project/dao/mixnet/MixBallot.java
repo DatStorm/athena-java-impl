@@ -3,10 +3,11 @@ package project.dao.mixnet;
 import com.google.common.primitives.Bytes;
 import project.elgamal.Ciphertext;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Objects;
 
-public class MixBallot {
+public class MixBallot implements Serializable {
     private final Ciphertext combinedCredential;    
     private final Ciphertext encryptedVote;    
 

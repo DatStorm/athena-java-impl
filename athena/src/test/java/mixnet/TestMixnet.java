@@ -40,10 +40,9 @@ public class TestMixnet {
         elgamal = factory.getElgamal();
         pk = factory.getPK();
         sk = factory.getSK();
-        MessageDigest hash = factory.getHash();
         Random random = factory.getRandom();
 
-        mixnet = new Mixnet(hash, elgamal, pk, random);
+        mixnet = new Mixnet(elgamal, pk, random);
 
     }
 

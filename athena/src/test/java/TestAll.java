@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 //        "TestsSigma1",
 //        "TestsSigma2BulletProof",
         "TestsSigma3",
-        "TestsSigma4",
+//        "TestsSigma4",
         "TestsMixnets",
         "TestsCiphertexts",
         "TestsUTIL",

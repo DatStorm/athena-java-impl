@@ -44,7 +44,7 @@ public class Tallier implements Entity {
         // Run Setup()
         electionSetup = athena.Setup(this.nc,this.kappa);
         sk = electionSetup.sk;
-        pk = electionSetup.pkv.pk;
+        pk = this.bulletinBoard.retrievePK_vector().pk;
     }
 
     public void tallyVotes() {

@@ -1,6 +1,7 @@
 package project.mixnet;
 
 import com.google.common.primitives.Bytes;
+import project.HASH;
 import project.UTIL;
 import project.dao.mixnet.*;
 import project.elgamal.Ciphertext;
@@ -12,15 +13,13 @@ import java.security.MessageDigest;
 import java.util.*;
 
 public class Mixnet {
-    private final MessageDigest hashH;
     private final ElGamal elgamal;
     private final Random random;
     private final ElGamalPK pk;
     private final BigInteger p;
     private final BigInteger q;
 
-    public Mixnet(MessageDigest hashH, ElGamal elgamal, ElGamalPK pk, Random random) {
-        this.hashH = hashH;
+    public Mixnet(ElGamal elgamal, ElGamalPK pk, Random random) {
         this.elgamal = elgamal;
         this.random = random;
         this.pk = pk;
@@ -89,7 +88,7 @@ public class Mixnet {
         }
 
         //Calculate challenges from hash
-        List<Boolean> challenges = hash(shadowMixes,kappa);
+        List<Boolean> challenges = HASH.computeChallenges(kappa, shadowMixes);
 
         //Calculate proof values
         List<MixSecret> composedMixSecrets = new ArrayList<>();
@@ -143,6 +142,7 @@ public class Mixnet {
         }
     }
 
+/*
     private List<Boolean> hash(List<List<MixBallot>> ballots, int kappa) {
         byte[] concatenated = new byte[]{};
 
@@ -153,7 +153,7 @@ public class Mixnet {
             }
         }
 
-        byte[] hashed = this.hashH.digest(concatenated);
+        byte[] hashed = HASH.hash(concatenated);
 
         // create list of C
         List<Boolean> listOfC = ByteConverter.valueOf(hashed, kappa);
@@ -161,6 +161,7 @@ public class Mixnet {
 
         return listOfC;
     }
+    */
 
     public boolean verify(MixStatement statement, MixProof proof, int kappa) {
         // Check proof size
@@ -173,7 +174,7 @@ public class Mixnet {
         List<List<MixBallot>> shadowMixes = proof.shadowMixes;
 
         // in this list there is n elements....
-        List<Boolean> challenges = hash(shadowMixes, kappa);
+        List<Boolean> challenges = HASH.computeChallenges(kappa, shadowMixes);
         for (int j = 0; j < kappa; j++) {
             //For each shadow mix
             List<MixBallot> shadowMix = proof.shadowMixes.get(j);
@@ -218,7 +219,7 @@ public class Mixnet {
             MixBallot sourceBallot = sourceMix.get(i); //Mixed original ballot
             MixBallot destinationBallot = destinationMix.get(i);
 
-            BigInteger e = elgamal.getNeutralElement();
+            BigInteger e = ElGamal.getNeutralElement();
 
             //c1 * Enc(1,R)
             Ciphertext reencryptionFactorR = this.elgamal.encrypt(e, pk, randomnessR.get(i));

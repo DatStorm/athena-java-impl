@@ -27,7 +27,6 @@ public class TestAthenaVerify {
 
     MainAthenaFactory msFactory;
 
-    private PK_Vector pkv;
     private ElGamalSK sk;
     private BulletinBoard bb;
 
@@ -41,7 +40,6 @@ public class TestAthenaVerify {
         ElectionSetup setup = athena.Setup(nc, kappa);
 
         sk = setup.sk;
-        pkv = setup.pkv;
 
         bb = msFactory.getBulletinBoard();
 
@@ -50,6 +48,8 @@ public class TestAthenaVerify {
 
     @Test
     void TestAthenaVerify() {
+
+        PK_Vector pkv = bb.retrievePK_vector();
 
         RegisterStruct register1 = athena.Register(pkv,kappa);
         CredentialTuple dv1  = register1.d;
@@ -83,7 +83,7 @@ public class TestAthenaVerify {
         PFStruct pf = tallyStruct.pf;
 
         System.out.println("--> Verify: ");
-        boolean verify = athena.Verify(pkv, nc, b, pf, kappa);
+        boolean verify = athena.Verify(pkv, kappa);
         System.out.println("--> Verify done ");
         assertTrue("should return 1", verify);
         

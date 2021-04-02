@@ -1,5 +1,7 @@
 package project.athena;
 
+import project.GENERATOR;
+import project.HASH;
 import project.dao.Randomness;
 import project.dao.athena.*;
 import project.dao.sigma1.ProveKeyInfo;
@@ -11,6 +13,7 @@ import project.sigma.Sigma1;
 import project.sigma.Sigma3;
 import project.sigma.Sigma4;
 import project.sigma.bulletproof.Bulletproof;
+
 
 import java.math.BigInteger;
 import java.util.*;
@@ -62,19 +65,19 @@ public class AthenaImpl implements Athena {
         Randomness randR = new Randomness(this.random.nextLong());
         ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
 
-        BigInteger H = BigInteger.valueOf(nc - 1); // H = nc - 1
-        int n1 = Bulletproof.getN(H);
-        int n2 = Bulletproof.getN(group.q) - 1; //q.bitlength()-1
+        // mb, mc is upper-bound by a polynomial in the security parameter.
+        // TODO: Shoud theese be updated
+        int mb = 1024; // TODO: look at the ElGamal test and find a 
+        this.mc = BigInteger.valueOf(1024);
 
-        // mc is upper-bound by a polynomial in the security parameter
-        // i.e kappa^2 = 2048^2 = 4194304 candidates.
-        int mb = (int) Math.pow(kappa * 8, 2.0); // TODO: FIX THESE VALUES
-        this.mc = BigInteger.valueOf(kappa * 8).pow(2); // TODO: FIX THESE VALUES
 
-        List<BigInteger> g_vector_vote = group.newGenerators(n1, random);
-        List<BigInteger> h_vector_vote = group.newGenerators(n1, random);
-        List<BigInteger> g_vector_negatedPrivateCredential = group.newGenerators(n2, random);
-        List<BigInteger> h_vector_negatedPrivateCredential = group.newGenerators(n2, random);
+        List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, nc);
+        List<BigInteger> g_vector_vote = generators.get(0);
+        List<BigInteger> h_vector_vote = generators.get(1);
+        List<BigInteger> g_vector_negatedPrivateCredential = generators.get(2);
+        List<BigInteger> h_vector_negatedPrivateCredential = generators.get(3);
+
+
 
         bb.publishNumberOfCandidates(nc);
         bb.publish_G_VectorVote(g_vector_vote);
@@ -86,8 +89,10 @@ public class AthenaImpl implements Athena {
         bb.publishPKV(pkv);
 
         this.initialised = true;
-        return new ElectionSetup(pkv, sk, mb, mc, nc);
+        return new ElectionSetup(sk);
     }
+
+
 
 
     @Override
@@ -146,7 +151,7 @@ public class AthenaImpl implements Athena {
     }
 
     @Override
-    public boolean Verify(PK_Vector pkv, int nc, Map<Integer, Integer> tallyOfVotes, PFStruct pf, int kappa) {
+    public boolean Verify(PK_Vector pkv, int kappa) {
         if (!this.initialised) {
             System.err.println("AthenaImpl.Verify => ERROR: System not initialised call .Setup before hand");
             return false;
@@ -161,7 +166,7 @@ public class AthenaImpl implements Athena {
                 .setMc(this.mc)
                 .setKappa(kappa)
                 .build()
-                .Verify(pkv, nc, tallyOfVotes, pf);
+                .Verify(pkv);
     }
 
 }

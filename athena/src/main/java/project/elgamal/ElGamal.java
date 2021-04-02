@@ -27,6 +27,7 @@ public class ElGamal {
         // Generate lookup table for decryption
         BigInteger g = group.g;
         BigInteger p = group.p;
+
         lookupTable = new HashMap<>();
         for(int i = 0; i < messageSpaceLength; i++) {
             lookupTable.put(g.pow(i).mod(p), i);
@@ -48,6 +49,7 @@ public class ElGamal {
         do {
             p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
             q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
+            
 
             // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
         } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
@@ -60,6 +62,7 @@ public class ElGamal {
         }
 
         assert g.modPow(q, p).equals(BigInteger.ONE) : "ElGamal group defined wrong, i.e. q definition is no good";
+        
 
         return new Group(p, q, g);
     }
