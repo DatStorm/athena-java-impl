@@ -1,7 +1,7 @@
 package project.dao.athena;
 
 import com.google.common.primitives.Bytes;
-import project.elgamal.Ciphertext;
+import elgamal.Ciphertext;
 
 import java.math.BigInteger;
 

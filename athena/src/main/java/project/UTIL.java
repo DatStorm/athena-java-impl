@@ -2,15 +2,13 @@ package project;
 
 import com.google.common.collect.Streams;
 import project.dao.sigma1.CoinFlipInfo;
-import project.elgamal.Group;
+import elgamal.Group;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -234,6 +232,22 @@ public class UTIL {
         }
 
         return result;
+    }
+
+    public static void printEvalMetrics(String TAG, long startTime, long endTime){
+        long timeElapsed = endTime - startTime;
+        System.out.println(TAG + "Execution time in minutes : \t\t\t" + nanosecToMin(timeElapsed)); // HERE..
+    }
+
+    private static long nanosecToMin(long nanoSeconds) {
+        // https://stackoverflow.com/a/924221
+        long res = TimeUnit.MINUTES.convert(nanoSeconds, TimeUnit.NANOSECONDS);
+//        long res_mark = nanoSeconds / (1000 * 1000 * 60);
+//        res_mark = res_mark / 1000;
+//
+//        System.out.println("RES     : " + res);
+//        System.out.println("RES MARK: " + res_mark);
+        return res;
     }
 
 }

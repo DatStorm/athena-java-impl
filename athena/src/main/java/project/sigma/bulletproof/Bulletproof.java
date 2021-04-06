@@ -1,5 +1,9 @@
 package project.sigma.bulletproof;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Bytes;
 import org.apache.commons.lang3.tuple.Pair;
@@ -8,8 +12,9 @@ import project.HASH;
 import project.UTIL;
 import project.dao.athena.UVector;
 import project.dao.bulletproof.*;
-import project.elgamal.ElGamalPK;
+import elgamal.ElGamalPK;
 
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +23,9 @@ import static project.UTIL.getRandomElement;
 import static project.UTIL.subtractLists;
 
 public class Bulletproof {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+    private static final Marker MARKER = MarkerFactory.getMarker("BULLETPROOF");
+
     private Random random;
 
     public Bulletproof(Random random) {

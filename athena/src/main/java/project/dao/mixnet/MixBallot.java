@@ -1,7 +1,7 @@
 package project.dao.mixnet;
 
 import com.google.common.primitives.Bytes;
-import project.elgamal.Ciphertext;
+import elgamal.Ciphertext;
 
 import java.io.Serializable;
 import java.math.BigInteger;

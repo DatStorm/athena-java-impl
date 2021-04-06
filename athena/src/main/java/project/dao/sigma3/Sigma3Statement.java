@@ -1,6 +1,6 @@
 package project.dao.sigma3;
 
-import project.elgamal.Group;
+import elgamal.Group;
 
 import java.math.BigInteger;
 

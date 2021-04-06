@@ -2,17 +2,11 @@ package project.dao.athena;
 
 import org.apache.commons.lang3.tuple.Pair;
 import project.CONSTANTS;
-import project.athena.AthenaVerify;
-import project.athena.BulletinBoard;
+import athena.AthenaVerify;
+import athena.BulletinBoard;
 import project.dao.bulletproof.BulletproofProof;
-import project.elgamal.Ciphertext;
-import project.mixnet.Mixnet;
-import project.sigma.Sigma1;
-import project.sigma.Sigma3;
-import project.sigma.Sigma4;
-import project.sigma.bulletproof.Bulletproof;
-
-import java.math.BigInteger;
+import elgamal.Ciphertext;
+import mixnet.Mixnet;
 
 public class Ballot {
     public Ciphertext publicCredential;

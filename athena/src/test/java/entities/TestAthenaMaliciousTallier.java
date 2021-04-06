@@ -2,16 +2,18 @@ package entities;
 
 //import org.junit.jupiter.api.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
-import project.athena.Athena;
-import project.athena.AthenaImpl;
-import project.athena.BulletinBoard;
-import project.athena.entities.Registrar;
-import project.athena.entities.Tallier;
-import project.athena.entities.Verifier;
-import project.athena.entities.Voter;
+import athena.Athena;
+import athena.AthenaImpl;
+import athena.BulletinBoard;
+import athena.entities.Registrar;
+import athena.entities.Tallier;
+import athena.entities.Verifier;
+import athena.entities.Voter;
 import project.factory.AthenaFactory;
 import project.factory.MainAthenaFactory;
 
@@ -21,11 +23,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 //@DisplayName("Test Athena Malicious Tallier")
+@Tag("TestAthenaMaliciousTallier")
+@DisplayName("Test Athena Malicious Tallier")
 public class TestAthenaMaliciousTallier {
     private int kappa =  CONSTANTS.KAPPA;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 

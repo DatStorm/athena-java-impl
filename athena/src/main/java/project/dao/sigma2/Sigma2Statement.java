@@ -1,7 +1,7 @@
 package project.dao.sigma2;
 
-import project.elgamal.Group;
-import project.elgamal.ElGamalPK;
+import elgamal.Group;
+import elgamal.ElGamalPK;
 
 import java.math.BigInteger;
 

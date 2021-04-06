@@ -7,18 +7,17 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
 import project.UTIL;
-import project.elgamal.ElGamalSK;
+import elgamal.ElGamalSK;
 import project.sigma.Sigma1;
 import project.dao.*;
 import project.dao.sigma1.CoinFlipInfo;
 import project.dao.sigma1.ProveKeyInfo;
 import project.dao.sigma1.PublicInfoSigma1;
-import project.elgamal.ElGamalPK;
+import elgamal.ElGamalPK;
 import project.factory.Factory;
 import project.factory.MainFactory;
 
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 

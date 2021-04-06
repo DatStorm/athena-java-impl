@@ -1,28 +1,48 @@
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.platform.suite.api.ExcludeTags;
-import org.junit.platform.suite.api.IncludeTags;
-import org.junit.platform.suite.api.SelectPackages;
+import athena.TestAthena;
+import bulletproof.TestBulletProofs;
+import elgamal.TestElgamalAll;
+import entities.TestEntities;
+import experiments.TestExperiments;
+import mixnet.TestMixnet;
 import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import sigmas.TestSigmas;
+import util.TestUTIL;
 
-@RunWith(JUnitPlatform.class)
-@SelectPackages("")
-@IncludeTags({
-        "TestElgamal",
-        // FIXME: add when done!
-//        "TestsSigma1",
-//        "TestsSigma2BulletProof",
-        "TestsSigma3",
-//        "TestsSigma4",
-        "TestsMixnets",
-        "TestsCiphertexts",
-        "TestsUTIL",
-        "TestsAthenaSetup",
-        "TestsAthenaRegister",
-        "TestsAthenaVote",
-        "TestsAthenaTally",
-        "TestsAthenaVerify",
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        TestAthena.class,
+        TestBulletProofs.class,
+        TestElgamalAll.class,
+        TestEntities.class,
+        TestExperiments.class,
+        TestMixnet.class,
+        TestSigmas.class,
+        TestUTIL.class,
 })
-//@ExcludeTags({""})
 public class TestAll {
 }
 
+
+
+
+//@RunWith(JUnitPlatform.class)
+//@SelectPackages("")
+//@IncludeTags({
+//        "TestElgamal",
+//        // FIXME: add when done!
+////        "TestsSigma1",
+////        "TestsSigma2BulletProof",
+//        "TestsSigma3",
+//        "TestEntities",
+////        "TestsSigma4",
+//        "TestsMixnets",
+//        "TestsCiphertexts",
+//        "TestsUTIL",
+//        "TestsAthenaSetup",
+//        "TestsAthenaRegister",
+//        "TestsAthenaVote",
+//        "TestsAthenaTally",
+//        "TestsAthenaVerify",
+//})
+////@ExcludeTags({""})

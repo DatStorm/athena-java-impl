@@ -2,7 +2,7 @@ package project.dao.athena;
 
 import project.dao.sigma3.Sigma3Proof;
 import project.dao.sigma4.Sigma4Proof;
-import project.elgamal.Ciphertext;
+import elgamal.Ciphertext;
 
 import java.math.BigInteger;
 

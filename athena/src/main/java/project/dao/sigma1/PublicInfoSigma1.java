@@ -1,6 +1,6 @@
 package project.dao.sigma1;
 
-import project.elgamal.ElGamalPK;
+import elgamal.ElGamalPK;
 
 public class PublicInfoSigma1 {
     private final int kappa;

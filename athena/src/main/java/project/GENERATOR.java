@@ -1,6 +1,6 @@
 package project;
 
-import project.elgamal.ElGamalPK;
+import elgamal.ElGamalPK;
 import project.sigma.bulletproof.Bulletproof;
 
 import java.math.BigInteger;

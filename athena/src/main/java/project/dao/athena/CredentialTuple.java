@@ -1,6 +1,6 @@
 package project.dao.athena;
 
-import project.elgamal.Ciphertext;
+import elgamal.Ciphertext;
 
 import java.math.BigInteger;
 

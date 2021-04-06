@@ -1,7 +1,7 @@
 package project.dao.athena;
 
 import project.dao.sigma1.ProveKeyInfo;
-import project.elgamal.ElGamalPK;
+import elgamal.ElGamalPK;
 
 public class PK_Vector {
     public final ElGamalPK pk;

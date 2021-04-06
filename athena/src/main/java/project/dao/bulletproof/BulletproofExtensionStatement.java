@@ -1,10 +1,8 @@
 package project.dao.bulletproof;
 
-import project.elgamal.ElGamalPK;
-import project.sigma.bulletproof.Bulletproof;
+import elgamal.ElGamalPK;
 
 import java.math.BigInteger;
-import java.util.List;
 
 public class BulletproofExtensionStatement {
     public final BigInteger H;

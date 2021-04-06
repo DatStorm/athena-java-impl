@@ -9,7 +9,7 @@ import project.dao.sigma1.PublicInfoSigma1;
 import project.dao.Randomness;
 import project.dao.sigma1.CoinFlipInfo;
 import project.dao.sigma1.ProveKeyInfo;
-import project.elgamal.ElGamalSK;
+import elgamal.ElGamalSK;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;

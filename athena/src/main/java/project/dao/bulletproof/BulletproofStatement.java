@@ -1,21 +1,16 @@
 package project.dao.bulletproof;
 
-import project.athena.AthenaTally;
-import project.athena.AthenaVote;
-import project.athena.BulletinBoard;
+import athena.AthenaTally;
+import athena.AthenaVote;
+import athena.BulletinBoard;
 import project.dao.athena.UVector;
-import project.elgamal.Ciphertext;
-import project.elgamal.ElGamal;
-import project.elgamal.ElGamalPK;
-import project.mixnet.Mixnet;
-import project.sigma.Sigma1;
-import project.sigma.Sigma3;
-import project.sigma.Sigma4;
-import project.sigma.bulletproof.Bulletproof;
+import elgamal.Ciphertext;
+import elgamal.ElGamal;
+import elgamal.ElGamalPK;
+import mixnet.Mixnet;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Random;
 
 public class BulletproofStatement {
     public Integer n;

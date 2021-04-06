@@ -1,6 +1,6 @@
 package project.dao.athena;
 
-import project.elgamal.ElGamalSK;
+import elgamal.ElGamalSK;
 
 public class SK_Vector {
     public final ElGamalSK sk;

@@ -3,13 +3,12 @@ package project.sigma;
 import project.dao.sigma3.Sigma3Proof;
 import project.dao.sigma3.Sigma3Statement;
 import project.dao.sigma4.Sigma4Proof;
-import project.elgamal.Ciphertext;
-import project.elgamal.ElGamalPK;
-import project.elgamal.ElGamalSK;
-import project.elgamal.Group;
+import elgamal.Ciphertext;
+import elgamal.ElGamalPK;
+import elgamal.ElGamalSK;
+import elgamal.Group;
 
 import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

@@ -6,15 +6,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
-import project.athena.AthenaImpl;
 import project.dao.athena.*;
-import project.elgamal.Ciphertext;
-import project.elgamal.ElGamal;
-import project.elgamal.ElGamalSK;
-import project.elgamal.Group;
+import elgamal.Ciphertext;
+import elgamal.ElGamal;
+import elgamal.ElGamalSK;
+import elgamal.Group;
 import project.factory.MainAthenaFactory;
 
-import java.io.IOException;
 import java.math.BigInteger;
 
 import static org.junit.Assert.*;

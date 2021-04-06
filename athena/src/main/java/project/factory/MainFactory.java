@@ -1,15 +1,11 @@
 package project.factory;
 
 import project.CONSTANTS;
-import project.UTIL;
-import project.athena.Gen;
-import project.dao.Randomness;
-import project.elgamal.ElGamal;
-import project.elgamal.ElGamalPK;
-import project.elgamal.ElGamalSK;
+import project.generator.Gen;
+import elgamal.ElGamal;
+import elgamal.ElGamalPK;
+import elgamal.ElGamalSK;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 public class MainFactory implements Factory {

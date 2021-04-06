@@ -1,7 +1,7 @@
 package project.dao.athena;
 
 import project.dao.mixnet.MixBallot;
-import project.elgamal.Ciphertext;
+import elgamal.Ciphertext;
 
 public class MapAValue {
     private final int counter;

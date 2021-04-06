@@ -5,17 +5,16 @@ import org.junit.jupiter.api.*;
 import project.CONSTANTS;
 import project.sigma.Sigma4;
 import project.dao.sigma4.Sigma4Proof;
-import project.elgamal.Ciphertext;
-import project.elgamal.ElGamal;
-import project.elgamal.ElGamalPK;
-import project.elgamal.ElGamalSK;
+import elgamal.Ciphertext;
+import elgamal.ElGamal;
+import elgamal.ElGamalPK;
+import elgamal.ElGamalSK;
 import project.factory.Factory;
 import project.factory.MainFactory;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

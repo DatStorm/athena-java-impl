@@ -4,18 +4,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
 import project.CONSTANTS;
 import project.dao.mixnet.*;
-import project.elgamal.Ciphertext;
-import project.elgamal.ElGamal;
-import project.elgamal.ElGamalPK;
-import project.elgamal.ElGamalSK;
+import elgamal.Ciphertext;
+import elgamal.ElGamal;
+import elgamal.ElGamalPK;
+import elgamal.ElGamalSK;
 import project.factory.Factory;
 import project.factory.MainFactory;
-import project.mixnet.Mixnet;
 
 import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -23,6 +23,7 @@ import java.util.Random;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(JUnitPlatform.class)
 @Tag("TestsMixnets")
 @DisplayName("Test Mixnet")
 public class TestMixnet {

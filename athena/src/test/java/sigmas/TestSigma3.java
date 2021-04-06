@@ -5,10 +5,10 @@ import project.CONSTANTS;
 import project.sigma.Sigma3;
 import project.dao.sigma3.Sigma3Proof;
 import project.dao.sigma3.Sigma3Statement;
-import project.elgamal.Ciphertext;
-import project.elgamal.ElGamal;
-import project.elgamal.ElGamalPK;
-import project.elgamal.ElGamalSK;
+import elgamal.Ciphertext;
+import elgamal.ElGamal;
+import elgamal.ElGamalPK;
+import elgamal.ElGamalSK;
 import project.factory.Factory;
 import project.factory.MainFactory;
 

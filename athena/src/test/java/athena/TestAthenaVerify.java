@@ -6,14 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
-import project.athena.AthenaImpl;
-import project.athena.BulletinBoard;
 import project.dao.athena.*;
-import project.elgamal.ElGamalSK;
+import elgamal.ElGamalSK;
 import project.factory.MainAthenaFactory;
 
-import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;

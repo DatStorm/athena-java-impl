@@ -1,10 +1,8 @@
 package project.dao.athena;
 
-import project.elgamal.ElGamal;
-import project.elgamal.ElGamalPK;
-import project.elgamal.ElGamalSK;
-
-import java.math.BigInteger;
+import elgamal.ElGamal;
+import elgamal.ElGamalPK;
+import elgamal.ElGamalSK;
 
 public class ElectionSetup {
     public final ElGamalSK sk;

@@ -3,8 +3,7 @@ package elgamal;
 import org.junit.jupiter.api.*;
 import project.CONSTANTS;
 import project.UTIL;
-import project.athena.AthenaCommon;
-import project.elgamal.*;
+import athena.AthenaCommon;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;

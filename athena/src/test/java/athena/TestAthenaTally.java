@@ -3,14 +3,9 @@ package athena;
 
 import org.junit.jupiter.api.*;
 import project.CONSTANTS;
-import project.athena.Athena;
-import project.athena.AthenaImpl;
-import project.athena.BulletinBoard;
 import project.dao.athena.*;
-import project.elgamal.ElGamalSK;
+import elgamal.ElGamalSK;
 import project.factory.MainAthenaFactory;
-
-import java.io.IOException;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;

@@ -6,13 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import project.CONSTANTS;
-import project.athena.AthenaImpl;
 import project.dao.athena.PK_Vector;
 import project.dao.athena.RegisterStruct;
 import project.dao.athena.ElectionSetup;
 import project.factory.MainAthenaFactory;
-
-import java.io.IOException;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
