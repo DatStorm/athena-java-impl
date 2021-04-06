@@ -2,9 +2,12 @@
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.out</target>
+<!--        <withJansi>true</withJansi>-->
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%cyan(%d{HH:mm:ss.SSS}) %highlight(%-5level) %logger{36} - %msg%n</pattern>
+<!--            <pattern>%d %highlight{%p} %style{%C{1.} [%t] %m}{bold,green}%n</pattern>-->
 <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+            <disableAnsi>false</disableAnsi>
         </encoder>
     </appender>
     <root level="info">

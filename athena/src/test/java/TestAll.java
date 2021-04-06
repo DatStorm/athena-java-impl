@@ -1,13 +1,14 @@
-import athena.TestAthena;
-import bulletproof.TestBulletProofs;
-import elgamal.TestElgamalAll;
-import entities.TestEntities;
-import experiments.TestExperiments;
-import mixnet.TestMixnet;
+
+import cs.au.athena.athena.TestAthena;
+import cs.au.athena.bulletproof.TestBulletProofs;
+import cs.au.athena.elgamal.TestElgamalAll;
+import cs.au.athena.entities.TestEntities;
+import cs.au.athena.experiments.TestExperiments;
+import cs.au.athena.mixnet.TestMixnet;
+import cs.au.athena.sigmas.TestSigmas;
+import cs.au.athena.util.TestUTIL;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import sigmas.TestSigmas;
-import util.TestUTIL;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
