@@ -23,15 +23,14 @@ public class CONSTANTS {
 
 
     public static class ELGAMAL_CURRENT {
-        public static final BigInteger ELGAMAL_P = ELGAMAL_64_BITS.ELGAMAL_P;
-        public static final BigInteger ELGAMAL_Q = ELGAMAL_64_BITS.ELGAMAL_Q;
-        public static final BigInteger ELGAMAL_G = ELGAMAL_64_BITS.ELGAMAL_G;
+        public static final BigInteger ELGAMAL_P = ELGAMAL_2048_BITS.ELGAMAL_P;
+        public static final BigInteger ELGAMAL_Q = ELGAMAL_2048_BITS.ELGAMAL_Q;
+        public static final BigInteger ELGAMAL_G = ELGAMAL_2048_BITS.ELGAMAL_G;
 
         /**
          * Elgamal bit length specify how big values to use.
          */
-        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_64_BITS.ELGAMAL_BIT_LENGTH;
-//        public static final BigInteger FAKE_SK = ELGAMAL_1024_BITS.FAKE_SK;
+        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_2048_BITS.ELGAMAL_BIT_LENGTH;
     }
 
 

@@ -484,7 +484,7 @@ public class Bulletproof {
             return false;
         }
 
-        return true;
+        return true;    
     }
 
     public BigInteger delta(BigInteger y, BigInteger z, int n, BigInteger q) {

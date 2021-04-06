@@ -154,7 +154,6 @@ public class AthenaTally {
                     .setUVector(uVector)
                     .build();
 
-
             logger.info(ATHENA_TALLY_MARKER, "Verifying bulletproof 1");
             boolean verify_encryptedNegatedPrivateCredential = bulletProof
                     .verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
