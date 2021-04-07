@@ -6,6 +6,7 @@ import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
+import cs.au.athena.sigma.Sigma2Pedersen;
 import cs.au.athena.sigma.Sigma3;
 import cs.au.athena.sigma.Sigma4;
 import cs.au.athena.sigma.bulletproof.Bulletproof;
@@ -23,14 +24,16 @@ public class MainAthenaFactory implements AthenaFactory {
 
     @Override
     public Bulletproof getBulletProof() {
-        return new Bulletproof(random);
+        return new Bulletproof(this.random);
     }
 
     @Override
     public Sigma1 getSigma1() {
         return new Sigma1();
     }
-    
+
+    @Override
+    public Sigma2Pedersen getSigma2Pedersen() { return new Sigma2Pedersen(this.random); }
 
     @Override
     public Sigma3 getSigma3() {

@@ -122,17 +122,12 @@ public class AthenaVerify {
         List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, bb.retrieveNumberOfCandidates());
         List<BigInteger> g_vector_vote = generators.get(0);
         List<BigInteger> h_vector_vote = generators.get(1);
-        List<BigInteger> g_vector_negatedPrivateCredential = generators.get(2);
-        List<BigInteger> h_vector_negatedPrivateCredential = generators.get(3);
 
-        // Verify all 4 vectors
+        // Verify all 2 vectors
         boolean isValid1 = g_vector_vote.equals(bb.retrieve_G_VectorVote());
         boolean isValid2 = h_vector_vote.equals(bb.retrieve_H_VectorVote());
-        boolean isValid3 = g_vector_negatedPrivateCredential.equals(bb.retrieve_G_VectorNegPrivCred());
-        boolean isValid4 = h_vector_negatedPrivateCredential.equals(bb.retrieve_H_VectorNegPrivCred());
-        boolean isValid = isValid1 && isValid2 && isValid3 && isValid4;
 
-        return isValid;
+        return isValid1 && isValid2;
     }
 
     private static boolean checkMix(Mixnet mixnet, List<Ballot> validBallots, PFStruct pf, ElGamalPK pk, int kappa) {

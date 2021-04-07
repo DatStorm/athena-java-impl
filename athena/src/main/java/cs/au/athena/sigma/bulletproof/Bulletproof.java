@@ -21,7 +21,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-
 public class Bulletproof {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private static final Marker MARKER = MarkerFactory.getMarker("BULLETPROOF");
@@ -519,20 +518,7 @@ public class Bulletproof {
     }
 
     private long hash(UVector vectorU, BigInteger... values) {
-        byte[] concatenated = new byte[]{};
-
-
-        concatenated = Bytes.concat(concatenated, vectorU.toByteArray());
-
-        for (BigInteger bigInt : values) {
-            concatenated = Bytes.concat(concatenated, bigInt.toByteArray());
-        }
-
-
-        byte[] hashed = HASH.hash(concatenated);
-
-        // create positive long value.
-        return new BigInteger(1, hashed).longValue();
+        return HASH.hashToBigInteger(vectorU, values).longValue();
     }
 
 

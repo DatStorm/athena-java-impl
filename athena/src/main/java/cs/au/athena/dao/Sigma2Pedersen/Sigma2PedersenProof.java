@@ -10,4 +10,13 @@ public class Sigma2PedersenProof{
         this.z1 = z1;
         this.z2 = z2;
     }
+
+    @Override
+    public String toString() {
+        return "Sigma2PedersenProof{" +
+                "a=" + a +
+                ", z1=" + z1 +
+                ", z2=" + z2 +
+                '}';
+    }
 }

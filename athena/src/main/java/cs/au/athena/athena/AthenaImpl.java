@@ -1,5 +1,6 @@
 package cs.au.athena.athena;
 
+import cs.au.athena.sigma.Sigma2Pedersen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -35,6 +36,7 @@ public class AthenaImpl implements Athena {
     private final Sigma4 sigma4;
     private final BulletinBoard bb;
     private final Random random;
+    private final Sigma2Pedersen sigma2Pedersen;
     private ElGamal elgamal;
     private Mixnet mixnet;
     private BigInteger mc;
@@ -45,6 +47,7 @@ public class AthenaImpl implements Athena {
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
         this.sigma1 = athenaFactory.getSigma1();
+        this.sigma2Pedersen = athenaFactory.getSigma2Pedersen();
         this.bulletProof = athenaFactory.getBulletProof();
         this.sigma3 = athenaFactory.getSigma3();
         this.sigma4 = athenaFactory.getSigma4();
@@ -64,9 +67,9 @@ public class AthenaImpl implements Athena {
         int bitlength = kappa * 8;
         
         /**********
-         * TODO: Add back the correct cs.au.cs.au.athena.athena.generator instead of mock!
+         * TODO: Add back the correct generator instead of mock!
          */
-//        Generator gen = new Gen(random, nc, bitlength); // Because cs.au.cs.au.athena.athena.elgamal needs a larger security param
+//        Generator gen = new Gen(random, nc, bitlength); // Because elgamal needs a larger security param
         Generator gen = new MockGenerator(random, nc, bitlength); //
 
         ElGamalSK sk = gen.generate();
@@ -80,7 +83,7 @@ public class AthenaImpl implements Athena {
         ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
 
         // mb, mc is upper-bound by a polynomial in the security parameter.
-        // TODO: Shoud theese be updated
+        // TODO: Should these be updated
         int mb = 1024; // TODO: look at the ElGamal test and find a 
         this.mc = BigInteger.valueOf(1024);
 
@@ -89,16 +92,12 @@ public class AthenaImpl implements Athena {
         List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, nc);
         List<BigInteger> g_vector_vote = generators.get(0);
         List<BigInteger> h_vector_vote = generators.get(1);
-        List<BigInteger> g_vector_negatedPrivateCredential = generators.get(2);
-        List<BigInteger> h_vector_negatedPrivateCredential = generators.get(3);
 
 
         logger.info(ATHENA_IMPL_MARKER, "Setup(...) => publish to BB");
         bb.publishNumberOfCandidates(nc);
         bb.publish_G_VectorVote(g_vector_vote);
         bb.publish_H_VectorVote(h_vector_vote);
-        bb.publish_G_VectorNegPrivCred(g_vector_negatedPrivateCredential);
-        bb.publish_H_VectorNegPrivCred(h_vector_negatedPrivateCredential);
 
         PK_Vector pkv = new PK_Vector(pk, rho);
         bb.publishPKV(pkv);
@@ -139,6 +138,7 @@ public class AthenaImpl implements Athena {
         }
         return new AthenaVote.Builder()
                 .setSigma1(this.sigma1)
+                .setSigma2Pedersen(this.sigma2Pedersen)
                 .setBulletProof(this.bulletProof)
                 .setRandom(this.random)
                 .setElGamal(this.elgamal)

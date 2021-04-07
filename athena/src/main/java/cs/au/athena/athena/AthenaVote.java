@@ -1,6 +1,10 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.UTIL;
+import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenProof;
+import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenSecret;
+import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenStatement;
+import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +31,7 @@ import java.util.Random;
 
 public class AthenaVote {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-    private static final Marker ATHENA_VOTE_MARKER = MarkerFactory.getMarker("ATHENA-VOTE");
+    private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-VOTE");
 
 
     private Sigma1 sigma1;
@@ -36,8 +40,10 @@ public class AthenaVote {
     private ElGamal elgamal;
     private int kappa;
     private BulletinBoard bb;
+    private Sigma2Pedersen sigma2Pedersen;
 
-    private AthenaVote() {}
+    private AthenaVote() {
+    }
 
     public Ballot Vote(
             CredentialTuple credentialTuple,
@@ -70,17 +76,14 @@ public class AthenaVote {
         BigInteger q = pk.group.q;
         BigInteger p = pk.group.p;
 
-
         // Make negated private credential
-        BigInteger negatedPrivateCredential = credentialTuple.privateCredential.negate();
-        negatedPrivateCredential = negatedPrivateCredential.mod(q).add(q).mod(q);
-
+        BigInteger negatedPrivateCredential = credentialTuple.privateCredential.negate().mod(q).add(q).mod(q);
         assert negatedPrivateCredential.add(credentialTuple.privateCredential).mod(q).equals(BigInteger.ZERO) : "-d + d != 0";
-
 
         // Create encryption of negated private credential
         BigInteger randomness_s = UTIL.getRandomElement(q, random);
         Ciphertext encryptedNegatedPrivateCredential = elgamal.exponentialEncrypt(negatedPrivateCredential, pk, randomness_s);
+
 
         // Create encryption of vote,
         BigInteger voteAsBigInteger = BigInteger.valueOf(vote);
@@ -91,30 +94,34 @@ public class AthenaVote {
         //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)
         UVector uVector = new UVector(publicCredential, encryptedNegatedPrivateCredential, encryptedVote, BigInteger.valueOf(cnt));
 
-        // Prove that for negated private credential -d that d is in [0, 2^{\lfloor log_2 q \rfloor} -1]
-        List<BigInteger> g_vector_negatedPrivateCredential = bb.retrieve_G_VectorNegPrivCred();
-        List<BigInteger> h_vector_negatedPrivateCredential = bb.retrieve_H_VectorNegPrivCred();
-        int n = Bulletproof.getN(q) - 1; //q.bitlength()-1
-
-        BulletproofStatement stmnt_1 = new BulletproofStatement.Builder()
-                .setN(n)
-                .setV(encryptedNegatedPrivateCredential.c2.modInverse(p)) // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
-                .setPK(pk)
-                .set_G_Vector(g_vector_negatedPrivateCredential)
-                .set_H_Vector(h_vector_negatedPrivateCredential)
-                .setUVector(uVector)
-                .build();
-
-        /*****
-         * NEW IMPLEMENTATION WITH Sigma Pedersen.
-         */
 
 
-        // negate since we take the inverse of the commitment
-        BulletproofSecret secret_1 = new BulletproofSecret(negatedPrivateCredential.negate().mod(q).add(q).mod(q), randomness_s.negate().mod(q).add(q).mod(q));
-        BulletproofProof proofRangeOfNegatedPrivateCredential = bulletProof.proveStatement(stmnt_1, secret_1);
+        // Proof of knowledge of encryptedNegatedPrivateCredential
+        Sigma2PedersenProof proofNegatedPrivateCredential = sigma2Pedersen.proveCipher(
+                encryptedNegatedPrivateCredential,
+                negatedPrivateCredential,
+                randomness_s,
+                uVector,
+                pk);
 
-        // Prove that vote v resides in [0,nc-1] (this is defined using n)
+        logger.debug(MARKER, "AT.V: " + encryptedNegatedPrivateCredential.toFormattedString());
+        logger.debug(MARKER, "AT.V: " + proofNegatedPrivateCredential);
+
+        boolean verify_encryptedNegatedPrivateCredential = Sigma2Pedersen.verifyCipher(
+                encryptedNegatedPrivateCredential,
+                proofNegatedPrivateCredential,
+                uVector,
+                pk);
+
+        if (!verify_encryptedNegatedPrivateCredential) {
+            throw new RuntimeException("Must always succeed");
+        } else {
+            System.err.println("ALL GOOD!!!");
+        }
+
+
+        // Proof on knowledge of encryptedVote
+        // Prove that vote v resides in [0, nc-1] (this is defined using n)
         List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
         List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
         BigInteger H = BigInteger.valueOf(nc - 1);
@@ -137,21 +144,13 @@ public class AthenaVote {
                 .setEncryptedNegatedPrivateCredential(encryptedNegatedPrivateCredential)
                 .setEncryptedVote(encryptedVote)
                 .setProofVotePair(proofRangeOfVotePair)
-                .setProofNegatedPrivateCredential(proofRangeOfNegatedPrivateCredential)
+                .setProofNegatedPrivateCredential(proofNegatedPrivateCredential)
                 .setCounter(cnt)
                 .build();
 
         // returns the vote.
         return ballot;
     }
-
-
-
-
-
-
-
-
 
 
     public static class Builder {
@@ -161,6 +160,7 @@ public class AthenaVote {
         private ElGamal elgamal;
         private int kappa;
         private BulletinBoard bb;
+        private Sigma2Pedersen sigma2Pedersen;
 
 
         public Builder setSigma1(Sigma1 sigma1) {
@@ -193,15 +193,21 @@ public class AthenaVote {
             return this;
         }
 
+        public Builder setSigma2Pedersen(Sigma2Pedersen sigma2Pedersen) {
+            this.sigma2Pedersen = sigma2Pedersen;
+            return this;
+        }
+
 
         public AthenaVote build() {
             //Check that all fields are set
             if (bb == null ||
-                random == null ||
-                sigma1 == null ||
-                bulletProof == null ||
-                elgamal == null ||
-                kappa == 0
+                    random == null ||
+                    sigma1 == null ||
+                    sigma2Pedersen == null ||
+                    bulletProof == null ||
+                    elgamal == null ||
+                    kappa == 0
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
@@ -209,6 +215,7 @@ public class AthenaVote {
             //Construct Object
             AthenaVote athenaVote = new AthenaVote();
             athenaVote.sigma1 = this.sigma1;
+            athenaVote.sigma2Pedersen = this.sigma2Pedersen;
             athenaVote.bulletProof = this.bulletProof;
             athenaVote.random = this.random;
             athenaVote.elgamal = this.elgamal;
@@ -218,6 +225,8 @@ public class AthenaVote {
             return athenaVote;
 
         }
+
+
     }
 
 

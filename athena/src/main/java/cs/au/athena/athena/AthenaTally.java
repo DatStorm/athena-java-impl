@@ -1,5 +1,6 @@
 package cs.au.athena.athena;
 
+import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 
 public class AthenaTally {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-    private static final Marker ATHENA_TALLY_MARKER = MarkerFactory.getMarker("ATHENA-TALLY");
+    private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-TALLY");
 
 
     private Random random;
@@ -56,11 +57,12 @@ public class AthenaTally {
         /* ********
          * Step 1: Remove invalid ballots
          *********/
-        logger.info(ATHENA_TALLY_MARKER, "Tally(...) => step1");
+        logger.info(MARKER, "Tally(...) => step1");
 
         List<Ballot> validBallots = removeInvalidBallots(pk, this.bb, this.bulletProof);
         if (validBallots.isEmpty()) {
-            System.err.println("AthenaImpl.Tally =>  Step 1 yielded no valid ballots on bulletinboard.");
+            logger.error("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
+//            System.err.println("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             return null;
         }
 
@@ -68,7 +70,7 @@ public class AthenaTally {
         /* ********
          * Step 2: Mix final votes
          *********/
-        logger.info(ATHENA_TALLY_MARKER, "Tally(...) => step2");
+        logger.info(MARKER, "Tally(...) => step2");
 
         //Filter ReVotes and pfr proof of same nonce
         Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterResult = filterReVotesAndProveSameNonce(validBallots, sk);
@@ -97,7 +99,7 @@ public class AthenaTally {
         /* ********
          * Step 3: Reveal eligible votes
          *********/
-        logger.info(ATHENA_TALLY_MARKER, "Tally(...) => step3");
+        logger.info(MARKER, "Tally(...) => step3");
 
         // Tally eligible votes and prove computations
         Pair<Map<Integer, Integer>, List<PFDStruct>> revealPair = revealEligibleVotes(sk, mixedBallots, nc, kappa);
@@ -130,39 +132,34 @@ public class AthenaTally {
             // Is the public credential
             boolean isPublicCredentialInL = bb.electoralRollContains(publicCredential);
             if (!isPublicCredentialInL) {
-                System.err.println("AthenaImpl.removeInvalidBallot => ballot posted with invalid public credential");
+                System.err.println("AthenaTally.removeInvalidBallot => ballot posted with invalid public credential");
                 finalBallots.remove(ballot);
             }
 
-
             // Verify that the negated private credential is in the valid range
-            // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersens' commitment of (-d) using randomness s
+            // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersen commitment of (-d) using randomness s
             Ciphertext encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
+            logger.debug(MARKER, "AT.T: " + encryptedNegatedPrivateCredential.toFormattedString());
+            logger.debug(MARKER, "AT.T: " + ballot.proofNegatedPrivateCredential);
 
 
             // message/vector u used to make ballot proofs specific to the given ballot
             //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)
             UVector uVector = new UVector(publicCredential, encryptedNegatedPrivateCredential, ballot.getEncryptedVote(), BigInteger.valueOf(ballot.getCounter()));
 
-            int n = Bulletproof.getN(pk.group.q) - 1; //q.bitlength()-1
-            BulletproofStatement stmnt_1 = new BulletproofStatement.Builder()
-                    .setN(n)
-                    .setV(encryptedNegatedPrivateCredential.c2.modInverse(pk.group.p)) // (g^{-d} h^s)^{-1} =>(g^{d} h^{-s})
-                    .setPK(pk)
-                    .set_G_Vector(bb.retrieve_G_VectorNegPrivCred())
-                    .set_H_Vector(bb.retrieve_H_VectorNegPrivCred())
-                    .setUVector(uVector)
-                    .build();
+//            logger.info(ATHENA_TALLY_MARKER, "Verifying Sigma2Pedersen 1");
+            boolean verify_encryptedNegatedPrivateCredential = Sigma2Pedersen.verifyCipher(
+                    encryptedNegatedPrivateCredential,
+                    ballot.proofNegatedPrivateCredential,
+                    uVector,
+                    pk);
+//            logger.info(ATHENA_TALLY_MARKER, "Finished Sigma2Pedersen 1");
 
-            logger.info(ATHENA_TALLY_MARKER, "Verifying cs.au.athena.bulletproof 1");
-            boolean verify_encryptedNegatedPrivateCredential = bulletProof
-                    .verifyStatement(stmnt_1, ballot.getProofNegatedPrivateCredential());
-            logger.info(ATHENA_TALLY_MARKER, "Finished cs.au.athena.bulletproof 1");
 
             // remove invalid ballots.
             if (!verify_encryptedNegatedPrivateCredential) {
-                System.err.println("AthenaImpl.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
-                logger.info(ATHENA_TALLY_MARKER, "Removing ballot");
+                System.err.println("AthenaTally.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
+                logger.error(MARKER, "AthenaTally.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
                 finalBallots.remove(ballot);
             }
 
@@ -171,8 +168,6 @@ public class AthenaTally {
             Ciphertext encryptedVote = ballot.getEncryptedVote();
 
             int nc = bb.retrieveNumberOfCandidates();
-
-
             BigInteger H = BigInteger.valueOf(nc - 1);
             BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
                     H,
@@ -187,20 +182,19 @@ public class AthenaTally {
             );
 
 
-            logger.info(ATHENA_TALLY_MARKER, "Verifying cs.au.athena.bulletproof 2");
+//            logger.info(ATHENA_TALLY_MARKER, "Verifying bulletproof 2");
             boolean verify_encVote = bulletProof
                     .verifyStatementArbitraryRange(
                             stmnt_2,
                             ballot.getProofVotePair()
                     );
-
-            logger.info(ATHENA_TALLY_MARKER, "Finished cs.au.athena.bulletproof 2");
+//            logger.info(ATHENA_TALLY_MARKER, "Finished bulletproof 2");
 
 
             // remove invalid ballots.
             if (!verify_encVote) {
                 System.err.println("AthenaImpl.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(v), proof_{v}) = 0");
-                logger.info(ATHENA_TALLY_MARKER, "Removing ballot");
+                logger.info(MARKER, "Removing ballot");
                 finalBallots.remove(ballot);
             }
         }
@@ -469,6 +463,8 @@ public class AthenaTally {
             this.kappa = kappa;
             return this;
         }
+
+
     }
 
 

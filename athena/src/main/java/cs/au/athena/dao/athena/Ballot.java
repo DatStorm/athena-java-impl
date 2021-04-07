@@ -1,6 +1,7 @@
 package cs.au.athena.dao.athena;
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenProof;
 import org.apache.commons.lang3.tuple.Pair;
 import cs.au.athena.dao.bulletproof.BulletproofProof;
 import cs.au.athena.elgamal.Ciphertext;
@@ -10,7 +11,7 @@ public class Ballot {
     public Ciphertext encryptedNegatedPrivateCredential;
     public Ciphertext encryptedVote;
     public Pair<BulletproofProof, BulletproofProof> proofVotePair;
-    public BulletproofProof proofNegatedPrivateCredential;
+    public Sigma2PedersenProof proofNegatedPrivateCredential;
     public int counter;
 
     private Ballot() {
@@ -32,7 +33,7 @@ public class Ballot {
     }
 
     // b[4] = sigma_1
-    public BulletproofProof getProofNegatedPrivateCredential() {
+    public Sigma2PedersenProof getProofNegatedPrivateCredential() {
         return proofNegatedPrivateCredential;
     }
 
@@ -66,7 +67,7 @@ public class Ballot {
         private Ciphertext encryptedNegatedPrivateCredential;
         private Ciphertext encryptedVote;
         private Pair<BulletproofProof, BulletproofProof> proofVotePair;
-        private BulletproofProof proofNegatedPrivateCredential;
+        private Sigma2PedersenProof proofNegatedPrivateCredential;
         private int counter;
 
         public Builder setPublicCredential(Ciphertext publicCredential) {
@@ -90,7 +91,7 @@ public class Ballot {
             return this;
         }
 
-        public Builder setProofNegatedPrivateCredential(BulletproofProof proofNegatedPrivateCredential) {
+        public Builder setProofNegatedPrivateCredential(Sigma2PedersenProof proofNegatedPrivateCredential) {
             this.proofNegatedPrivateCredential = proofNegatedPrivateCredential;
             return this;
         }

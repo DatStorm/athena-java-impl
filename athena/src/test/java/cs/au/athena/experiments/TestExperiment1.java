@@ -104,6 +104,19 @@ public class TestExperiment1 {
         registerVote(numVoters);
     }
 
+    @Test
+    public void TestExperimentTime50Voters() {
+        //Vote 20 times
+        int numVoters = 50;
+        registerVote(numVoters);
+    }
+
+    @Test
+    public void TestExperimentTime100Voters() {
+        //Vote 20 times
+        int numVoters = 100;
+        registerVote(numVoters);
+    }
 
 
 

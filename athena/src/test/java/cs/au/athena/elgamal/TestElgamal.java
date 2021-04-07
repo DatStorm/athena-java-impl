@@ -164,6 +164,7 @@ public class TestElgamal {
         assertEquals(expected.intValueExact(), result.intValue());
     }
 
+    @Disabled
     @Test
     void TestLookupTableComputationTime() {
          // Version 1024 bits....

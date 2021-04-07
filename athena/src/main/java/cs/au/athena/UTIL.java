@@ -235,7 +235,12 @@ public class UTIL {
 
     public static void printEvalMetrics(String TAG, long startTime, long endTime){
         long timeElapsed = endTime - startTime;
+        System.out.println(TAG + "Execution time in seconds : \t\t\t" + nanosecToSec(timeElapsed)); // HERE..
         System.out.println(TAG + "Execution time in minutes : \t\t\t" + nanosecToMin(timeElapsed)); // HERE..
+    }
+
+    private static long nanosecToSec(long timeElapsed) {
+        return TimeUnit.SECONDS.convert(timeElapsed, TimeUnit.NANOSECONDS);
     }
 
     private static long nanosecToMin(long nanoSeconds) {

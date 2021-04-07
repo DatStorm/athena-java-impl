@@ -14,6 +14,7 @@ public class ElGamal {
     private int messageSpaceLength;
     private Map<BigInteger, Integer> lookupTable;
 
+    @Deprecated
     public ElGamal(Group group, int messageSpaceLength, Random random) {
         if (messageSpaceLength < 0) {
             System.err.println("ERROR messageSpaceLength < 0");
@@ -33,15 +34,32 @@ public class ElGamal {
         }
     }
 
+    public ElGamal(Group group, Random random) {
+        this.group = group;
+        this.random = random;
+    }
+
 //    public ElGamal(int bitLength) {
 //        this(bitLength, new SecureRandom());
 //    }
 
+    public static Map<BigInteger, Integer> generateLookupTable(Group group, int length) {
+        Map<BigInteger, Integer> lookupTable = new HashMap<>();
+        for(int i = 0; i < length; i++) {
+            BigInteger element = group.g.pow(i).mod(group.p);
+            lookupTable.put(element, i);
+        }
+
+        return lookupTable;
+    }
+
+    @Deprecated
     public ElGamal(int bitLength, int messageSpaceLength, Random random) {
         this(generateGroup(bitLength, random), messageSpaceLength, random);
 
     }
 
+    @Deprecated
     public static Group generateGroup(int bitLength, Random random) {
         // SECURE == 2048
         BigInteger p, q, g;
@@ -65,7 +83,8 @@ public class ElGamal {
 
         return new Group(p, q, g);
     }
-    
+
+    @Deprecated
     public Group getDescription() {
         return group;
     }
@@ -96,7 +115,7 @@ public class ElGamal {
         BigInteger h = pk.h;
 
         // C = (g^r, m·h^r)
-        return new Ciphertext(g.modPow(r, p), h.modPow(r, p).multiply(messageElement).mod(p));
+        return new Ciphertext(g.modPow(r, p), messageElement.multiply(h.modPow(r, p)).mod(p));
     }
 
     public Ciphertext exponentialEncrypt(BigInteger msg, ElGamalPK pk) {
@@ -126,6 +145,7 @@ public class ElGamal {
         return encrypt(messageElement, pk, r);
     }
 
+    @Deprecated
     public static BigInteger getNeutralElement() {
         return BigInteger.ONE;
     }
@@ -134,7 +154,6 @@ public class ElGamal {
     public Integer exponentialDecrypt(Ciphertext cipherText, ElGamalSK sk) {
         return lookup(decrypt(cipherText, sk));
     }
-
 
 
     // Decrypting El Gamal encryption using secret key
@@ -149,19 +168,31 @@ public class ElGamal {
         return c2.multiply(c1NegAlpha).mod(p);
     }
 
-
-    public Integer lookup(BigInteger big) {
-        if(!lookupTable.containsKey(big)){
-            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + big + CONSTANTS.ANSI_RESET);
+    @Deprecated
+    public Integer lookup(BigInteger element) {
+        if(!lookupTable.containsKey(element)){
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt: Possible votes = " + lookupTable.values() + CONSTANTS.ANSI_RESET);
             throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength);
         } else {
-            return lookupTable.get(big);
+            return lookupTable.get(element);
+        }
+    }
+
+    public Integer lookup(Map<BigInteger, Integer> lookupTable, BigInteger element) {
+        if(!lookupTable.containsKey(element)){
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt: Possible votes = " + lookupTable.values() + CONSTANTS.ANSI_RESET);
+            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength);
+        } else {
+            return lookupTable.get(element);
         }
     }
 
     // Generate random sk
+    @Deprecated
     public ElGamalSK generateSK() {
         if (this.group == null) {
             System.out.println("group = null");
@@ -174,8 +205,18 @@ public class ElGamal {
         return new ElGamalSK(this.group, sk);
     }
 
+    public static ElGamalSK generateSK(Group group, Random random) {
+        if (group == null) {
+            System.out.println("group = null");
+        }
+
+        BigInteger sk = UTIL.getRandomElement(group.getQ(), random);
+        return new ElGamalSK(group, sk);
+    }
+
 
     // Generating El Gamal public key from a specified secret key
+    @Deprecated
     public ElGamalPK generatePk(ElGamalSK sk) {
         BigInteger g = this.group.getG();
         BigInteger p = this.group.getP();
@@ -183,7 +224,7 @@ public class ElGamal {
         return new ElGamalPK(this.group, h); // return pk=(g,h)
     }
 
-
+    @Deprecated
     public BigInteger getP() {
         return this.group.getP();
     }

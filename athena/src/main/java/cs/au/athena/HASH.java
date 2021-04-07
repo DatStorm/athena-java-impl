@@ -2,8 +2,10 @@ package cs.au.athena;
 
 import com.google.common.primitives.Bytes;
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.dao.athena.UVector;
 import cs.au.athena.dao.mixnet.MixBallot;
 
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -57,6 +59,24 @@ public class HASH {
 
     public static byte[] hash(byte[] bytes) {
         return hashH.digest(bytes);
+    }
+
+
+    public static BigInteger hashToBigInteger(UVector vectorU, BigInteger... values) {
+        byte[] concatenated = new byte[]{};
+
+
+        concatenated = Bytes.concat(concatenated, vectorU.toByteArray());
+
+        for (BigInteger bigInt : values) {
+            concatenated = Bytes.concat(concatenated, bigInt.toByteArray());
+        }
+
+
+        byte[] hashed = hash(concatenated);
+
+        // create positive long value.
+        return new BigInteger(1, hashed);
     }
 
     //Hash

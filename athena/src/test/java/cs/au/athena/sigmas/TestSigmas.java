@@ -9,6 +9,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitPlatform.class)
 @Tag("TestSigmas")
-@SelectClasses( {TestSigma1.class, TestSigma2.class, TestSigma3.class, TestSigma4.class} )
+@SelectClasses({TestSigma1.class, TestSigma2Pedersen.class, TestSigma3.class, TestSigma4.class})
 public class TestSigmas {
 }
