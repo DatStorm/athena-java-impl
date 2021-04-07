@@ -56,8 +56,8 @@ public class Voter implements Entity {
             return;
         }
 
-         counter = counter + 1; // TODO: use a timestamp perhaps
-         Ballot ballot = athena.Vote(credentialTuple, pk_vector, vote, counter, nc, kappa);
+        counter = counter + 1; // TODO: use a timestamp perhaps
+        Ballot ballot = athena.Vote(credentialTuple, pk_vector, vote, counter, nc, kappa);
 
          // publish the ballot
          bulletinBoard.publishBallot(ballot);

@@ -54,18 +54,10 @@ public class Sigma2Pedersen {
         // Compute challenge
         // e = hash(a, uvector)    in Zq
         BigInteger e = getChallenge(statement, a);
-//        logger.info(MARKER, String.format("P.p: %s", p));
-//        logger.info(MARKER, String.format("P.g: %s", statement.g));
-//        logger.info(MARKER, String.format("P.h: %s", statement.h));
-//        logger.info(MARKER, String.format("P.a: %s", a));
 
         // Answer challenge
         BigInteger z1 = r1.add(e.multiply(secret.m).mod(q)).mod(q);
         BigInteger z2 = r2.add(e.multiply(secret.r).mod(q)).mod(q);
-
-//        logger.info(MARKER, String.format("P.z1: %s", z1));
-//        logger.info(MARKER, String.format("P.z2: %s", z2));
-//        logger.info(MARKER, String.format("P.C: %s", statement.C));
 
         return new Sigma2PedersenProof(a, z1, z2);
     }
@@ -89,14 +81,6 @@ public class Sigma2Pedersen {
         // Compute challenge
         // e = hash(a, uvector)  in Zq
         BigInteger e = getChallenge(statement, a);
-//        logger.info(MARKER, String.format("V.p: %s", p));
-//        logger.info(MARKER, String.format("V.g: %s", g));
-//        logger.info(MARKER, String.format("V.h: %s", h));
-//        logger.info(MARKER, String.format("V.a: %s", a));
-//
-//        logger.info(MARKER, String.format("V.z1: %s", proof.z1));
-//        logger.info(MARKER, String.format("V.z2: %s", proof.z2));
-//        logger.info(MARKER, String.format("V.C: %s", statement.C));
 
         // g^z1 * h^z2 = a * C^e
         BigInteger left = g.modPow(proof.z1, p).multiply(h.modPow(proof.z2, p)).mod(p);

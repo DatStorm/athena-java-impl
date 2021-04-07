@@ -94,8 +94,6 @@ public class AthenaVote {
         //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)
         UVector uVector = new UVector(publicCredential, encryptedNegatedPrivateCredential, encryptedVote, BigInteger.valueOf(cnt));
 
-
-
         // Proof of knowledge of encryptedNegatedPrivateCredential
         Sigma2PedersenProof proofNegatedPrivateCredential = sigma2Pedersen.proveCipher(
                 encryptedNegatedPrivateCredential,
@@ -104,20 +102,6 @@ public class AthenaVote {
                 uVector,
                 pk);
 
-        logger.debug(MARKER, "AT.V: " + encryptedNegatedPrivateCredential.toFormattedString());
-        logger.debug(MARKER, "AT.V: " + proofNegatedPrivateCredential);
-
-        boolean verify_encryptedNegatedPrivateCredential = Sigma2Pedersen.verifyCipher(
-                encryptedNegatedPrivateCredential,
-                proofNegatedPrivateCredential,
-                uVector,
-                pk);
-
-        if (!verify_encryptedNegatedPrivateCredential) {
-            throw new RuntimeException("Must always succeed");
-        } else {
-            System.err.println("ALL GOOD!!!");
-        }
 
 
         // Proof on knowledge of encryptedVote

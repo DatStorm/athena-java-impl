@@ -151,13 +151,18 @@ public class ElGamal {
     }
 
 
+    @Deprecated
     public Integer exponentialDecrypt(Ciphertext cipherText, ElGamalSK sk) {
         return lookup(decrypt(cipherText, sk));
     }
 
+    public static Integer exponentialDecrypt(Ciphertext cipherText, Map<BigInteger, Integer> lookupTable, ElGamalSK sk) {
+        return lookup(lookupTable, decrypt(cipherText, sk));
+    }
+
 
     // Decrypting El Gamal encryption using secret key
-    public BigInteger decrypt(Ciphertext cipherText, ElGamalSK sk) {
+    public static BigInteger decrypt(Ciphertext cipherText, ElGamalSK sk) {
         BigInteger c1 = cipherText.c1;
         BigInteger c2 = cipherText.c2;
         BigInteger p = sk.getPK().getGroup().getP();
@@ -180,12 +185,12 @@ public class ElGamal {
         }
     }
 
-    public Integer lookup(Map<BigInteger, Integer> lookupTable, BigInteger element) {
+    public static Integer lookup(Map<BigInteger, Integer> lookupTable, BigInteger element) {
         if(!lookupTable.containsKey(element)){
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt: Possible votes = " + lookupTable.values() + CONSTANTS.ANSI_RESET);
-            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength);
+            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: ");
         } else {
             return lookupTable.get(element);
         }

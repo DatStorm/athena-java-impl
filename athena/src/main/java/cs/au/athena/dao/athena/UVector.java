@@ -53,4 +53,16 @@ public class UVector {
     }
 
 
+    @Override
+    public String toString() {
+        return "UVector{" +
+                "pudCred_c1=" + pudCred_c1 +
+                ", pudCred_c2=" + pudCred_c2 +
+                ", encNegPrivCred_c1=" + encNegPrivCred_c1 +
+                ", encNegPrivCred_c2=" + encNegPrivCred_c2 +
+                ", encVote_c1=" + encVote_c1 +
+                ", encVote_c2=" + encVote_c2 +
+                ", cnt=" + cnt +
+                '}';
+    }
 }

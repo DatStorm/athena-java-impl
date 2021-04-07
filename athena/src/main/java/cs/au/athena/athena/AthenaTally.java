@@ -139,8 +139,6 @@ public class AthenaTally {
             // Verify that the negated private credential is in the valid range
             // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersen commitment of (-d) using randomness s
             Ciphertext encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
-            logger.debug(MARKER, "AT.T: " + encryptedNegatedPrivateCredential.toFormattedString());
-            logger.debug(MARKER, "AT.T: " + ballot.proofNegatedPrivateCredential);
 
 
             // message/vector u used to make ballot proofs specific to the given ballot

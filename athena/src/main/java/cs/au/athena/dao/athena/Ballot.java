@@ -120,6 +120,7 @@ public class Ballot {
             ballot.encryptedVote = encryptedVote;
             ballot.proofVotePair = proofVotePair;
             ballot.proofNegatedPrivateCredential = proofNegatedPrivateCredential;
+            ballot.counter = counter;
             return ballot;
         }
     }
