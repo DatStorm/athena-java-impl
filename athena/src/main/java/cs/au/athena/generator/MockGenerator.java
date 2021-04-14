@@ -26,8 +26,7 @@ public class MockGenerator implements Generator {
 
         Group mockGroup = new Group(p, q, g);
 
-        int msgSpaceLength = CONSTANTS.MSG_SPACE_LENGTH;
-        this.elGamal = new ElGamal(mockGroup, msgSpaceLength,random);
+        this.elGamal = new ElGamal(mockGroup, nc,random);
     }
 
     @Override

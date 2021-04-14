@@ -13,10 +13,13 @@ public class PFDStruct {
     }
 
     public final Level type;
+
     public final Ciphertext ciphertextCombination;
-    public final BigInteger plaintext;
     public final Sigma4Proof proofCombination;
+
+    public final BigInteger plaintext;
     public final Sigma3Proof proofDecryptionOfCombination;
+
     public final Sigma3Proof proofDecryptionVote;
 
     private PFDStruct(Level type, Ciphertext ciphertextCombination, BigInteger plaintext, Sigma4Proof proofCombination, Sigma3Proof proofDecryptionOfCombination, Sigma3Proof proofDecryptionVote) {
@@ -35,7 +38,7 @@ public class PFDStruct {
                 ciphertextCombination,
                 plaintext,
                 proofCombination,
-                proofDecryptionOfCombination,
+                proofDecryptionOfCombination, //add BigInteger.ONE to pair
                 proofDecryptionVote);
     }
 

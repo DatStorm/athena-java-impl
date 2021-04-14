@@ -23,8 +23,6 @@ public class Sigma1 {
 
     //input pk, sk,
     public ProveKeyInfo ProveKey(PublicInfoSigma1 publicInfoSigma1, ElGamalSK sk, Randomness r, int kappa) {
-        kappa *= 8; //FIXME: Remove?
-
         Random random = new SecureRandom();
 
         // lists
@@ -130,8 +128,6 @@ public class Sigma1 {
 
 
     public boolean VerifyKey(PublicInfoSigma1 publicInfoSigma1, ProveKeyInfo rho, int kappa) {
-        kappa *= 8; //FIXME: Remove?
-
         // lists
         ArrayList<CoinFlipInfo> coinFlipInfoPairs = rho.getCoinFlipInfoPairs();
         BigInteger zeta = rho.getZeta();

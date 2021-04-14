@@ -1,6 +1,8 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.athena.strategy.Strategy;
+import cs.au.athena.factory.AthenaFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -20,15 +22,16 @@ public class AthenaRegister {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private static final Marker ATHENA_REGISTER_MARKER = MarkerFactory.getMarker("ATHENA-REGISTER");
 
-
     private BulletinBoard bb;
     private Random random;
     private Sigma1 sigma1;
     private ElGamal elGamal;
     private int kappa;
+    private Strategy strategy;
 
 
-    private AthenaRegister() {}
+    private AthenaRegister() {
+    }
 
 
     public RegisterStruct Register(PK_Vector pkv) {
@@ -44,7 +47,7 @@ public class AthenaRegister {
         BigInteger q = pkv.pk.group.q;
 
         //Generate nonce. aka private credential
-        BigInteger privateCredential = GENERATOR.generateUniqueNonce(BigInteger.ZERO,q,this.random); // a nonce in [0,q]
+        BigInteger privateCredential = GENERATOR.generateUniqueNonce(BigInteger.ZERO, q, this.random); // a nonce in [0,q]
 
         // Enc^{exp}_pk(d)  
         Ciphertext publicCredential = this.elGamal.exponentialEncrypt(privateCredential, pkv.pk);
@@ -52,55 +55,40 @@ public class AthenaRegister {
         // bold{d} = (pd, d) = (Enc_pk(g^d), d)
         CredentialTuple credentialTuple = new CredentialTuple(publicCredential, privateCredential);
 
-        this.bb.addPublicCredentitalToL(publicCredential);
-        
+        this.bb.addPublicCredentialToL(publicCredential);
+
         return new RegisterStruct(publicCredential, credentialTuple);
     }
 
 
     public static class Builder {
-        private BulletinBoard bb;
-        private Random random;
-        private Sigma1 sigma1;
-        private ElGamal elGamal;
+        private AthenaFactory factory;
         private Integer kappa;
+        private ElGamal elgamal;
 
 
-        public Builder setBB(BulletinBoard bb) {
-            this.bb = bb;
+        public Builder setFactory(AthenaFactory factory) {
+            this.factory = factory;
             return this;
         }
 
-        public Builder setRandom(Random random) {
-            this.random = random;
-            return this;
-        }
-
-        public Builder setSigma1(Sigma1 sigma1) {
-            this.sigma1 = sigma1;
-            return this;
-        }
-
-        public Builder setElGamal(ElGamal elgamal) {
-            this.elGamal = elgamal;
-            return this;
-        }
 
         public Builder setKappa(Integer kappa) {
             this.kappa = kappa;
             return this;
         }
 
+        public Builder setElGamal(ElGamal elgamal) {
+            this.elgamal = elgamal;
+            return this;
+        }
 
 
         public AthenaRegister build() {
             //Check that all fields are set
-            if (bb == null ||
-                random == null ||
-                sigma1 == null ||
-                kappa == null ||
-                elGamal == null
-
+            if (factory == null ||
+                    elgamal == null ||
+                    kappa == null
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
             }
@@ -108,11 +96,11 @@ public class AthenaRegister {
 
             //Construct Object
             AthenaRegister obj = new AthenaRegister();
-
-            obj.bb = this.bb;
-            obj.random = this.random;
-            obj.sigma1 = this.sigma1;
-            obj.elGamal = this.elGamal;
+            obj.bb = this.factory.getBulletinBoard();
+            obj.strategy = this.factory.getStrategy();
+            obj.random = this.factory.getRandom();
+            obj.sigma1 = this.factory.getSigma1();
+            obj.elGamal = this.elgamal;
             obj.kappa = this.kappa;
             return obj;
         }

@@ -1,5 +1,6 @@
 package cs.au.athena.athena;
 
+import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ public class AthenaImpl implements Athena {
     private final BulletinBoard bb;
     private final Random random;
     private final Sigma2Pedersen sigma2Pedersen;
+    private final Strategy currentStrategy;
     private ElGamal elgamal;
     private Mixnet mixnet;
     private BigInteger mc;
@@ -46,6 +48,7 @@ public class AthenaImpl implements Athena {
 
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
+        this.currentStrategy = athenaFactory.getStrategy();
         this.sigma1 = athenaFactory.getSigma1();
         this.sigma2Pedersen = athenaFactory.getSigma2Pedersen();
         this.bulletProof = athenaFactory.getBulletProof();
@@ -70,17 +73,13 @@ public class AthenaImpl implements Athena {
          * TODO: Add back the correct generator instead of mock!
          */
 //        Generator gen = new Gen(random, nc, bitlength); // Because elgamal needs a larger security param
-        Generator gen = new MockGenerator(random, nc, bitlength); //
+        Generator gen = new MockGenerator(this.random, nc, bitlength); // TODO: strategy call
 
         ElGamalSK sk = gen.generate();
         ElGamalPK pk = sk.pk;
         this.elgamal = gen.getElGamal();
-
         this.mixnet = athenaFactory.getMixnet(elgamal, pk);
-
-        PublicInfoSigma1 publicInfo = new PublicInfoSigma1(kappa, pk);
-        Randomness randR = new Randomness(this.random.nextLong());
-        ProveKeyInfo rho = sigma1.ProveKey(publicInfo, sk, randR, kappa);
+        ProveKeyInfo rho = sigma1.ProveKey(new PublicInfoSigma1(kappa, pk), sk, new Randomness(this.random.nextLong()), kappa); //TODO: strategy call
 
         // mb, mc is upper-bound by a polynomial in the security parameter.
         // TODO: Should these be updated
@@ -119,10 +118,11 @@ public class AthenaImpl implements Athena {
             return null;
         }
         return new AthenaRegister.Builder()
-                .setBB(this.bb)
-                .setRandom(this.random)
-                .setSigma1(this.sigma1)
+//                .setBB(this.bb)
+//                .setRandom(this.random)
+//                .setSigma1(this.sigma1)
                 .setElGamal(this.elgamal)
+                .setFactory(this.athenaFactory)
                 .setKappa(kappa)
                 .build()
                 .Register(pkv);

@@ -1,6 +1,7 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ public class AthenaTally {
     private Random random;
     private ElGamal elgamal;
     private BulletinBoard bb;
+    private Strategy strategy;
 
     private Sigma1 sigma1;
     private Bulletproof bulletProof;
@@ -86,7 +88,7 @@ public class AthenaTally {
 
 
         // Perform random mix
-        Pair<List<MixBallot>, MixProof> mixPair = mixnet(A);
+        Pair<List<MixBallot>, MixProof> mixPair = mixnet(A, pk);
         List<MixBallot> mixedBallots = mixPair.getLeft();
         MixProof mixProof = mixPair.getRight();
 
@@ -216,10 +218,10 @@ public class AthenaTally {
             Ballot ballot = ballots.get(i);
 
             // Homomorpically reencrypt(by raising to power n) ballot and decrypt
-            Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p);
+            Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p); // TODO: strategy call
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = ElGamal.decrypt(ci_prime, sk);
+            BigInteger noncedNegatedPrivateCredentialElement = ElGamal.decrypt(ci_prime, sk); // TODO: strategy call
 
 
             // Update map with highest counter entry.
@@ -229,14 +231,14 @@ public class AthenaTally {
             A.put(key, updatedValue);
 
             // Prove decryption
-            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredentialElement, sk, kappa);
+            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredentialElement, sk, kappa); // TODO: strategy call
 
             // Proove that the same nonce was used for all ballots.
             if (pfr.size() > 0) {
                 // Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
                 List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
                 List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
-                Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCiphertexts, nonce_n, kappa);
+                Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCiphertexts, nonce_n, kappa); // TODO: strategy call
 
                 pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, omega));
             } else {
@@ -272,20 +274,25 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Mix ballots
-    private Pair<List<MixBallot>, MixProof> mixnet(Map<MapAKey, MapAValue> A) {
+    private Pair<List<MixBallot>, MixProof> mixnet(Map<MapAKey, MapAValue> A, ElGamalPK pk) {
         // Cast to mix ballot list
         List<MixBallot> ballots = A.values().stream()
                 .map(MapAValue::toMixBallot)
                 .collect(Collectors.toList());
 
-        // Mix ballots
-        MixStruct mixStruct = this.mixnet.mix(ballots);
-        List<MixBallot> mixedBallots = mixStruct.mixedBallots;
+        //////////////////////////////// TODO: strategy call
 
-        // Prove mix
-        MixStatement statement = new MixStatement(ballots, mixedBallots);
-        MixProof mixProof = mixnet.proveMix(statement, mixStruct.secret, kappa);
-        assert mixnet.verify(statement, mixProof, kappa);
+        return this.strategy.proveMix(ballots, pk, kappa);
+        // Mix ballots
+//        MixStruct mixStruct = this.mixnet.mix(ballots, pk);
+//        List<MixBallot> mixedBallots = mixStruct.mixedBallots;
+//
+//        // Prove mix
+//        MixStatement statement = new MixStatement(ballots, mixedBallots);
+//        MixProof mixProof = mixnet.proveMix(statement, mixStruct.secret, pk, kappa);
+        ////////////////////////
+
+//        assert mixnet.verify(statement, mixProof, pk, kappa); // TODO: remove, waste of computing power
 
         return Pair.of(mixedBallots, mixProof);
     }
@@ -355,21 +362,6 @@ public class AthenaTally {
 
         return Pair.of(officialTally, pfd);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -14,7 +14,6 @@ public class ElGamal {
     private int messageSpaceLength;
     private Map<BigInteger, Integer> lookupTable;
 
-    @Deprecated
     public ElGamal(Group group, int messageSpaceLength, Random random) {
         if (messageSpaceLength < 0) {
             System.err.println("ERROR messageSpaceLength < 0");
@@ -53,13 +52,11 @@ public class ElGamal {
         return lookupTable;
     }
 
-    @Deprecated
     public ElGamal(int bitLength, int messageSpaceLength, Random random) {
         this(generateGroup(bitLength, random), messageSpaceLength, random);
 
     }
 
-    @Deprecated
     public static Group generateGroup(int bitLength, Random random) {
         // SECURE == 2048
         BigInteger p, q, g;
@@ -84,7 +81,6 @@ public class ElGamal {
         return new Group(p, q, g);
     }
 
-    @Deprecated
     public Group getDescription() {
         return group;
     }
@@ -197,7 +193,6 @@ public class ElGamal {
     }
 
     // Generate random sk
-    @Deprecated
     public ElGamalSK generateSK() {
         if (this.group == null) {
             System.out.println("group = null");
@@ -221,7 +216,7 @@ public class ElGamal {
 
 
     // Generating El Gamal public key from a specified secret key
-    @Deprecated
+
     public ElGamalPK generatePk(ElGamalSK sk) {
         BigInteger g = this.group.getG();
         BigInteger p = this.group.getP();
@@ -229,7 +224,6 @@ public class ElGamal {
         return new ElGamalPK(this.group, h); // return pk=(g,h)
     }
 
-    @Deprecated
     public BigInteger getP() {
         return this.group.getP();
     }
