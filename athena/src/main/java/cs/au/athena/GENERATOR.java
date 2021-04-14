@@ -4,11 +4,15 @@ import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.sigma.bulletproof.Bulletproof;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 public class GENERATOR {
+    private static final List<BigInteger> usedNonces = new ArrayList<>();
+
+    private GENERATOR() {}
 
     public static List<List<BigInteger>> generateRangeProofGenerators(ElGamalPK pk, int nc) {
 
@@ -26,5 +30,19 @@ public class GENERATOR {
 
         // Return generators
         return Arrays.asList(g_vector_vote, h_vector_vote);
+    }
+
+    public static BigInteger generateUniqueNonce(BigInteger from, BigInteger end, Random random) {
+        // Sample nonce
+        BigInteger nonce = UTIL.getRandomElement(from, end, random);
+
+        // Sample again while the nonce is not unique
+        while (usedNonces.contains(nonce)) {
+            nonce = UTIL.getRandomElement(from, end, random);
+        };
+
+        // We found a unique nonce, store and return
+        usedNonces.add(nonce);
+        return nonce;
     }
 }

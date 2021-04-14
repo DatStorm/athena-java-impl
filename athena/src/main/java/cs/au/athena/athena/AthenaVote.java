@@ -2,8 +2,6 @@ package cs.au.athena.athena;
 
 import cs.au.athena.UTIL;
 import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenProof;
-import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenSecret;
-import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenStatement;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -74,7 +72,6 @@ public class AthenaVote {
         Ciphertext publicCredential = credentialTuple.publicCredential;
         ElGamalPK pk = pkv.pk;
         BigInteger q = pk.group.q;
-        BigInteger p = pk.group.p;
 
         // Make negated private credential
         BigInteger negatedPrivateCredential = credentialTuple.privateCredential.negate().mod(q).add(q).mod(q);
@@ -123,7 +120,8 @@ public class AthenaVote {
         BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
         Pair<BulletproofProof, BulletproofProof> proofRangeOfVotePair = bulletProof.proveStatementArbitraryRange(stmnt_2, secret_2);
 
-        Ballot ballot = new Ballot.Builder()
+        // returns the vote.
+        return new Ballot.Builder()
                 .setPublicCredential(publicCredential)
                 .setEncryptedNegatedPrivateCredential(encryptedNegatedPrivateCredential)
                 .setEncryptedVote(encryptedVote)
@@ -131,9 +129,6 @@ public class AthenaVote {
                 .setProofNegatedPrivateCredential(proofNegatedPrivateCredential)
                 .setCounter(cnt)
                 .build();
-
-        // returns the vote.
-        return ballot;
     }
 
 

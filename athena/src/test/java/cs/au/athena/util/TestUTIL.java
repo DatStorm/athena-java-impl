@@ -1,7 +1,10 @@
 package cs.au.athena.util;
 
 
+import cs.au.athena.CONSTANTS;
 import cs.au.athena.UTIL;
+import cs.au.athena.dao.athena.ElectoralRoll;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 @RunWith(JUnitPlatform.class)
@@ -98,6 +102,31 @@ public class TestUTIL {
         assertFalse(UTIL.BIGINT_IN_RANGE(start,end,BigInteger.valueOf(20)));
 
     }
+    @Test
+    void TestProb() {
+        List<BigInteger> nonces = new ArrayList<>();
+
+        BigInteger q = CONSTANTS.ELGAMAL_32_BITS.ELGAMAL_Q;
+        int n = q.bitLength() - 1;
+        BigInteger endRange = BigInteger.TWO.modPow(BigInteger.valueOf(n), q).subtract(BigInteger.ONE); // [0; 2^n-1]
+        BigInteger cur = BigInteger.ONE;
+
+        int i = 0;
+
+        do{
+            nonces.add(cur);
+            cur = UTIL.getRandomElement(BigInteger.ZERO, endRange, new Random());
+            i++;
+
+        }while( !nonces.contains(cur));
+
+        System.out.println("cur:" + cur);
+        System.out.println("iterations it took to produce a nonce all ready used:" + i);
+        MatcherAssert.assertThat("", true, is(true));
+    }
+
+
+
 
 
 

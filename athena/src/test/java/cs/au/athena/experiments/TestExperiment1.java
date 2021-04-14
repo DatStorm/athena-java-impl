@@ -118,8 +118,6 @@ public class TestExperiment1 {
         registerVote(numVoters);
     }
 
-
-
     private void registerVote(int numVoters) {
         tallier.init();
         List<Voter> voters = new ArrayList<>(numVoters);

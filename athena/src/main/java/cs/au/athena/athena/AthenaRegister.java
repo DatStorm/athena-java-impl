@@ -1,6 +1,6 @@
 package cs.au.athena.athena;
 
-import cs.au.athena.UTIL;
+import cs.au.athena.GENERATOR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -32,8 +32,6 @@ public class AthenaRegister {
 
 
     public RegisterStruct Register(PK_Vector pkv) {
-
-
         if (!AthenaCommon.parsePKV(pkv)) {
             System.err.println("AthenaImpl.Register => ERROR: pkv null");
             return null;
@@ -43,13 +41,10 @@ public class AthenaRegister {
             System.err.println("AthenaImpl.Register => ERROR: VerifyKey(...) => false");
             return null;
         }
-
         BigInteger q = pkv.pk.group.q;
 
         //Generate nonce. aka private credential
-        int n = q.bitLength() - 1;
-        BigInteger endRange = BigInteger.TWO.modPow(BigInteger.valueOf(n), q).subtract(BigInteger.ONE); // [0; 2^n-1]
-        BigInteger privateCredential = UTIL.getRandomElement(BigInteger.ZERO, endRange, this.random); // a nonce in [0,2^{\lfloor \log_2 q \rfloor} -1]
+        BigInteger privateCredential = GENERATOR.generateUniqueNonce(BigInteger.ZERO,q,this.random); // a nonce in [0,q]
 
         // Enc^{exp}_pk(d)  
         Ciphertext publicCredential = this.elGamal.exponentialEncrypt(privateCredential, pkv.pk);

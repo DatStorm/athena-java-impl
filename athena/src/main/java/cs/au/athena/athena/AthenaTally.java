@@ -1,5 +1,6 @@
 package cs.au.athena.athena;
 
+import cs.au.athena.GENERATOR;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -140,7 +141,6 @@ public class AthenaTally {
             // ElGamal ciphertext (c1,c2) => use c2=g^(-d) h^s as Pedersen commitment of (-d) using randomness s
             Ciphertext encryptedNegatedPrivateCredential = ballot.getEncryptedNegatedPrivateCredential();
 
-
             // message/vector u used to make ballot proofs specific to the given ballot
             //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)
             UVector uVector = new UVector(publicCredential, encryptedNegatedPrivateCredential, ballot.getEncryptedVote(), BigInteger.valueOf(ballot.getCounter()));
@@ -162,7 +162,7 @@ public class AthenaTally {
             }
 
             // Verify that the vote is in the valid range
-            // ElGamal ciphertext (c1,c2) => use c2=g^(v) h^t as Pedersens' commitment of vote v using randomness t
+            // ElGamal ciphertext (c1,c2) => use c2=g^(v) h^t as Pedersen commitment of vote v using randomness t
             Ciphertext encryptedVote = ballot.getEncryptedVote();
 
             int nc = bb.retrieveNumberOfCandidates();
@@ -208,7 +208,7 @@ public class AthenaTally {
         Map<MapAKey, MapAValue> A = new HashMap<>();
 
         // Pick a nonce to mask public credentials.
-        BigInteger nonce_n = UTIL.getRandomElement(sk.pk.group.q, random);
+        BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
 
         // For each ballot.
         Ciphertext ci_prime_previous = null;
@@ -219,7 +219,7 @@ public class AthenaTally {
             Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p);
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = elgamal.decrypt(ci_prime, sk);
+            BigInteger noncedNegatedPrivateCredentialElement = ElGamal.decrypt(ci_prime, sk);
 
 
             // Update map with highest counter entry.
@@ -306,7 +306,7 @@ public class AthenaTally {
             Ciphertext encryptedVote = mixBallot.getEncryptedVote();
 
             // Apply a nonce to the combinedCredential
-            BigInteger nonce = UTIL.getRandomElement(BigInteger.ONE, q, random);
+            BigInteger nonce = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
             Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
 
             // Decrypt nonced combinedCredential
