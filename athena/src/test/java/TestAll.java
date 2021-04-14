@@ -1,28 +1,49 @@
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.platform.suite.api.ExcludeTags;
-import org.junit.platform.suite.api.IncludeTags;
-import org.junit.platform.suite.api.SelectPackages;
-import org.junit.runner.RunWith;
 
-@RunWith(JUnitPlatform.class)
-@SelectPackages("")
-@IncludeTags({
-        "TestElgamal",
-        // FIXME: add when done!
-//        "TestsSigma1",
-//        "TestsSigma2BulletProof",
-        "TestsSigma3",
-//        "TestsSigma4",
-        "TestsMixnets",
-        "TestsCiphertexts",
-        "TestsUTIL",
-        "TestsAthenaSetup",
-        "TestsAthenaRegister",
-        "TestsAthenaVote",
-        "TestsAthenaTally",
-        "TestsAthenaVerify",
+import cs.au.athena.athena.TestAthena;
+import cs.au.athena.bulletproof.TestBulletProofs;
+import cs.au.athena.elgamal.TestElgamalAll;
+import cs.au.athena.entities.TestEntities;
+import cs.au.athena.experiments.TestExperiments;
+import cs.au.athena.mixnet.TestMixnet;
+import cs.au.athena.sigmas.TestSigmas;
+import cs.au.athena.util.TestUTIL;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        TestAthena.class,
+        TestBulletProofs.class,
+        TestElgamalAll.class,
+        TestEntities.class,
+        TestExperiments.class,
+        TestMixnet.class,
+        TestSigmas.class,
+        TestUTIL.class,
 })
-//@ExcludeTags({""})
 public class TestAll {
 }
 
+
+
+
+//@RunWith(JUnitPlatform.class)
+//@SelectPackages("")
+//@IncludeTags({
+//        "TestElgamal",
+//        // FIXME: add when done!
+////        "TestsSigma1",
+////        "TestsSigma2BulletProof",
+//        "TestsSigma3",
+//        "TestEntities",
+////        "TestsSigma4",
+//        "TestsMixnets",
+//        "TestsCiphertexts",
+//        "TestsUTIL",
+//        "TestsAthenaSetup",
+//        "TestsAthenaRegister",
+//        "TestsAthenaVote",
+//        "TestsAthenaTally",
+//        "TestsAthenaVerify",
+//})
+////@ExcludeTags({""})

@@ -5,23 +5,33 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>athena</artifactId>
+    <artifactId>cs.au.athena.athena</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
 <!--        <maven.compiler.source>1.8</maven.compiler.source>-->
 <!--        <maven.compiler.target>1.8</maven.compiler.target>-->
         <junit.platform.version>1.5.2</junit.platform.version>
+        <junit.jupiter.version>5.7.0</junit.jupiter.version>
     </properties>
 
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-runner</artifactId>
@@ -47,28 +57,88 @@
             <version>3.11</version>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>com.google.caliper</groupId>-->
+<!--            <artifactId>caliper</artifactId>-->
+<!--            <version>RELEASE</version>-->
+<!--        </dependency>-->
+
+
+        <!-- LOGGING -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+
+
+
+<!--        <dependency>-->
+<!--            <groupId>com.jcabi</groupId>-->
+<!--            <artifactId>jcabi-log</artifactId>-->
+<!--            <version>0.17.1</version>-->
+<!--        </dependency>-->
+
 
     </dependencies>
 
     <build>
         <finalName>maven-unit-test</finalName>
         <plugins>
-
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
                 <configuration>
-                    <source>9</source>
-                    <target>9</target>
+<!--                    <source>${java.version}</source>-->
+<!--                    <target>${java.version}</target>-->
+                                        <source>9</source>
+                                        <target>9</target>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <dependencies>
+<!--                    <dependency>-->
+<!--                        <groupId>org.junit.platform</groupId>-->
+<!--                        <artifactId>junit-platform-surefire-provider</artifactId>-->
+<!--                        <version>1.2.0</version>-->
+<!--                    </dependency>-->
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>5.7.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
+
+<!--    <build>-->
+<!--        <finalName>maven-unit-test</finalName>-->
+<!--        <plugins>-->
+
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-surefire-plugin</artifactId>-->
+<!--                <version>3.0.0-M5</version>-->
+<!--            </plugin>-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <source>9</source>-->
+<!--                    <target>9</target>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
+<!--        </plugins>-->
+<!--    </build>-->
 
 </project>
