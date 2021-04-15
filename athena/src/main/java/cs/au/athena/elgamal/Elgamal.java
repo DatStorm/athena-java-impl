@@ -7,14 +7,14 @@ import cs.au.athena.UTIL;
 import java.math.BigInteger;
 import java.util.*;
 
-public class ElGamal {
+public class Elgamal {
     private Group group;
     private Random random;
 
     private int messageSpaceLength;
     private Map<BigInteger, Integer> lookupTable;
 
-    public ElGamal(Group group, int messageSpaceLength, Random random) {
+    public Elgamal(Group group, int messageSpaceLength, Random random) {
         if (messageSpaceLength < 0) {
             System.err.println("ERROR messageSpaceLength < 0");
         }
@@ -33,7 +33,7 @@ public class ElGamal {
         }
     }
 
-    public ElGamal(Group group, Random random) {
+    public Elgamal(Group group, Random random) {
         this.group = group;
         this.random = random;
     }
@@ -52,7 +52,8 @@ public class ElGamal {
         return lookupTable;
     }
 
-    public ElGamal(int bitLength, int messageSpaceLength, Random random) {
+    @Deprecated // Use generateGroup instead, and pass group to constructor.
+    public Elgamal(int bitLength, int messageSpaceLength, Random random) {
         this(generateGroup(bitLength, random), messageSpaceLength, random);
 
     }
@@ -98,7 +99,9 @@ public class ElGamal {
         return encrypt(messageElement, pk, r);
     }
 
-    public Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk, BigInteger r){
+
+
+    public static Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk, BigInteger r){
         BigInteger p = pk.group.p;
         BigInteger q = pk.group.q;
         r = r.mod(q).add(q).mod(q);

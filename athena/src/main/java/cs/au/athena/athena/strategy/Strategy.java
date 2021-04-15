@@ -1,6 +1,7 @@
 package cs.au.athena.athena.strategy;
 
 import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
@@ -46,7 +47,7 @@ public interface Strategy {
      * ProveMix_{M} & VerifyMix_{M}
      */
     // TODO: proveMix, what should it return (mixedBallots, proof) or proof
-    Pair<List<MixBallot>, MixProof> proveMix(List<MixBallot> ballots, ElGamalPK pk, int kappa);
+    MixedBallotsAndProof proveMix(List<MixBallot> ballots, ElGamalPK pk, int kappa);
 
     // TODO: verifyMix
 

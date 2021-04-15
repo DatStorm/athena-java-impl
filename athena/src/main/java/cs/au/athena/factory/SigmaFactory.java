@@ -1,6 +1,6 @@
 package cs.au.athena.factory;
 
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
@@ -15,5 +15,5 @@ public interface SigmaFactory {
     Bulletproof getBulletProof();
     Sigma3 getSigma3();
     Sigma4 getSigma4();
-    Mixnet getMixnet(ElGamal elgamal, ElGamalPK pk);
+    Mixnet getMixnet();
 }

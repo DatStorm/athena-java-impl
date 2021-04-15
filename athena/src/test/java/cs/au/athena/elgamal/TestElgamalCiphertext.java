@@ -15,7 +15,7 @@ import static org.junit.Assert.assertArrayEquals;
 @Tag("TestsCiphertexts")
 @DisplayName("Test CipherTexts")
 public class TestElgamalCiphertext {
-    private ElGamal elgamal;
+    private Elgamal elgamal;
     private ElGamalPK pk;
     private ElGamalSK sk;
 

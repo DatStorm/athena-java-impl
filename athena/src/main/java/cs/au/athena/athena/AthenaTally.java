@@ -1,6 +1,7 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
@@ -8,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import cs.au.athena.UTIL;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.dao.bulletproof.BulletproofExtensionStatement;
 import cs.au.athena.dao.bulletproof.BulletproofStatement;
@@ -19,7 +19,7 @@ import cs.au.athena.dao.mixnet.MixStruct;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.mixnet.Mixnet;
@@ -39,7 +39,7 @@ public class AthenaTally {
 
 
     private Random random;
-    private ElGamal elgamal;
+    private Elgamal elgamal;
     private BulletinBoard bb;
     private Strategy strategy;
 
@@ -88,9 +88,9 @@ public class AthenaTally {
 
 
         // Perform random mix
-        Pair<List<MixBallot>, MixProof> mixPair = mixnet(A, pk);
-        List<MixBallot> mixedBallots = mixPair.getLeft();
-        MixProof mixProof = mixPair.getRight();
+        MixedBallotsAndProof mixPair = mixnet(A, pk);
+        List<MixBallot> mixedBallots = mixPair.mixedBallots;
+        MixProof mixProof = mixPair.mixProof;
 
 
 //        assert mixedBallots.stream()
@@ -221,7 +221,7 @@ public class AthenaTally {
             Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p); // TODO: strategy call
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = ElGamal.decrypt(ci_prime, sk); // TODO: strategy call
+            BigInteger noncedNegatedPrivateCredentialElement = Elgamal.decrypt(ci_prime, sk); // TODO: strategy call
 
 
             // Update map with highest counter entry.
@@ -274,27 +274,16 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Mix ballots
-    private Pair<List<MixBallot>, MixProof> mixnet(Map<MapAKey, MapAValue> A, ElGamalPK pk) {
+    private MixedBallotsAndProof mixnet(Map<MapAKey, MapAValue> A, ElGamalPK pk) {
         // Cast to mix ballot list
         List<MixBallot> ballots = A.values().stream()
                 .map(MapAValue::toMixBallot)
                 .collect(Collectors.toList());
 
-        //////////////////////////////// TODO: strategy call
-
-        return this.strategy.proveMix(ballots, pk, kappa);
-        // Mix ballots
-//        MixStruct mixStruct = this.mixnet.mix(ballots, pk);
-//        List<MixBallot> mixedBallots = mixStruct.mixedBallots;
-//
-//        // Prove mix
-//        MixStatement statement = new MixStatement(ballots, mixedBallots);
-//        MixProof mixProof = mixnet.proveMix(statement, mixStruct.secret, pk, kappa);
-        ////////////////////////
 
 //        assert mixnet.verify(statement, mixProof, pk, kappa); // TODO: remove, waste of computing power
+        return this.strategy.proveMix(ballots, pk, kappa);
 
-        return Pair.of(mixedBallots, mixProof);
     }
 
     // Step 3 of tally. Nonce and decrypt ballots, and keep a tally of the eligible votes.
@@ -368,7 +357,7 @@ public class AthenaTally {
 
     public static class Builder {
         private Random random;
-        private ElGamal elgamal;
+        private Elgamal elgamal;
         private BulletinBoard bb;
 
         private Sigma1 sigma1;
@@ -414,7 +403,7 @@ public class AthenaTally {
             return this;
         }
 
-        public Builder setElgamal(ElGamal elgamal) {
+        public Builder setElgamal(Elgamal elgamal) {
             this.elgamal = elgamal;
             return this;
         }

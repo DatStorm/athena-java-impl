@@ -4,7 +4,7 @@ import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.BulletinBoard;
 import cs.au.athena.athena.strategy.SingleTallierStrategy;
 import cs.au.athena.athena.strategy.Strategy;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
@@ -46,8 +46,8 @@ public class MainAthenaFactory implements AthenaFactory {
     }
 
     @Override
-    public Mixnet getMixnet(ElGamal elgamal, ElGamalPK pk) {
-        return new Mixnet(elgamal, this.random);
+    public Mixnet getMixnet() {
+        return new Mixnet(this.random);
     }
 
     @Override

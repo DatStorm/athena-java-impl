@@ -2,8 +2,6 @@ package cs.au.athena.athena;
 
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.dao.mixnet.MixBallot;
-import cs.au.athena.dao.sigma3.Sigma3Proof;
-import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
 
 import java.math.BigInteger;
@@ -52,7 +50,7 @@ public class BulletinBoard {
     public List<BigInteger> retrieve_H_VectorVote() { return this.getH_vector_vote(); }
     public List<Ballot> retrievePublicBallots() { return this.getBallots(); }
     public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
-    public void addPublicCredentialToL(Ciphertext publicCredential_pd) { d();this.electoralRoll.add(publicCredential_pd); }
+    public void addPublicCredentitalToL(Ciphertext publicCredential_pd) { d();this.electoralRoll.add(publicCredential_pd); }
     public Map<Integer, Integer> retrieveTallyOfVotes() { return this.getTallyOfVotes(); }
 
 
@@ -61,14 +59,6 @@ public class BulletinBoard {
      */
     public void publishPKV(PK_Vector pkv) { this.setPkv(pkv); }
     public void publishPF(PFStruct pf) {  this.setPf(pf); } //d();
-
-    public void publishPFCiphertextCombination(int ballotIndex, int tallierIndex, Ciphertext c) {  this.pf.pfr.get(ballotIndex).ciphertextCombination.add(c);}
-    public void publishPFDecryptionShare(int ballotIndex, int tallierIndex, BigInteger d) {  this.pf.pfr.get(ballotIndex).plaintext_N.add(d);}
-    public void publishPFDecryptionProof(int ballotIndex, int tallierIndex, Sigma3Proof proof) {  this.pf.pfr.get(ballotIndex).proofDecryption.add(proof);}
-    public void publishPFCombinationProof(int ballotIndex, int tallierIndex, Sigma4Proof proof) {  this.pf.pfr.get(ballotIndex).proofCombination.add(proof);}
-
-
-
     public void publishNumberOfCandidates(int nc) { this.setNc(nc); }
     public void publish_G_VectorVote(List<BigInteger> g_vector_vote) { this.setG_vector_vote(g_vector_vote); }
     public void publishBallot(Ballot ballot) { this.addBallot(ballot); }

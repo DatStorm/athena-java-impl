@@ -1,10 +1,12 @@
 package cs.au.athena.athena.strategy;
 
 import cs.au.athena.athena.AthenaCommon;
-import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
+import cs.au.athena.dao.mixnet.MixStatement;
+import cs.au.athena.dao.mixnet.MixStruct;
 import cs.au.athena.dao.sigma1.ProveKeyInfo;
 import cs.au.athena.dao.sigma1.PublicInfoSigma1;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
@@ -14,6 +16,8 @@ import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.generator.Gen;
 import cs.au.athena.generator.Generator;
 import cs.au.athena.generator.MockGenerator;
+import cs.au.athena.mixnet.Mixnet;
+import cs.au.athena.sigma.Sigma4;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
@@ -34,6 +38,8 @@ public class SingleTallierStrategy implements Strategy {
         gen = new MockGenerator(random, nc, bitlength); // TODO: comment out if we want the generate "fresh" group, i.e. primes p and q
         return gen;
     }
+
+
 
     @Override
     public ProveKeyInfo proveKey(PublicInfoSigma1 publicInfo, ElGamalSK sk, Randomness r, int kappa) {
@@ -64,14 +70,19 @@ public class SingleTallierStrategy implements Strategy {
 
     @Override
     public boolean verifyCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, Sigma4Proof omega, ElGamalPK pk, int kappa) {
-        return athenaFactory.getSigma4().verifyCombination(pk, listOfCombinedCiphertexts, listCiphertexts, omega, kappa);
+        Sigma4 sigma4 = athenaFactory.getSigma4();
+
+        return sigma4.verifyCombination(pk, listOfCombinedCiphertexts, listCiphertexts, omega, kappa);
     }
 
     @Override
-    public Pair<List<MixBallot>, MixProof> proveMix(List<MixBallot> ballots, ElGamalPK pk, int kappa) {
-        //Wait for my turn to mix
+    public MixedBallotsAndProof proveMix(List<MixBallot> ballots, ElGamalPK pk, int kappa) {
+        // TODO: Wait for turn
 
-        return athenaFactory.getMixnet();
+        //Mix
+        Mixnet mixnet = athenaFactory.getMixnet();
+        return mixnet.mixAndProveMix(ballots, pk, kappa);
+
     }
 
     @Override
@@ -81,6 +92,8 @@ public class SingleTallierStrategy implements Strategy {
 
     @Override
     public BigInteger decrypt(Ciphertext c, ElGamalSK sk) {
-        return ElGamal.decrypt(c, sk);
+        return Elgamal.decrypt(c, sk);
     }
+
+
 }

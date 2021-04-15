@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.elgamal.Group;
 import cs.au.athena.factory.MainAthenaFactory;
@@ -30,7 +30,7 @@ public class TestAthenaVote {
     private ElGamalSK sk;
 
     private AthenaImpl athena;
-    private ElGamal elgamal;
+    private Elgamal elgamal;
 
 
     @BeforeEach
@@ -43,7 +43,7 @@ public class TestAthenaVote {
         PK_Vector pk_vector = msFactory.getBulletinBoard().retrievePK_vector();
         Group group = pk_vector.pk.group;
 
-        this.elgamal = new ElGamal(group, nc, msFactory.getRandom());
+        this.elgamal = new Elgamal(group, nc, msFactory.getRandom());
 
         pkv = pk_vector;
         sk = setup.sk;

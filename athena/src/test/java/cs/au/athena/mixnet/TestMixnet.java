@@ -1,5 +1,6 @@
 package cs.au.athena.mixnet;
 
+import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -9,7 +10,7 @@ import org.junit.runner.RunWith;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.mixnet.*;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.Factory;
@@ -31,7 +32,7 @@ public class TestMixnet {
 
     
     private Mixnet mixnet;
-    private ElGamal elgamal;
+    private Elgamal elgamal;
     private ElGamalPK pk;
     private ElGamalSK sk;
 
@@ -96,12 +97,11 @@ public class TestMixnet {
 
 
         List<MixBallot> ballots = Arrays.asList(mb1, mb2, mb3);
-        MixStruct mixStruct = mixnet.mix(ballots);
 
-        MixStatement statement = new MixStatement(ballots, mixStruct.mixedBallots);
-        MixProof proof = mixnet.proveMix(statement, mixStruct.secret, kappa);
+        MixedBallotsAndProof pair = mixnet.mixAndProveMix(ballots, pk, kappa);
+        MixStatement statement = new MixStatement(ballots, pair.mixedBallots);
 
-        boolean verification = mixnet.verify(statement, proof, kappa);
+        boolean verification = mixnet.verify(statement, pair.mixProof, pk, kappa);
 
         assertTrue("Should return 1: " + verification, verification);
     }

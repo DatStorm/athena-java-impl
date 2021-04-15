@@ -39,7 +39,7 @@ public class AthenaImpl implements Athena {
     private final Random random;
     private final Sigma2Pedersen sigma2Pedersen;
     private final Strategy currentStrategy;
-    private ElGamal elgamal;
+    private Elgamal elgamal;
     private Mixnet mixnet;
     private BigInteger mc;
     private boolean initialised;
@@ -78,7 +78,7 @@ public class AthenaImpl implements Athena {
         ElGamalSK sk = gen.generate();
         ElGamalPK pk = sk.pk;
         this.elgamal = gen.getElGamal();
-        this.mixnet = athenaFactory.getMixnet(elgamal, pk);
+        this.mixnet = athenaFactory.getMixnet();
         ProveKeyInfo rho = sigma1.ProveKey(new PublicInfoSigma1(kappa, pk), sk, new Randomness(this.random.nextLong()), kappa); //TODO: strategy call
 
         // mb, mc is upper-bound by a polynomial in the security parameter.

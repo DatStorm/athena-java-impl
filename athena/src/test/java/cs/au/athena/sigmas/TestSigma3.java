@@ -6,7 +6,7 @@ import cs.au.athena.sigma.Sigma3;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma3.Sigma3Statement;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.Factory;
@@ -31,7 +31,7 @@ public class TestSigma3 {
     @BeforeEach
     void setUp() {
         Factory factory = new MainFactory();
-        ElGamal elGamal = factory.getElgamal();
+        Elgamal elGamal = factory.getElgamal();
         ElGamalPK pk = factory.getPK();
         sk = factory.getSK();
         sigma3 = new Sigma3();
