@@ -31,16 +31,8 @@ public class AthenaImpl implements Athena {
     private static final Marker ATHENA_IMPL_MARKER = MarkerFactory.getMarker("ATHENA-IMPL");
 
     private final AthenaFactory athenaFactory;
-    private final Sigma1 sigma1;
-    private final Bulletproof bulletProof;
-    private final Sigma3 sigma3;
-    private final Sigma4 sigma4;
-    private final BulletinBoard bb;
-    private final Random random;
-    private final Sigma2Pedersen sigma2Pedersen;
     private final Strategy currentStrategy;
     private Elgamal elgamal;
-    private Mixnet mixnet;
     private BigInteger mc;
     private boolean initialised;
 
@@ -49,13 +41,6 @@ public class AthenaImpl implements Athena {
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
         this.currentStrategy = athenaFactory.getStrategy();
-        this.sigma1 = athenaFactory.getSigma1();
-        this.sigma2Pedersen = athenaFactory.getSigma2Pedersen();
-        this.bulletProof = athenaFactory.getBulletProof();
-        this.sigma3 = athenaFactory.getSigma3();
-        this.sigma4 = athenaFactory.getSigma4();
-        this.random = athenaFactory.getRandom();
-        this.bb = athenaFactory.getBulletinBoard();
         this.initialised = false;
     }
 
@@ -68,18 +53,20 @@ public class AthenaImpl implements Athena {
         }
 
         int bitlength = kappa * 8;
-        
+        Random random = athenaFactory.getRandom();
+        BulletinBoard bb = athenaFactory.getBulletinBoard();
+        Sigma1 sigma1 = athenaFactory.getSigma1();
+
         /**********
          * TODO: Add back the correct generator instead of mock!
          */
 //        Generator gen = new Gen(random, nc, bitlength); // Because elgamal needs a larger security param
-        Generator gen = new MockGenerator(this.random, nc, bitlength); // TODO: strategy call
+        Generator gen = new MockGenerator(random, nc, bitlength); // TODO: strategy call
 
         ElGamalSK sk = gen.generate();
         ElGamalPK pk = sk.pk;
         this.elgamal = gen.getElGamal();
-        this.mixnet = athenaFactory.getMixnet();
-        ProveKeyInfo rho = sigma1.ProveKey(new PublicInfoSigma1(kappa, pk), sk, new Randomness(this.random.nextLong()), kappa); //TODO: strategy call
+        ProveKeyInfo rho = sigma1.ProveKey(new PublicInfoSigma1(kappa, pk), sk, new Randomness(random.nextLong()), kappa); //TODO: strategy call
 
         // mb, mc is upper-bound by a polynomial in the security parameter.
         // TODO: Should these be updated
@@ -118,11 +105,8 @@ public class AthenaImpl implements Athena {
             return null;
         }
         return new AthenaRegister.Builder()
-//                .setBB(this.bb)
-//                .setRandom(this.random)
-//                .setSigma1(this.sigma1)
-                .setElGamal(this.elgamal)
                 .setFactory(this.athenaFactory)
+                .setElGamal(this.elgamal)
                 .setKappa(kappa)
                 .build()
                 .Register(pkv);
@@ -137,12 +121,8 @@ public class AthenaImpl implements Athena {
             return null;
         }
         return new AthenaVote.Builder()
-                .setSigma1(this.sigma1)
-                .setSigma2Pedersen(this.sigma2Pedersen)
-                .setBulletProof(this.bulletProof)
-                .setRandom(this.random)
+                .setFactory(this.athenaFactory)
                 .setElGamal(this.elgamal)
-                .setBB(this.bb)
                 .setKappa(kappa)
                 .build()
                 .Vote(credentialTuple, pkv, vote, cnt, nc);
@@ -158,14 +138,8 @@ public class AthenaImpl implements Athena {
             return null;
         }
         return new AthenaTally.Builder()
-                .setRandom(this.random)
+                .setFactory(this.athenaFactory)
                 .setElgamal(this.elgamal)
-                .setBb(this.bb)
-                .setSigma1(this.sigma1)
-                .setBulletProof(this.bulletProof)
-                .setSigma3(this.sigma3)
-                .setSigma4(this.sigma4)
-                .setMixnet(this.mixnet)
                 .setKappa(kappa)
                 .build()
                 .Tally(skv, nc);
@@ -180,12 +154,7 @@ public class AthenaImpl implements Athena {
             return false;
         }
         return new AthenaVerify.Builder()
-                .setSigma1(this.sigma1)
-                .setBulletproof(this.bulletProof)
-                .setSigma3(this.sigma3)
-                .setSigma4(this.sigma4)
-                .setMixnet(this.mixnet)
-                .setBB(this.bb)
+                .setFactory(this.athenaFactory)
                 .setMc(this.mc)
                 .setKappa(kappa)
                 .build()

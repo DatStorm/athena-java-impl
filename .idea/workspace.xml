@@ -5,64 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__ch_qos_logback_logback_classic_1_2_3.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__ch_qos_logback_logback_core_1_2_3.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_slf4j_slf4j_api_1_7_30.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/athena/cs.au.athena.athena.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/MixedBallotsAndProof.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_jetbrains_annotations_13_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_jetbrains_kotlin_kotlin_stdlib_1_4_20.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_jetbrains_kotlin_kotlin_stdlib_common_1_4_20.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_jetbrains_kotlin_kotlin_stdlib_jdk7_1_4_20.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_jetbrains_kotlin_kotlin_stdlib_jdk8_1_4_20.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_5_8_0_M1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_api_5_7_0.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_api_5_8_0_M1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_engine_5_8_0_M1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_engine_5_7_0.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_params_5_8_0_M1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_platform_junit_platform_commons_1_8_0_M1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_platform_junit_platform_commons_1_7_0.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_platform_junit_platform_engine_1_8_0_M1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_platform_junit_platform_engine_1_7_0.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/athena.iml" beforeDir="false" afterPath="$PROJECT_DIR$/athena/athena.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaRegister.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaRegister.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaTally.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaTally.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaVote.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaVote.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/BulletinBoardV2_0.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/BulletinBoardV2_0.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/SingleTallierStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/SingleTallierStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/dao/athena/BallotList.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/dao/athena/BallotList.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/dao/athena/PFStruct.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/dao/athena/PFStruct.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/dao/mixnet/MixStruct.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/dao/mixnet/MixStruct.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/elgamal/ElGamal.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/elgamal/Elgamal.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/AthenaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/AthenaFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/Factory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/MainAthenaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/MainAthenaFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/MainFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/MainFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/SigmaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/SigmaFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/generator/Gen.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/generator/Gen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/generator/Generator.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/generator/Generator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/generator/MockGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/generator/MockGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/mixnet/Mixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/mixnet/Mixnet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaVote.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaVote.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/elgamal/TestElgamal.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/elgamal/TestElgamal.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/elgamal/TestElgamalCiphertext.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/elgamal/TestElgamalCiphertext.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/mixnet/TestMixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/mixnet/TestMixnet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma2Pedersen.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma2Pedersen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma3.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma3.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma4.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma4.java" afterDir="false" />
     </list>
     <list id="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" name="Changes by datstorm" comment="">
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/BulletinBoard.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/BulletinBoard.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/BulletinBoardV2_0.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/BulletinBoardV2_0.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/SingleTallierStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/SingleTallierStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/Strategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/Strategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/dao/athena/PFStruct.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/dao/athena/PFStruct.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/elgamal/ElGamal.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/elgamal/Elgamal.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/mixnet/Mixnet.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/mixnet/Mixnet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaVote.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaVote.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,8 +93,19 @@
     </file>
     <file path="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaImpl.java">
       <ranges>
-        <range start1="41" end1="42" start2="41" end2="42" changelist="33926536-3b19-4dc0-9128-337d753f37db" />
-        <range start1="80" end1="81" start2="80" end2="81" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="33" end1="40" start2="33" end2="33" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="42" end1="43" start2="35" end2="35" changelist="33926536-3b19-4dc0-9128-337d753f37db" />
+        <range start1="51" end1="58" start2="43" end2="43" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="70" end1="71" start2="55" end2="59" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="75" end1="76" start2="63" end2="64" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="80" end1="82" start2="68" end2="69" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="120" end1="123" start2="107" end2="108" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="124" end1="125" start2="109" end2="109" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="139" end1="143" start2="123" end2="124" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="144" end1="145" start2="125" end2="125" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="160" end1="161" start2="140" end2="141" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="162" end1="168" start2="142" end2="142" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
+        <range start1="182" end1="188" start2="156" end2="157" changelist="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" />
       </ranges>
     </file>
     <file path="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java">
