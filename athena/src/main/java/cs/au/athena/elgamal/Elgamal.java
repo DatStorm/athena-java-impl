@@ -52,6 +52,7 @@ public class Elgamal {
         return lookupTable;
     }
 
+    @Deprecated // Use generateGroup instead, and pass group to constructor.
     public Elgamal(int bitLength, int messageSpaceLength, Random random) {
         this(generateGroup(bitLength, random), messageSpaceLength, random);
 
@@ -63,20 +64,15 @@ public class Elgamal {
         do {
             p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
             q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
-            
 
             // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
         } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
 
         g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
-
-
         if (p.bitLength() <= bitLength) {
             throw new RuntimeException("P, with bitLength " + p.bitLength() + ", is too small to encrypt numbers with bitlength " + bitLength);
         }
-
         assert g.modPow(q, p).equals(BigInteger.ONE) : "ElGamal group defined wrong, i.e. q definition is no good";
-        
 
         return new Group(p, q, g);
     }
@@ -98,13 +94,13 @@ public class Elgamal {
         return encrypt(messageElement, pk, r);
     }
 
-    public Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk, BigInteger r){
+    public static Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk, BigInteger r){
         BigInteger p = pk.group.p;
         BigInteger q = pk.group.q;
         r = r.mod(q).add(q).mod(q);
 
         // We dont know how to check group membership, but lets just check group order for safety.
-        assert messageElement.modPow(q, p).equals(BigInteger.ONE);
+        assert messageElement.modPow(q, p).equals(BigInteger.ONE) : "This Group order fucks up!!!";
 
         // Extract public key
         BigInteger g = pk.group.g;
@@ -167,14 +163,7 @@ public class Elgamal {
     }
 
     public Integer lookup(BigInteger element) {
-        if(!lookupTable.containsKey(element)){
-            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
-            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
-            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt: Possible votes = " + lookupTable.values() + CONSTANTS.ANSI_RESET);
-            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + messageSpaceLength);
-        } else {
-            return lookupTable.get(element);
-        }
+        return lookup(this.lookupTable,element);
     }
 
     public static Integer lookup(Map<BigInteger, Integer> lookupTable, BigInteger element) {

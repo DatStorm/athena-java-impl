@@ -2,6 +2,7 @@ package cs.au.athena.factory;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.strategy.DistributedStrategy;
 import cs.au.athena.athena.strategy.SingleTallierStrategy;
 import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.elgamal.Elgamal;
@@ -22,23 +23,42 @@ public class MainAthenaFactory implements AthenaFactory {
     private final Strategy strategy;
 
 
-    public MainAthenaFactory() {
+    public MainAthenaFactory(AthenaFactory.STRATEGY strategyChoice) {
         this.random = new Random(CONSTANTS.RANDOM_SEED);
-        this.strategy = new SingleTallierStrategy(this);
+
+        switch (strategyChoice) {
+            case SINGLE:
+                this.strategy = new SingleTallierStrategy(this);
+                break;
+            case DISTRIBUTED:
+                this.strategy = new DistributedStrategy(this);
+                break;
+            default:
+                throw new IllegalArgumentException("Not a valid strategy");
+        }
+
+
     }
 
+    @Override
+    public Sigma1 getSigma1() {
+        return new Sigma1();
+    }
 
     @Override
-    public Sigma1 getSigma1() { return new Sigma1(); }
+    public Bulletproof getBulletProof() {
+        return new Bulletproof(this.random);
+    }
 
     @Override
-    public Bulletproof getBulletProof() { return new Bulletproof(this.random); }
+    public Sigma2Pedersen getSigma2Pedersen() {
+        return new Sigma2Pedersen(this.random);
+    }
 
     @Override
-    public Sigma2Pedersen getSigma2Pedersen() { return new Sigma2Pedersen(this.random); }
-
-    @Override
-    public Sigma3 getSigma3() { return new Sigma3(); }
+    public Sigma3 getSigma3() {
+        return new Sigma3();
+    }
 
     @Override
     public Sigma4 getSigma4() {
@@ -46,12 +66,14 @@ public class MainAthenaFactory implements AthenaFactory {
     }
 
     @Override
-    public Mixnet getMixnet(Elgamal elgamal, ElGamalPK pk) {
-        return new Mixnet(elgamal, this.random);
+    public Mixnet getMixnet() {
+        return new Mixnet(this.random);
     }
 
     @Override
-    public Random getRandom() { return this.random; }
+    public Random getRandom() {
+        return this.random;
+    }
 
     @Override
     public BulletinBoard getBulletinBoard() {
@@ -59,7 +81,9 @@ public class MainAthenaFactory implements AthenaFactory {
     }
 
     @Override
-    public Strategy getStrategy() { return this.strategy; }
+    public Strategy getStrategy() {
+        return this.strategy;
+    }
 
 
 }

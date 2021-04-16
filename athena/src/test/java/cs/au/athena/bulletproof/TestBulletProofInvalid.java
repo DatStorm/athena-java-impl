@@ -1,10 +1,7 @@
 package cs.au.athena.bulletproof;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import cs.au.athena.UTIL;
 import cs.au.athena.dao.athena.UVector;
 import cs.au.athena.dao.bulletproof.BulletproofExtensionStatement;
@@ -65,31 +62,35 @@ public class TestBulletProofInvalid {
 
     @Test
     void TestSigma2BulletProofOutOfRange() {
-        // m \not in [0, 2^5 -1] = [0, 31]
-        BigInteger m = BigInteger.valueOf(32);
-        int n = 5;
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            // m \not in [0, 2^5 -1] = [0, 31]
+            BigInteger m = BigInteger.valueOf(32);
+            int n = 5;
 
-        // \gamma \in Z_q =[0,q-1]
-        BigInteger gamma = UTIL.getRandomElement(q, random);
-        BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
-        List<BigInteger> g_vector = group.newGenerators(n, random);
-        List<BigInteger> h_vector = group.newGenerators(n, random);
+            // \gamma \in Z_q =[0,q-1]
+            BigInteger gamma = UTIL.getRandomElement(q, random);
+            BigInteger V = PedersenCommitment.commit(g, m, h, gamma, p);
+            List<BigInteger> g_vector = group.newGenerators(n, random);
+            List<BigInteger> h_vector = group.newGenerators(n, random);
 
-        BulletproofStatement stmnt = new BulletproofStatement.Builder()
-                .setN(n)
-                .setV(V) // g^v h^t
-                .setPK(pk)
-                .set_G_Vector(g_vector)
-                .set_H_Vector(h_vector)
-                .setUVector(fakeUVector)
-                .build();
+            BulletproofStatement stmnt = new BulletproofStatement.Builder()
+                    .setN(n)
+                    .setV(V) // g^v h^t
+                    .setPK(pk)
+                    .set_G_Vector(g_vector)
+                    .set_H_Vector(h_vector)
+                    .setUVector(fakeUVector)
+                    .build();
 
 
-        BulletproofSecret secret = new BulletproofSecret(m, gamma);
-        BulletproofProof proof = bulletproof.proveStatement(stmnt, secret);
+            BulletproofSecret secret = new BulletproofSecret(m, gamma);
+            BulletproofProof proof = bulletproof.proveStatement(stmnt, secret);
 
-        boolean verification = bulletproof.verifyStatement(stmnt, proof);
-        assertFalse("Should return 0", verification);
+            boolean verification = Bulletproof.verifyStatement(stmnt, proof);
+            // should trow exception..
+//            assertFalse("Should return 0", verification);
+        });
+
     }
     
     

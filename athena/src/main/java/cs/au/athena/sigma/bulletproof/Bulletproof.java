@@ -313,7 +313,7 @@ public class Bulletproof {
     }
 
 
-    public boolean verifyStatementArbitraryRange(BulletproofExtensionStatement statement, Pair<BulletproofProof, BulletproofProof> proofs) {
+    public static boolean verifyStatementArbitraryRange(BulletproofExtensionStatement statement, Pair<BulletproofProof, BulletproofProof> proofs) {
         BulletproofStatement bfStatement = statement.bulletproofStatement;
 
         // Verifying both that m in [0, 2^n-1] and that q-m in [0, 2^n-1].
@@ -387,7 +387,7 @@ public class Bulletproof {
         return true;
     }
 
-    public boolean verifyStatement(BulletproofStatement statement, BulletproofProof proof) {
+    public static boolean verifyStatement(BulletproofStatement statement, BulletproofProof proof) {
         // Get the publicly known info
         int n = statement.n;
         BigInteger V = statement.V;
@@ -486,7 +486,7 @@ public class Bulletproof {
         return true;
     }
 
-    public BigInteger delta(BigInteger y, BigInteger z, int n, BigInteger q) {
+    private static BigInteger delta(BigInteger y, BigInteger z, int n, BigInteger q) {
         List<BigInteger> _1_vector_n = generateList(BigInteger.ONE, n, q);
         List<BigInteger> _2_vector_n = generateList(BigInteger.TWO, n, q);
         List<BigInteger> y_vector_n = generateList(y, n, q);
@@ -502,12 +502,12 @@ public class Bulletproof {
                 .subtract(z_3_mult_innerProd_1n_2n).mod(q).add(q).mod(q);
     }
 
-    private List<BigInteger> generateConstList(BigInteger val, int repitions) {
+    private static List<BigInteger> generateConstList(BigInteger val, int repitions) {
         return Collections.nCopies(repitions, val);
     }
 
     // k_vector^n = [k^0, k^1, k^2,..., k^{n-1}] (mod order)
-    public List<BigInteger> generateList(BigInteger val, int n, BigInteger order) {
+    public static List<BigInteger> generateList(BigInteger val, int n, BigInteger order) {
         List<BigInteger> vector = new ArrayList<>();
 
         for (int i = 0; i < n; i++) {
@@ -529,14 +529,14 @@ public class Bulletproof {
     }
 
     // compute x*g for vector g and biginteger x
-    private List<BigInteger> generateListMultWithBigInt(List<BigInteger> list, BigInteger val, BigInteger order) {
+    private static List<BigInteger> generateListMultWithBigInt(List<BigInteger> list, BigInteger val, BigInteger order) {
         return list.stream()
                 .map(element -> val.multiply(element).mod(order))
                 .collect(Collectors.toList());
     }
 
     // compute a+b for vectors a and b
-    private List<BigInteger> generateListAddVectors(List<BigInteger> list_a, List<BigInteger> list_b, BigInteger order) {
+    private static List<BigInteger> generateListAddVectors(List<BigInteger> list_a, List<BigInteger> list_b, BigInteger order) {
         return Streams.zip(list_a.stream(), list_b.stream(), (bigInt_a, bigInt_b) -> bigInt_a.add(bigInt_b).mod(order)).collect(Collectors.toList());
     }
 

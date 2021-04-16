@@ -12,4 +12,12 @@ public class CredentialTuple {
         this.publicCredential = publicCredential;
         this.privateCredential = privateCredential;
     }
+
+    @Override
+    public String toString() {
+        return "CredentialTuple{" +
+                "publicCredential=" + publicCredential +
+                ", privateCredential=" + privateCredential +
+                '}';
+    }
 }

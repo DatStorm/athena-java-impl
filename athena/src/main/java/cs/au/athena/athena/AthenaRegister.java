@@ -24,7 +24,6 @@ public class AthenaRegister {
 
     private BulletinBoard bb;
     private Random random;
-    private Sigma1 sigma1;
     private Elgamal elGamal;
     private int kappa;
     private Strategy strategy;
@@ -33,17 +32,17 @@ public class AthenaRegister {
     private AthenaRegister() {
     }
 
-
     public RegisterStruct Register(PK_Vector pkv) {
         if (!AthenaCommon.parsePKV(pkv)) {
-            System.err.println("AthenaImpl.Register => ERROR: pkv null");
+            System.err.println("AthenaRegister.Register => ERROR: pkv null");
             return null;
         }
 
-        if (!AthenaCommon.verifyKey(this.sigma1, pkv, this.kappa)) {
-            System.err.println("AthenaImpl.Register => ERROR: VerifyKey(...) => false");
+        if (!this.strategy.verifyKey(pkv.pk, pkv.rho, this.kappa)) {
+            System.err.println("AthenaRegister.Register => ERROR: VerifyKey(...) => false");
             return null;
         }
+
         BigInteger q = pkv.pk.group.q;
 
         //Generate nonce. aka private credential
@@ -54,7 +53,6 @@ public class AthenaRegister {
 
         // bold{d} = (pd, d) = (Enc_pk(g^d), d)
         CredentialTuple credentialTuple = new CredentialTuple(publicCredential, privateCredential);
-
         this.bb.addPublicCredentialToL(publicCredential);
 
         return new RegisterStruct(publicCredential, credentialTuple);
@@ -95,14 +93,13 @@ public class AthenaRegister {
 
 
             //Construct Object
-            AthenaRegister obj = new AthenaRegister();
-            obj.bb = this.factory.getBulletinBoard();
-            obj.strategy = this.factory.getStrategy();
-            obj.random = this.factory.getRandom();
-            obj.sigma1 = this.factory.getSigma1();
-            obj.elGamal = this.elgamal;
-            obj.kappa = this.kappa;
-            return obj;
+            AthenaRegister athenaRegister = new AthenaRegister();
+            athenaRegister.bb = this.factory.getBulletinBoard();
+            athenaRegister.strategy = this.factory.getStrategy();
+            athenaRegister.random = this.factory.getRandom();
+            athenaRegister.elGamal = this.elgamal;
+            athenaRegister.kappa = this.kappa;
+            return athenaRegister;
         }
     }
 }

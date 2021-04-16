@@ -15,5 +15,5 @@ public interface SigmaFactory {
     Bulletproof getBulletProof();
     Sigma3 getSigma3();
     Sigma4 getSigma4();
-    Mixnet getMixnet(Elgamal elgamal, ElGamalPK pk);
+    Mixnet getMixnet();
 }

@@ -85,12 +85,12 @@ public class TestBulletProof {
 
         BigInteger two = BigInteger.TWO;
         BigInteger order = BigInteger.valueOf(100L);
-        List<BigInteger> list = bulletproof.generateList(two, n, order);
+        List<BigInteger> list = Bulletproof.generateList(two, n, order);
         assertArrayEquals("should be the same", Stream.of(1, 2, 4, 8, 16).map(BigInteger::valueOf).toArray(), list.toArray());
 
         BigInteger val = BigInteger.valueOf(5);
         BigInteger order2 = BigInteger.valueOf(100L);
-        List<BigInteger> list2 = bulletproof.generateList(val, n, order2);
+        List<BigInteger> list2 = Bulletproof.generateList(val, n, order2);
         assertArrayEquals("should be the same", Stream.of(1, 5, 25, 25, 25).map(BigInteger::valueOf).toArray(), list2.toArray());
     }
 
@@ -150,7 +150,7 @@ public class TestBulletProof {
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         BulletproofProof proof = bulletproof.proveStatement(stmnt, secret);
 
-        boolean verification = bulletproof.verifyStatement(stmnt, proof);
+        boolean verification = Bulletproof.verifyStatement(stmnt, proof);
 
         assertTrue("Should return 1", verification);
 
@@ -184,7 +184,7 @@ public class TestBulletProof {
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         Pair<BulletproofProof, BulletproofProof> proofPair = bulletproof.proveStatementArbitraryRange(stmnt, secret);
 
-        boolean verification = bulletproof.verifyStatementArbitraryRange(stmnt, proofPair);
+        boolean verification = Bulletproof.verifyStatementArbitraryRange(stmnt, proofPair);
 
         assertThat("Should be 1", verification, is(true));
     }
@@ -217,7 +217,7 @@ public class TestBulletProof {
         BulletproofSecret secret = new BulletproofSecret(m, gamma);
         Pair<BulletproofProof, BulletproofProof> proofPair = bulletproof.proveStatementArbitraryRange(stmnt, secret);
 
-        boolean verification = bulletproof.verifyStatementArbitraryRange(stmnt, proofPair);
+        boolean verification = Bulletproof.verifyStatementArbitraryRange(stmnt, proofPair);
 
         assertThat("Should be 1", verification, is(true));
     }

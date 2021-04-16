@@ -10,7 +10,8 @@ import java.util.Random;
 
 public class MockGenerator implements Generator {
     private final Elgamal elGamal;
-    
+
+    @Deprecated // Use ElGamal directly? new ElGamal
     public MockGenerator(Random random, int nc, int bitlength) {
 
         if(random == null){

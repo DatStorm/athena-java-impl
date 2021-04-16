@@ -1,8 +1,6 @@
-package cs.au.athena.athena;
+package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.dao.athena.Ballot;
-import cs.au.athena.dao.mixnet.MixBallot;
-import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
@@ -21,6 +19,11 @@ public class BulletinBoardV2_0 {
             single_instance = new BulletinBoardV2_0();
         }
         return single_instance;
+    }
+
+
+    private BulletinBoardV2_0(){
+
     }
 
 
@@ -110,11 +113,6 @@ public class BulletinBoardV2_0 {
 
     // For each tallier
     List<MixedBallotsAndProof> mixAndProofs;
-    class MixedBallotsAndProof {
-        // Mixnet & proof
-        List<MixBallot> mixedBallots;
-        MixProof mixProof;
-    }
 
     // For each ballot (generation pfd)
     class PFD {

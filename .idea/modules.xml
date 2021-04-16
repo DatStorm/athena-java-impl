@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/athena/athena.iml" filepath="$PROJECT_DIR$/athena/athena.iml" />
+      <module fileurl="file://$PROJECT_DIR$/athena/cs.au.athena.athena.iml" filepath="$PROJECT_DIR$/athena/cs.au.athena.athena.iml" />
     </modules>
   </component>
 </project>

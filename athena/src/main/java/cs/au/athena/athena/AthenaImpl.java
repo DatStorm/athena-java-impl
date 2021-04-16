@@ -1,7 +1,6 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.athena.strategy.Strategy;
-import cs.au.athena.sigma.Sigma2Pedersen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -10,16 +9,8 @@ import cs.au.athena.GENERATOR;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.dao.sigma1.ProveKeyInfo;
-import cs.au.athena.dao.sigma1.PublicInfoSigma1;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
-import cs.au.athena.generator.Generator;
-import cs.au.athena.generator.MockGenerator;
-import cs.au.athena.mixnet.Mixnet;
-import cs.au.athena.sigma.Sigma1;
-import cs.au.athena.sigma.Sigma3;
-import cs.au.athena.sigma.Sigma4;
-import cs.au.athena.sigma.bulletproof.Bulletproof;
 
 
 import java.lang.invoke.MethodHandles;
@@ -31,8 +22,8 @@ public class AthenaImpl implements Athena {
     private static final Marker ATHENA_IMPL_MARKER = MarkerFactory.getMarker("ATHENA-IMPL");
 
     private final AthenaFactory athenaFactory;
-    private final Strategy currentStrategy;
-    private Elgamal elgamal;
+    private final Strategy strategy;
+    private Elgamal elgamalWithLookUpTable;
     private BigInteger mc;
     private boolean initialised;
 
@@ -40,7 +31,7 @@ public class AthenaImpl implements Athena {
 
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
-        this.currentStrategy = athenaFactory.getStrategy();
+        this.strategy = athenaFactory.getStrategy();
         this.initialised = false;
     }
 
@@ -53,26 +44,23 @@ public class AthenaImpl implements Athena {
         }
 
         int bitlength = kappa * 8;
-        Random random = athenaFactory.getRandom();
         BulletinBoard bb = athenaFactory.getBulletinBoard();
-        Sigma1 sigma1 = athenaFactory.getSigma1();
+        Random random = athenaFactory.getRandom();
 
-        /**********
-         * TODO: Add back the correct generator instead of mock!
-         */
-//        Generator gen = new Gen(random, nc, bitlength); // Because elgamal needs a larger security param
-        Generator gen = new MockGenerator(random, nc, bitlength); // TODO: strategy call
+        // Get the group
+        Group group = strategy.getGroup(bitlength, random);
 
-        ElGamalSK sk = gen.generate();
-        ElGamalPK pk = sk.pk;
-        this.elgamal = gen.getElGamal();
-        ProveKeyInfo rho = sigma1.ProveKey(new PublicInfoSigma1(kappa, pk), sk, new Randomness(random.nextLong()), kappa); //TODO: strategy call
+        // Create elgamal and generate keys
+        ElGamalSK sk = strategy.getElGamalSK(group, random); // Dependent on the strategy this will be either the full sk or a share of it.
+        ElGamalPK pk = strategy.getElGamalPK(sk); // TODO: will this be pk or h_i ?
+        ProveKeyInfo rho = strategy.proveKey(pk, sk, new Randomness(random.nextLong()), kappa);
+
+        this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
 
         // mb, mc is upper-bound by a polynomial in the security parameter.
         // TODO: Should these be updated
         int mb = 1024; // TODO: look at the ElGamal test and find a
         this.mc = BigInteger.valueOf(1024);
-
 
         logger.info(ATHENA_IMPL_MARKER, "Setup(...) => generators");
         List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, nc);
@@ -106,7 +94,7 @@ public class AthenaImpl implements Athena {
         }
         return new AthenaRegister.Builder()
                 .setFactory(this.athenaFactory)
-                .setElGamal(this.elgamal)
+                .setElGamal(this.elgamalWithLookUpTable)
                 .setKappa(kappa)
                 .build()
                 .Register(pkv);
@@ -122,7 +110,7 @@ public class AthenaImpl implements Athena {
         }
         return new AthenaVote.Builder()
                 .setFactory(this.athenaFactory)
-                .setElGamal(this.elgamal)
+                .setElGamal(this.elgamalWithLookUpTable)
                 .setKappa(kappa)
                 .build()
                 .Vote(credentialTuple, pkv, vote, cnt, nc);
@@ -137,9 +125,12 @@ public class AthenaImpl implements Athena {
             System.err.println("AthenaImpl.Tally => ERROR: System not initialised call .Setup before hand");
             return null;
         }
+
+
+
         return new AthenaTally.Builder()
                 .setFactory(this.athenaFactory)
-                .setElgamal(this.elgamal)
+                .setElgamal(this.elgamalWithLookUpTable)
                 .setKappa(kappa)
                 .build()
                 .Tally(skv, nc);
@@ -160,6 +151,5 @@ public class AthenaImpl implements Athena {
                 .build()
                 .Verify(pkv);
     }
-
 }
 

@@ -1,5 +1,6 @@
 package cs.au.athena.mixnet;
 
+import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -43,7 +44,7 @@ public class TestMixnet {
         sk = factory.getSK();
         Random random = factory.getRandom();
 
-        mixnet = new Mixnet(elgamal, pk, random);
+        mixnet = new Mixnet(random);
 
     }
 
@@ -71,10 +72,10 @@ public class TestMixnet {
         BigInteger p = pk.getGroup().getP();
         MixBallot mult = mb1.multiply(mb2,p);
 
-        BigInteger dec_c1 = elgamal.decrypt(mult.getCombinedCredential(), sk);
+        BigInteger dec_c1 = Elgamal.decrypt(mult.getCombinedCredential(), sk);
         assertEquals("should be ??", g.modPow(BigInteger.valueOf(c),p), dec_c1);
         
-        BigInteger dec_c2 = elgamal.decrypt(mult.getEncryptedVote(), sk);
+        BigInteger dec_c2 = Elgamal.decrypt(mult.getEncryptedVote(), sk);
         assertEquals("should be ??", g.modPow(BigInteger.valueOf(vc),p), dec_c2);
     }
 
@@ -96,12 +97,11 @@ public class TestMixnet {
 
 
         List<MixBallot> ballots = Arrays.asList(mb1, mb2, mb3);
-        MixStruct mixStruct = mixnet.mix(ballots);
 
-        MixStatement statement = new MixStatement(ballots, mixStruct.mixedBallots);
-        MixProof proof = mixnet.proveMix(statement, mixStruct.secret, kappa);
+        MixedBallotsAndProof pair = mixnet.mixAndProveMix(ballots, pk, kappa);
+        MixStatement statement = new MixStatement(ballots, pair.mixedBallots);
 
-        boolean verification = mixnet.verify(statement, proof, kappa);
+        boolean verification = mixnet.verify(statement, pair.mixProof, pk, kappa);
 
         assertTrue("Should return 1: " + verification, verification);
     }

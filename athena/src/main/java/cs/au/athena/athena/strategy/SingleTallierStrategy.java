@@ -1,11 +1,14 @@
 package cs.au.athena.athena.strategy;
 
+import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.AthenaCommon;
+
+import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
+import cs.au.athena.dao.mixnet.MixStatement;
 import cs.au.athena.dao.sigma1.ProveKeyInfo;
-import cs.au.athena.dao.sigma1.PublicInfoSigma1;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.*;
@@ -13,7 +16,9 @@ import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.generator.Gen;
 import cs.au.athena.generator.Generator;
 import cs.au.athena.generator.MockGenerator;
-import org.apache.commons.lang3.tuple.Pair;
+import cs.au.athena.mixnet.Mixnet;
+import cs.au.athena.sigma.Sigma1;
+import cs.au.athena.sigma.Sigma4;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -35,13 +40,29 @@ public class SingleTallierStrategy implements Strategy {
     }
 
     @Override
-    public ProveKeyInfo proveKey(PublicInfoSigma1 publicInfo, ElGamalSK sk, Randomness r, int kappa) {
-        return athenaFactory.getSigma1().ProveKey(publicInfo, sk, r, kappa);
+    public Group getGroup(int bitlength, Random random) {
+        // return Group.generateGroup(bitlength, random);
+        return CONSTANTS.ELGAMAL_CURRENT.GROUP;
     }
 
     @Override
-    public boolean verifyKey(PublicInfoSigma1 publicInfoSigma1, ProveKeyInfo rho, int kappa) {
-        return athenaFactory.getSigma1().VerifyKey(publicInfoSigma1, rho, kappa);
+    public ElGamalSK getElGamalSK(Group group, Random random) {
+        return Elgamal.generateSK(group, random);
+    }
+
+    @Override
+    public ElGamalPK getElGamalPK(ElGamalSK sk) { return sk.pk; }
+
+    @Override
+    public ProveKeyInfo proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
+        Sigma1 sigma1 = athenaFactory.getSigma1();
+        return sigma1.ProveKey(pk, sk, r, kappa);
+    }
+
+    @Override
+    public boolean verifyKey(ElGamalPK pk, ProveKeyInfo rho, int kappa) {
+        Sigma1 sigma1 = athenaFactory.getSigma1();
+        return sigma1.VerifyKey(pk, rho, kappa);
     }
 
     @Override
@@ -63,15 +84,23 @@ public class SingleTallierStrategy implements Strategy {
 
     @Override
     public boolean verifyCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, Sigma4Proof omega, ElGamalPK pk, int kappa) {
-        return athenaFactory.getSigma4().verifyCombination(pk, listOfCombinedCiphertexts, listCiphertexts, omega, kappa);
+        Sigma4 sigma4 = athenaFactory.getSigma4();
+
+        return sigma4.verifyCombination(pk, listOfCombinedCiphertexts, listCiphertexts, omega, kappa);
     }
 
     @Override
-    public Pair<List<MixBallot>, MixProof> proveMix(List<MixBallot> ballots, ElGamalPK pk, int kappa) {
-        //Wait for my turn to mix
-
-        return athenaFactory.getMixnet();
+    public MixedBallotsAndProof proveMix(List<MixBallot> ballots, ElGamalPK pk, int kappa) {
+        Mixnet mixnet = athenaFactory.getMixnet();
+        return mixnet.mixAndProveMix(ballots, pk, kappa);
     }
+
+    @Override
+    public boolean verifyMix(MixStatement statement, MixProof proof, ElGamalPK pk, int kappa) {
+        Mixnet mixnet = athenaFactory.getMixnet();
+        return mixnet.verify(statement, proof, pk, kappa);
+    }
+
 
     @Override
     public Ciphertext homoCombination(Ciphertext c, BigInteger nonce, Group group) {
@@ -82,4 +111,6 @@ public class SingleTallierStrategy implements Strategy {
     public BigInteger decrypt(Ciphertext c, ElGamalSK sk) {
         return Elgamal.decrypt(c, sk);
     }
+
+
 }

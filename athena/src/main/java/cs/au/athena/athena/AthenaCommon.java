@@ -2,7 +2,6 @@ package cs.au.athena.athena;
 
 import cs.au.athena.dao.athena.PFStruct;
 import cs.au.athena.dao.athena.PK_Vector;
-import cs.au.athena.dao.sigma1.PublicInfoSigma1;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.sigma.Sigma1;
 
@@ -11,9 +10,6 @@ import java.util.Map;
 
 public class AthenaCommon {
 
-    public static boolean verifyKey(Sigma1 sigma1, PK_Vector pkv, int kappa) {
-        return sigma1.VerifyKey(new PublicInfoSigma1(kappa, pkv.pk), pkv.rho, kappa);
-    }
 
     public static boolean parsePKV(PK_Vector pkv) {
         return pkv != null && pkv.rho != null && pkv.pk != null;

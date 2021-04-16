@@ -2,6 +2,7 @@ package cs.au.athena.athena;
 
 
 import cs.au.athena.CONSTANTS;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -15,6 +16,8 @@ import cs.au.athena.factory.MainAthenaFactory;
 
 import java.math.BigInteger;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 
 @Tag("TestsAthenaVote")
@@ -23,7 +26,7 @@ public class TestAthenaVote {
 
     private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
     private final int kappa = CONSTANTS.KAPPA;
-    
+
     MainAthenaFactory msFactory;
     private CredentialTuple dv;
     private PK_Vector pkv;
@@ -58,12 +61,12 @@ public class TestAthenaVote {
         int vote = 4;
         int cnt = 0;
         Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc, this.kappa);
-        assertNotNull("Should not be null", ballot.getPublicCredential());
-        assertNotNull("Should not be null", ballot.getEncryptedNegatedPrivateCredential());
-        assertNotNull("Should not be null", ballot.getEncryptedVote());
-        assertNotNull("Should not be null", ballot.getProofNegatedPrivateCredential());
-        assertNotNull("Should not be null", ballot.getProofVotePair());
-        assertEquals("Should be 0",0, ballot.getCounter());
+        MatcherAssert.assertThat("Should not be null", ballot.getPublicCredential(), notNullValue());
+        MatcherAssert.assertThat("Should not be null", ballot.getEncryptedNegatedPrivateCredential(), notNullValue());
+        MatcherAssert.assertThat("Should not be null", ballot.getEncryptedVote(), notNullValue());
+        MatcherAssert.assertThat("Should not be null", ballot.getProofNegatedPrivateCredential(), notNullValue());
+        MatcherAssert.assertThat("Should not be null", ballot.getProofVotePair(), notNullValue());
+        MatcherAssert.assertThat("Should be 0", ballot.getCounter(),is(0));
     }
 
     @Test

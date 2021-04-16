@@ -4,32 +4,26 @@ import cs.au.athena.CONSTANTS;
 import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
-import cs.au.athena.generator.Generator;
-import cs.au.athena.generator.MockGenerator;
 
 import java.util.Random;
 
 public class MainFactory implements Factory {
     private final ElGamalSK sk;
-    private final Generator gen;
     private final Random random;
+    private final Elgamal elgamal;
 
 
     public MainFactory() {
         this.random = new Random(CONSTANTS.RANDOM_SEED);
+        int nc = 10; //TODO: What value?;
+
         int bitlength = CONSTANTS.KAPPA * 8;
-//        this.gen = new Gen(this.random, CONSTANTS.MSG_SPACE_LENGTH, bitlength);
-        int nc = ??;
-        this.gen = new MockGenerator(random, nc, bitlength);
-        this.sk = gen.generate();
+        this.elgamal = new Elgamal(CONSTANTS.ELGAMAL_CURRENT.GROUP, nc, random);
+        this.sk = elgamal.generateSK();
     }
-
-
 
     @Override
-    public Elgamal getElgamal() {
-        return gen.getElGamal();
-    }
+    public Elgamal getElgamal() { return this.elgamal; }
 
     @Override
     public ElGamalPK getPK() {
@@ -41,9 +35,6 @@ public class MainFactory implements Factory {
         return this.sk;
     }
 
-
     @Override
     public Random getRandom() { return this.random; }
-
-
 }

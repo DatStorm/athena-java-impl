@@ -1,7 +1,9 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.athena.strategy.Strategy;
+import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -39,12 +41,6 @@ public class AthenaTally {
     private Elgamal elgamal;
     private BulletinBoard bb;
     private Strategy strategy;
-
-    private Sigma1 sigma1;
-    private Bulletproof bulletProof;
-    private Sigma3 sigma3;
-    private Sigma4 sigma4;
-    private Mixnet mixnet;
     private int kappa;
 
     // Construct using builder
@@ -59,10 +55,9 @@ public class AthenaTally {
          *********/
         logger.info(MARKER, "Tally(...) => step1");
 
-        List<Ballot> validBallots = removeInvalidBallots(pk, this.bb, this.bulletProof);
+        List<Ballot> validBallots = removeInvalidBallots(pk, this.bb);
         if (validBallots.isEmpty()) {
             logger.error("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
-//            System.err.println("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             return null;
         }
 
@@ -85,9 +80,9 @@ public class AthenaTally {
 
 
         // Perform random mix
-        Pair<List<MixBallot>, MixProof> mixPair = mixnet(A, pk);
-        List<MixBallot> mixedBallots = mixPair.getLeft();
-        MixProof mixProof = mixPair.getRight();
+        MixedBallotsAndProof mixPair = mixnet(A, pk);
+        List<MixBallot> mixedBallots = mixPair.mixedBallots; // TODO: strategy
+        MixProof mixProof = mixPair.mixProof;
 
 
 //        assert mixedBallots.stream()
@@ -111,7 +106,7 @@ public class AthenaTally {
 
         List<PFDStruct> pfd = revealPair.getRight();
 
-        // Post (b, (pfr, B, pfd) ) to bullitin board
+        // Post (b, (pfr, B, pfd) ) to bulletin board
         bb.publishTallyOfVotes(officialTally);
         PFStruct pf = new PFStruct(pfr, mixedBallots, pfd, mixProof);
         bb.publishPF(pf);
@@ -122,8 +117,7 @@ public class AthenaTally {
 
 
     // Step 1 of Tally
-    public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoard bb, Bulletproof bulletProof) {
-
+    public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoard bb) {
         List<Ballot> finalBallots = new ArrayList<>(bb.retrievePublicBallots());
 
         for (Ballot ballot : bb.retrievePublicBallots()) {
@@ -180,7 +174,7 @@ public class AthenaTally {
 
 
 //            logger.info(ATHENA_TALLY_MARKER, "Verifying bulletproof 2");
-            boolean verify_encVote = bulletProof
+            boolean verify_encVote = Bulletproof
                     .verifyStatementArbitraryRange(
                             stmnt_2,
                             ballot.getProofVotePair()
@@ -215,10 +209,10 @@ public class AthenaTally {
             Ballot ballot = ballots.get(i);
 
             // Homomorpically reencrypt(by raising to power n) ballot and decrypt
-            Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p); // TODO: strategy call
+            Ciphertext ci_prime = this.strategy.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group);
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = Elgamal.decrypt(ci_prime, sk); // TODO: strategy call
+            BigInteger noncedNegatedPrivateCredentialElement = this.strategy.decrypt(ci_prime, sk);
 
 
             // Update map with highest counter entry.
@@ -228,14 +222,14 @@ public class AthenaTally {
             A.put(key, updatedValue);
 
             // Prove decryption
-            Sigma3Proof decryptionProof = sigma3.proveDecryption(ci_prime, noncedNegatedPrivateCredentialElement, sk, kappa); // TODO: strategy call
+            Sigma3Proof decryptionProof = this.strategy.proveDecryption(ci_prime, noncedNegatedPrivateCredentialElement, sk, kappa);
 
             // Proove that the same nonce was used for all ballots.
             if (pfr.size() > 0) {
                 // Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
                 List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
                 List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
-                Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCiphertexts, nonce_n, kappa); // TODO: strategy call
+                Sigma4Proof omega = this.strategy.proveCombination(listCombined, listCiphertexts, nonce_n, sk, kappa);
 
                 pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, omega));
             } else {
@@ -271,27 +265,14 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Mix ballots
-    private Pair<List<MixBallot>, MixProof> mixnet(Map<MapAKey, MapAValue> A, ElGamalPK pk) {
+    private MixedBallotsAndProof mixnet(Map<MapAKey, MapAValue> A, ElGamalPK pk) {
         // Cast to mix ballot list
         List<MixBallot> ballots = A.values().stream()
                 .map(MapAValue::toMixBallot)
                 .collect(Collectors.toList());
 
-        //////////////////////////////// TODO: strategy call
-
         return this.strategy.proveMix(ballots, pk, kappa);
-        // Mix ballots
-//        MixStruct mixStruct = this.mixnet.mix(ballots, pk);
-//        List<MixBallot> mixedBallots = mixStruct.mixedBallots;
-//
-//        // Prove mix
-//        MixStatement statement = new MixStatement(ballots, mixedBallots);
-//        MixProof mixProof = mixnet.proveMix(statement, mixStruct.secret, pk, kappa);
-        ////////////////////////
 
-//        assert mixnet.verify(statement, mixProof, pk, kappa); // TODO: remove, waste of computing power
-
-        return Pair.of(mixedBallots, mixProof);
     }
 
     // Step 3 of tally. Nonce and decrypt ballots, and keep a tally of the eligible votes.
@@ -301,9 +282,7 @@ public class AthenaTally {
             officialTally.put(candidates, 0);
         }
         List<PFDStruct> pfd = new ArrayList<>(mixedBallots.size());
-
         BigInteger p = sk.pk.group.p;
-        BigInteger q = sk.pk.group.q;
 
         for (MixBallot mixBallot : mixedBallots) {
             Ciphertext combinedCredential = mixBallot.getCombinedCredential();
@@ -314,25 +293,22 @@ public class AthenaTally {
             Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
 
             // Decrypt nonced combinedCredential
-            BigInteger m = elgamal.decrypt(c_prime, sk);
+            BigInteger m = Elgamal.decrypt(c_prime, sk);
 
             // Prove that c' is a homomorphic combination of combinedCredential
-            Sigma4Proof combinationProof = sigma4.proveCombination(
-                    sk,
-                    c_prime,
-                    combinedCredential,
+            Sigma4Proof combinationProof = this.strategy.proveCombination(List.of(c_prime),
+                    List.of(combinedCredential),
                     nonce,
+                    sk,
                     kappa);
 
             // Prove that msg m is the correct decryption of c'
-            Sigma3Proof combinationDecryptionProof = sigma3.proveDecryption(c_prime, m, sk, kappa);
+            Sigma3Proof combinationDecryptionProof = this.strategy.proveDecryption(c_prime, m, sk, kappa);
 
             // Check validity of private credential. (decrypted combinedCredential = 1)
             if (m.equals(BigInteger.ONE)) {
-//                System.out.println("AthenaTally.revealEligibleVotes CASE: M=1  ");
-
                 // Decrypt vote
-                BigInteger voteElement = elgamal.decrypt(encryptedVote, sk);
+                BigInteger voteElement = Elgamal.decrypt(encryptedVote, sk);
                 Integer vote = elgamal.lookup(voteElement);
 
                 // Tally the vote
@@ -344,10 +320,10 @@ public class AthenaTally {
                 }
 
                 // Prove correct decryption of vote
-                Sigma3Proof voteDecryptionProof = sigma3.proveDecryption(encryptedVote, voteElement, sk, kappa);
+                Sigma3Proof voteDecryptionProof = this.strategy.proveDecryption(encryptedVote, voteElement, sk, kappa);
 
                 // Store proofs
-                PFDStruct value = PFDStruct.newValid(c_prime, BigInteger.valueOf(vote), combinationProof, combinationDecryptionProof, voteDecryptionProof);
+                PFDStruct value = PFDStruct.newValid(c_prime, voteElement, combinationProof, combinationDecryptionProof, voteDecryptionProof);
                 pfd.add(value);
 
             } else { // m != 1
@@ -364,50 +340,14 @@ public class AthenaTally {
 
 
     public static class Builder {
-        private Random random;
         private Elgamal elgamal;
-        private BulletinBoard bb;
-
-        private Sigma1 sigma1;
-        private Bulletproof bulletProof;
-        private Sigma3 sigma3;
-        private Sigma4 sigma4;
-        private Mixnet mixnet;
+        private AthenaFactory athenaFactory;
         private int kappa;
 
-        public AthenaTally build() {
-            //Check that all fields are set
-            if (random == null ||
-                    elgamal == null ||
-                    bb == null ||
-                    sigma1 == null ||
-                    bulletProof == null ||
-                    sigma3 == null ||
-                    sigma4 == null ||
-                    mixnet == null ||
-                    kappa == 0
-            ) {
-                throw new IllegalArgumentException("Not all fields have been set");
-            }
-
-            //Construct Object
-            AthenaTally obj = new AthenaTally();
-            obj.random = random;
-            obj.elgamal = elgamal;
-            obj.bb = bb;
-            obj.sigma1 = sigma1;
-            obj.bulletProof = bulletProof;
-            obj.sigma3 = sigma3;
-            obj.sigma4 = sigma4;
-            obj.mixnet = mixnet;
-            obj.kappa = kappa;
-
-            return obj;
-        }
 
         //Setters
-        public Builder setRandom(Random random) {
-            this.random = random;
+        public Builder setFactory(AthenaFactory athenaFactory) {
+            this.athenaFactory = athenaFactory;
             return this;
         }
 
@@ -416,43 +356,30 @@ public class AthenaTally {
             return this;
         }
 
-        public Builder setBb(BulletinBoard bb) {
-            this.bb = bb;
-            return this;
-        }
-
-        public Builder setSigma1(Sigma1 sigma1) {
-            this.sigma1 = sigma1;
-            return this;
-        }
-
-        public Builder setBulletProof(Bulletproof bulletProof) {
-            this.bulletProof = bulletProof;
-            return this;
-        }
-
-        public Builder setSigma3(Sigma3 sigma3) {
-            this.sigma3 = sigma3;
-            return this;
-        }
-
-        public Builder setSigma4(Sigma4 sigma4) {
-            this.sigma4 = sigma4;
-            return this;
-        }
-
-        public Builder setMixnet(Mixnet mixnet) {
-            this.mixnet = mixnet;
-            return this;
-        }
 
         public Builder setKappa(int kappa) {
             this.kappa = kappa;
             return this;
         }
 
+        public AthenaTally build() {
+            //Check that all fields are set
+            if (athenaFactory == null ||
+                    elgamal == null ||
+                    kappa == 0
+            ) {
+                throw new IllegalArgumentException("Not all fields have been set");
+            }
 
+            //Construct Object
+            AthenaTally athenaTally = new AthenaTally();
+            athenaTally.elgamal = elgamal;
+            athenaTally.strategy = this.athenaFactory.getStrategy();
+            athenaTally.random = this.athenaFactory.getRandom();
+            athenaTally.bb = this.athenaFactory.getBulletinBoard();
+            athenaTally.kappa = kappa;
+
+            return athenaTally;
+        }
     }
-
-
 }

@@ -5,10 +5,10 @@ import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Longs;
 import cs.au.athena.HASH;
 import cs.au.athena.UTIL;
-import cs.au.athena.dao.sigma1.PublicInfoSigma1;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.sigma1.CoinFlipInfo;
 import cs.au.athena.dao.sigma1.ProveKeyInfo;
+import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 
 import java.math.BigInteger;
@@ -22,7 +22,7 @@ public class Sigma1 {
     public Sigma1() {}
 
     //input pk, sk,
-    public ProveKeyInfo ProveKey(PublicInfoSigma1 publicInfoSigma1, ElGamalSK sk, Randomness r, int kappa) {
+    public ProveKeyInfo ProveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
         Random random = new SecureRandom();
 
         // lists
@@ -34,10 +34,10 @@ public class Sigma1 {
         BigInteger alpha = sk.toBigInteger();
 
         // public keys
-        BigInteger g = publicInfoSigma1.getPK().getGroup().getG();
-        BigInteger p = publicInfoSigma1.getPK().getGroup().getP();
-        BigInteger q = publicInfoSigma1.getPK().getGroup().getQ();
-        BigInteger h = publicInfoSigma1.getPK().getH();
+        BigInteger g = pk.getGroup().getG();
+        BigInteger p = pk.getGroup().getP();
+        BigInteger q = pk.getGroup().getQ();
+        BigInteger h = pk.getH();
 
 
         for (int i = 0; i < kappa; i++) {
@@ -127,7 +127,7 @@ public class Sigma1 {
     }
 
 
-    public boolean VerifyKey(PublicInfoSigma1 publicInfoSigma1, ProveKeyInfo rho, int kappa) {
+    public boolean VerifyKey(ElGamalPK pk, ProveKeyInfo rho, int kappa) {
         // lists
         ArrayList<CoinFlipInfo> coinFlipInfoPairs = rho.getCoinFlipInfoPairs();
         BigInteger zeta = rho.getZeta();
@@ -138,9 +138,9 @@ public class Sigma1 {
         int j = UTIL.findFirstOne(coinFlipInfoPairs, 1); // find index j
 
         // bigints g,p,yj
-        BigInteger g = publicInfoSigma1.getPK().getGroup().getG();
-        BigInteger p = publicInfoSigma1.getPK().getGroup().getP();
-        BigInteger h = publicInfoSigma1.getPK().getH();
+        BigInteger g = pk.getGroup().getG();
+        BigInteger p = pk.getGroup().getP();
+        BigInteger h = pk.getH();
         BigInteger yj = y1_yk.get(j);
 
         // Step 2 verify
@@ -151,7 +151,6 @@ public class Sigma1 {
 
         // step 4 check
         boolean checkStep4 = checkStep4(g, h, p, yj, zeta);
-
 
         return checkStep2 && checkStep3 && checkStep4;
     }

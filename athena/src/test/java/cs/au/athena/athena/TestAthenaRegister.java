@@ -2,6 +2,8 @@ package cs.au.athena.athena;
 
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.factory.AthenaFactory;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -11,6 +13,7 @@ import cs.au.athena.dao.athena.RegisterStruct;
 import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.factory.MainAthenaFactory;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -25,7 +28,7 @@ public class TestAthenaRegister {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory();
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
     }
 
     @Test
@@ -37,7 +40,7 @@ public class TestAthenaRegister {
 
         RegisterStruct register = athena.Register(pkv, kappa);
 
-        assertNotNull("Should not be null", register.pd);
-        assertNotNull("Should not be null", register.d);
+        MatcherAssert.assertThat("Should not be null", register.pd, notNullValue());
+        MatcherAssert.assertThat("Should not be null", register.d, notNullValue());
     }
 }

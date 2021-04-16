@@ -84,11 +84,7 @@ public class Sigma4 {
     * secret key sk
     * homo comb combinedCiphertextList of b0_b1
     */
-   public boolean verifyCombination(ElGamalPK pk, Ciphertext combinedCiphertext, Ciphertext ciphertext, Sigma4Proof proof, int kappa) {
-       return verifyCombination(pk, Collections.singletonList(combinedCiphertext), Collections.singletonList(ciphertext), proof, kappa);
-   }
-
-   public boolean verifyCombination(ElGamalPK pk, List<Ciphertext> combinedCiphertextList, List<Ciphertext> listOfCiphertexts, Sigma4Proof proof, int kappa) {
+    public boolean verifyCombination(ElGamalPK pk, List<Ciphertext> combinedCiphertextList, List<Ciphertext> listOfCiphertexts, Sigma4Proof proof, int kappa) {
         Group group = pk.getGroup();
 
         int size = combinedCiphertextList.size();

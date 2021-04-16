@@ -1,6 +1,7 @@
 package cs.au.athena.sigmas;
 
 import cs.au.athena.CONSTANTS;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.*;
 import cs.au.athena.sigma.Sigma3;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
@@ -14,6 +15,7 @@ import cs.au.athena.factory.MainFactory;
 
 import java.math.BigInteger;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertTrue;
 
 @Tag("TestsSigma3")
@@ -36,38 +38,23 @@ public class TestSigma3 {
         sk = factory.getSK();
         sigma3 = new Sigma3();
 
-
+        // 41 Not a group element in G = Z_p^* , G = {g^i | i in Zq}
+        // g^41 is though
         plain_msg_m = new BigInteger("41");
-
-        cipher = elGamal.encrypt(plain_msg_m, pk);
+        cipher = elGamal.exponentialEncrypt(plain_msg_m, pk);
         statement = Sigma3.createStatement(pk, cipher, plain_msg_m);
     }
 
 
-    @Test
-    void TestSigma3_checkPart1() {
-        // ProveDec s1 = ProveDec(...)'
-        Sigma3Proof proof = sigma3.proveDecryption(cipher, plain_msg_m, sk, kappa);
-        BigInteger c = sigma3.hash(proof.a, proof.b, statement.alpha, statement.beta, statement.alpha_base, statement.beta_base);
-        boolean check1 = sigma3.checkPart1(statement.alpha_base, proof.r, proof.a, statement.alpha, c, statement.group.p);
-        assertTrue("Verify check1", check1);
-
-    }
-
-    @Test
-    void TestSigma3_checkPart2() {
-        Sigma3Proof proof = sigma3.proveDecryption(cipher, plain_msg_m,sk, kappa);
-        BigInteger c = sigma3.hash(proof.a, proof.b, statement.alpha, statement.beta, statement.alpha_base, statement.beta_base);
-        boolean check2 = sigma3.checkPart2(statement.beta_base, proof.r, proof.b, statement.beta,  c, statement.group.p);
-        assertTrue("Verify check2", check2);
-    }
-
 
     @Test
     void TestSigma3() {
-        Sigma3Proof sigma3Proof = sigma3.proveDecryption(cipher, plain_msg_m, sk, kappa);
-        boolean verification = sigma3.verifyDecryption(cipher, plain_msg_m, sk.getPK(), sigma3Proof, kappa);
-        assertTrue("VerDec(...)=1", verification);
+        BigInteger g = sk.pk.group.g;
+        BigInteger p = sk.pk.group.p;
+        BigInteger g_raised_to_plain = g.modPow(this.plain_msg_m,p);
+        Sigma3Proof sigma3Proof = sigma3.proveDecryption(cipher, g_raised_to_plain, sk, kappa);
+        boolean verification = sigma3.verifyDecryption(cipher, g_raised_to_plain, sk.getPK(), sigma3Proof, kappa);
+        MatcherAssert.assertThat("VerDec(...)=1", verification, is(true));
     }
 
 

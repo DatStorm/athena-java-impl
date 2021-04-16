@@ -7,6 +7,10 @@ import java.util.Random;
 
 public interface AthenaFactory extends SigmaFactory {
 
+    enum STRATEGY {
+        SINGLE, DISTRIBUTED
+    }
+
 //    Sigma1 getSigma1();
 //    Sigma2Pedersen getSigma2Pedersen();
 //    Bulletproof getBulletProof();

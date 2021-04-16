@@ -1,7 +1,9 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.UTIL;
+import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenProof;
+import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -31,12 +33,11 @@ public class AthenaVote {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-VOTE");
 
-
-    private Sigma1 sigma1;
     private Bulletproof bulletProof;
     private Random random;
     private Elgamal elgamal;
     private int kappa;
+    private Strategy strategy;
     private BulletinBoard bb;
     private Sigma2Pedersen sigma2Pedersen;
 
@@ -50,13 +51,12 @@ public class AthenaVote {
             int cnt,
             int nc) {
 
-
         if (!AthenaCommon.parsePKV(pkv)) {
             System.err.println("AthenaImpl.Vote => ERROR: pkv null");
             return null;
         }
 
-        if (!AthenaCommon.verifyKey(sigma1, pkv, kappa)) {
+        if (!this.strategy.verifyKey(pkv.pk, pkv.rho, kappa)) {
             System.err.println("AthenaImpl.Vote => ERROR: VerifyKey(...) => false");
             return null;
         }
@@ -133,27 +133,13 @@ public class AthenaVote {
 
 
     public static class Builder {
-        private Sigma1 sigma1;
-        private Bulletproof bulletProof;
-        private Random random;
         private Elgamal elgamal;
         private int kappa;
-        private BulletinBoard bb;
-        private Sigma2Pedersen sigma2Pedersen;
+        private AthenaFactory athenaFactory;
 
 
-        public Builder setSigma1(Sigma1 sigma1) {
-            this.sigma1 = sigma1;
-            return this;
-        }
-
-        public Builder setBulletProof(Bulletproof bulletProof) {
-            this.bulletProof = bulletProof;
-            return this;
-        }
-
-        public Builder setRandom(Random random) {
-            this.random = random;
+        public Builder setFactory(AthenaFactory athenaFactory) {
+            this.athenaFactory = athenaFactory;
             return this;
         }
 
@@ -167,24 +153,9 @@ public class AthenaVote {
             return this;
         }
 
-        public Builder setBB(BulletinBoard bb) {
-            this.bb = bb;
-            return this;
-        }
-
-        public Builder setSigma2Pedersen(Sigma2Pedersen sigma2Pedersen) {
-            this.sigma2Pedersen = sigma2Pedersen;
-            return this;
-        }
-
-
         public AthenaVote build() {
             //Check that all fields are set
-            if (bb == null ||
-                    random == null ||
-                    sigma1 == null ||
-                    sigma2Pedersen == null ||
-                    bulletProof == null ||
+            if (athenaFactory == null ||
                     elgamal == null ||
                     kappa == 0
             ) {
@@ -193,20 +164,15 @@ public class AthenaVote {
 
             //Construct Object
             AthenaVote athenaVote = new AthenaVote();
-            athenaVote.sigma1 = this.sigma1;
-            athenaVote.sigma2Pedersen = this.sigma2Pedersen;
-            athenaVote.bulletProof = this.bulletProof;
-            athenaVote.random = this.random;
+            athenaVote.strategy = this.athenaFactory.getStrategy();
+            athenaVote.sigma2Pedersen = this.athenaFactory.getSigma2Pedersen();
+            athenaVote.bulletProof = this.athenaFactory.getBulletProof();
+            athenaVote.random = this.athenaFactory.getRandom();
             athenaVote.elgamal = this.elgamal;
-            athenaVote.bb = this.bb;
+            athenaVote.bb = this.athenaFactory.getBulletinBoard();
             athenaVote.kappa = this.kappa;
 
             return athenaVote;
-
         }
-
-
     }
-
-
 }
