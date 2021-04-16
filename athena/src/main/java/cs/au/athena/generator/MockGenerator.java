@@ -1,7 +1,7 @@
 package cs.au.athena.generator;
 
 import cs.au.athena.CONSTANTS;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.elgamal.Group;
 
@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import java.util.Random;
 
 public class MockGenerator implements Generator {
-    private final ElGamal elGamal; 
+    private final Elgamal elGamal;
     
     public MockGenerator(Random random, int nc, int bitlength) {
 
@@ -26,11 +26,11 @@ public class MockGenerator implements Generator {
 
         Group mockGroup = new Group(p, q, g);
 
-        this.elGamal = new ElGamal(mockGroup, nc,random);
+        this.elGamal = new Elgamal(mockGroup, nc,random);
     }
 
     @Override
-    public ElGamal getElGamal() {
+    public Elgamal getElGamal() {
         return this.elGamal;
     }
 

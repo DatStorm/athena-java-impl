@@ -1,7 +1,6 @@
 package cs.au.athena.athena.strategy;
 
 import cs.au.athena.athena.AthenaCommon;
-import cs.au.athena.athena.BulletinBoard;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
@@ -81,6 +80,6 @@ public class SingleTallierStrategy implements Strategy {
 
     @Override
     public BigInteger decrypt(Ciphertext c, ElGamalSK sk) {
-        return ElGamal.decrypt(c, sk);
+        return Elgamal.decrypt(c, sk);
     }
 }

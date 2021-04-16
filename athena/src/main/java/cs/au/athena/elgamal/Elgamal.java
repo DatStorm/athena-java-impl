@@ -7,14 +7,14 @@ import cs.au.athena.UTIL;
 import java.math.BigInteger;
 import java.util.*;
 
-public class ElGamal {
+public class Elgamal {
     private Group group;
     private Random random;
 
     private int messageSpaceLength;
     private Map<BigInteger, Integer> lookupTable;
 
-    public ElGamal(Group group, int messageSpaceLength, Random random) {
+    public Elgamal(Group group, int messageSpaceLength, Random random) {
         if (messageSpaceLength < 0) {
             System.err.println("ERROR messageSpaceLength < 0");
         }
@@ -33,7 +33,7 @@ public class ElGamal {
         }
     }
 
-    public ElGamal(Group group, Random random) {
+    public Elgamal(Group group, Random random) {
         this.group = group;
         this.random = random;
     }
@@ -52,7 +52,7 @@ public class ElGamal {
         return lookupTable;
     }
 
-    public ElGamal(int bitLength, int messageSpaceLength, Random random) {
+    public Elgamal(int bitLength, int messageSpaceLength, Random random) {
         this(generateGroup(bitLength, random), messageSpaceLength, random);
 
     }
@@ -141,13 +141,10 @@ public class ElGamal {
         return encrypt(messageElement, pk, r);
     }
 
-    @Deprecated
     public static BigInteger getNeutralElement() {
         return BigInteger.ONE;
     }
 
-
-    @Deprecated
     public Integer exponentialDecrypt(Ciphertext cipherText, ElGamalSK sk) {
         return lookup(decrypt(cipherText, sk));
     }
@@ -169,7 +166,6 @@ public class ElGamal {
         return c2.multiply(c1NegAlpha).mod(p);
     }
 
-    @Deprecated
     public Integer lookup(BigInteger element) {
         if(!lookupTable.containsKey(element)){
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
@@ -216,7 +212,6 @@ public class ElGamal {
 
 
     // Generating El Gamal public key from a specified secret key
-
     public ElGamalPK generatePk(ElGamalSK sk) {
         BigInteger g = this.group.getG();
         BigInteger p = this.group.getP();

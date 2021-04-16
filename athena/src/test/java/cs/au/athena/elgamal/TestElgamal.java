@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DisplayName("Test Elgamal Encryption+Decryption")
 public class TestElgamal {
     private Random random;
-    private ElGamal elGamal;
+    private Elgamal elGamal;
     private ElGamalSK sk;
     private ElGamalPK pk;
     private int bitlength;
@@ -34,7 +34,7 @@ public class TestElgamal {
         BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G;
 
         Group group = new Group(p, q, g);
-        elGamal = new ElGamal(group, CONSTANTS.MSG_SPACE_LENGTH, random);
+        elGamal = new Elgamal(group, CONSTANTS.MSG_SPACE_LENGTH, random);
         sk = elGamal.generateSK();
         pk = elGamal.generatePk(sk);
 
@@ -53,7 +53,7 @@ public class TestElgamal {
 //    @RepeatedTest(100)
     @Test
     void TestRandomLong() {
-        ElGamal elGamal = new ElGamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
+        Elgamal elGamal = new Elgamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
 
         ElGamalSK sk = elGamal.generateSK();
         ElGamalPK pk = elGamal.generatePk(sk);
@@ -99,8 +99,8 @@ public class TestElgamal {
 
     @Test
     void TestElGamalDescription() {
-        ElGamal elGamal1 = new ElGamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
-        ElGamal elGamal2 = new ElGamal(elGamal1.getDescription(),CONSTANTS.MSG_SPACE_LENGTH ,random);
+        Elgamal elGamal1 = new Elgamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
+        Elgamal elGamal2 = new Elgamal(elGamal1.getDescription(),CONSTANTS.MSG_SPACE_LENGTH ,random);
 
         ElGamalSK sk = elGamal1.generateSK();
         ElGamalPK pk = elGamal1.generatePk(sk);
@@ -174,7 +174,7 @@ public class TestElgamal {
 
         Group group = new Group(p, q, g);
         int messageSpaceLength = (int) Math.pow(2, 10); // 1.000.000
-        elGamal = new ElGamal(group, messageSpaceLength, random);
+        elGamal = new Elgamal(group, messageSpaceLength, random);
     }
 
 

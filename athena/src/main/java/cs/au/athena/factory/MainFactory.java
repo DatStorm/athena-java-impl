@@ -1,8 +1,7 @@
 package cs.au.athena.factory;
 
 import cs.au.athena.CONSTANTS;
-import cs.au.athena.generator.Gen;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.generator.Generator;
@@ -28,7 +27,7 @@ public class MainFactory implements Factory {
 
 
     @Override
-    public ElGamal getElgamal() {
+    public Elgamal getElgamal() {
         return gen.getElGamal();
     }
 

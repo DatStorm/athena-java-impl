@@ -6,7 +6,7 @@ import cs.au.athena.CONSTANTS;
 import cs.au.athena.sigma.Sigma4;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.Factory;
@@ -27,7 +27,7 @@ public class TestSigma4 {
     private Sigma4 sigma4;
     private ElGamalSK sk;
     private ElGamalPK pk;
-    private ElGamal elgamal;
+    private Elgamal elgamal;
 
 
     @BeforeEach

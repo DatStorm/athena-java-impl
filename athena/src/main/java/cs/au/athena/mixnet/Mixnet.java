@@ -4,7 +4,7 @@ import cs.au.athena.HASH;
 import cs.au.athena.UTIL;
 import cs.au.athena.dao.mixnet.*;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.Group;
 import cs.au.athena.elgamal.ElGamalPK;
 
@@ -12,10 +12,10 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class Mixnet {
-    private final ElGamal elgamal;
+    private final Elgamal elgamal;
     private final Random random;
 
-    public Mixnet(ElGamal elgamal, Random random) {
+    public Mixnet(Elgamal elgamal, Random random) {
         this.elgamal = elgamal;
         this.random = random;
     }
@@ -37,7 +37,7 @@ public class Mixnet {
             BigInteger si = UTIL.getRandomElement(BigInteger.ONE, pk.group.q, random);
 
             //Make reencryption ciphertets
-            BigInteger e = ElGamal.getNeutralElement();
+            BigInteger e = Elgamal.getNeutralElement();
             Ciphertext reencryptRi = elgamal.encrypt(e, pk, ri);
             Ciphertext reencryptSi = elgamal.encrypt(e, pk, si);
 
@@ -189,7 +189,7 @@ public class Mixnet {
             MixBallot sourceBallot = sourceMix.get(i); //Mixed original ballot
             MixBallot destinationBallot = destinationMix.get(i);
 
-            BigInteger e = ElGamal.getNeutralElement();
+            BigInteger e = Elgamal.getNeutralElement();
 
             //c1 * Enc(1,R)
             Ciphertext reencryptionFactorR = this.elgamal.encrypt(e, pk, randomnessR.get(i));

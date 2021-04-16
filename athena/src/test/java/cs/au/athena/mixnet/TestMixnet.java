@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.mixnet.*;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.Factory;
@@ -31,7 +31,7 @@ public class TestMixnet {
 
     
     private Mixnet mixnet;
-    private ElGamal elgamal;
+    private Elgamal elgamal;
     private ElGamalPK pk;
     private ElGamalSK sk;
 

@@ -11,7 +11,7 @@ import cs.au.athena.dao.athena.CredentialTuple;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.athena.RegisterStruct;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.sigma.Sigma1;
 
 import java.lang.invoke.MethodHandles;
@@ -25,7 +25,7 @@ public class AthenaRegister {
     private BulletinBoard bb;
     private Random random;
     private Sigma1 sigma1;
-    private ElGamal elGamal;
+    private Elgamal elGamal;
     private int kappa;
     private Strategy strategy;
 
@@ -64,7 +64,7 @@ public class AthenaRegister {
     public static class Builder {
         private AthenaFactory factory;
         private Integer kappa;
-        private ElGamal elgamal;
+        private Elgamal elgamal;
 
 
         public Builder setFactory(AthenaFactory factory) {
@@ -78,7 +78,7 @@ public class AthenaRegister {
             return this;
         }
 
-        public Builder setElGamal(ElGamal elgamal) {
+        public Builder setElGamal(Elgamal elgamal) {
             this.elgamal = elgamal;
             return this;
         }

@@ -8,18 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import cs.au.athena.UTIL;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.dao.bulletproof.BulletproofExtensionStatement;
 import cs.au.athena.dao.bulletproof.BulletproofStatement;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
-import cs.au.athena.dao.mixnet.MixStatement;
-import cs.au.athena.dao.mixnet.MixStruct;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
+import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.mixnet.Mixnet;
@@ -39,7 +36,7 @@ public class AthenaTally {
 
 
     private Random random;
-    private ElGamal elgamal;
+    private Elgamal elgamal;
     private BulletinBoard bb;
     private Strategy strategy;
 
@@ -221,7 +218,7 @@ public class AthenaTally {
             Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group.p); // TODO: strategy call
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = ElGamal.decrypt(ci_prime, sk); // TODO: strategy call
+            BigInteger noncedNegatedPrivateCredentialElement = Elgamal.decrypt(ci_prime, sk); // TODO: strategy call
 
 
             // Update map with highest counter entry.
@@ -368,7 +365,7 @@ public class AthenaTally {
 
     public static class Builder {
         private Random random;
-        private ElGamal elgamal;
+        private Elgamal elgamal;
         private BulletinBoard bb;
 
         private Sigma1 sigma1;
@@ -414,7 +411,7 @@ public class AthenaTally {
             return this;
         }
 
-        public Builder setElgamal(ElGamal elgamal) {
+        public Builder setElgamal(Elgamal elgamal) {
             this.elgamal = elgamal;
             return this;
         }
