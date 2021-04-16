@@ -1,6 +1,5 @@
 package cs.au.athena.athena.strategy;
 
-import cs.au.athena.athena.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.mixnet.MixBallot;
@@ -10,8 +9,6 @@ import cs.au.athena.dao.sigma1.ProveKeyInfo;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.*;
-import cs.au.athena.generator.Generator;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -19,13 +16,9 @@ import java.util.Random;
 
 public interface Strategy {
 
-    /**
-     * Setup / Key generation
-     */
-    Generator getGenerator(Random random, int nc, int bitlength);
 
     Group getGroup(int bitlength, Random random);
-    ElGamalSK getElGamalSK(Group group, Random random);
+    ElGamalSK getElGamalSK(int i, Group group, Random random);
     ElGamalPK getElGamalPK(ElGamalSK sk);
     /**
      * ProveKey_{SIGMA_1} & VerifyKey_{SIGMA_1}

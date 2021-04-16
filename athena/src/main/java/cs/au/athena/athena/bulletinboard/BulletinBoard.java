@@ -1,8 +1,10 @@
-package cs.au.athena.athena;
+package cs.au.athena.athena.bulletinboard;
 
+import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.elgamal.Ciphertext;
+import cs.au.athena.elgamal.Group;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -149,7 +151,6 @@ public class BulletinBoard {
     private void setPf(PFStruct pf) { this.pf = pf; }
     private void setTallyOfVotes(Map<Integer, Integer> tallyOfVotes) { this.tallyOfVotes = tallyOfVotes; }
     private void setPkv(PK_Vector pkv) { this.pkv = pkv; }
-
 
 
 }

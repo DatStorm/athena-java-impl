@@ -2,6 +2,8 @@ package cs.au.athena.athena;
 
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.factory.AthenaFactory;
 import org.junit.jupiter.api.*;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.ElGamalSK;
@@ -28,7 +30,7 @@ public class TestAthenaTally {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory();
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
         athena = new AthenaImpl(msFactory);
         ElectionSetup setup = athena.Setup(nc, this.kappa);
         bb = msFactory.getBulletinBoard();

@@ -1,12 +1,10 @@
 package cs.au.athena.factory;
 
 import cs.au.athena.CONSTANTS;
-import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.strategy.DistributedStrategy;
 import cs.au.athena.athena.strategy.SingleTallierStrategy;
 import cs.au.athena.athena.strategy.Strategy;
-import cs.au.athena.elgamal.Elgamal;
-import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
 import cs.au.athena.sigma.Sigma2Pedersen;

@@ -2,7 +2,7 @@ package cs.au.athena.athena.entities;
 
 
 import cs.au.athena.athena.Athena;
-import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.dao.athena.SK_Vector;
 import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.dao.athena.TallyStruct;

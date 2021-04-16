@@ -1,6 +1,7 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.factory.AthenaFactory;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.athena.RegisterStruct;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.Elgamal;
-import cs.au.athena.sigma.Sigma1;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;

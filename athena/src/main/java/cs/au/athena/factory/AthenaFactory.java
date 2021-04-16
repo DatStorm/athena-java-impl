@@ -1,6 +1,6 @@
 package cs.au.athena.factory;
 
-import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.strategy.Strategy;
 
 import java.util.Random;

@@ -1,17 +1,28 @@
 package cs.au.athena.athena.bulletinboard;
 
+import com.google.common.cache.AbstractCache;
+import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
+import cs.au.athena.elgamal.ElGamalPK;
+import cs.au.athena.elgamal.Group;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class BulletinBoardV2_0 {
 
     private static BulletinBoardV2_0 single_instance = null;
+    private final int tallierCount;
+    private int k;
+    private Group group;
+    private Map<Integer, List<BigInteger>> tallierCommitments;
+    private Map<Integer, Ciphertext> encryptedSubShares;
 
     // static method to create instance of Singleton class
     public static BulletinBoardV2_0 getInstance() {
@@ -22,8 +33,12 @@ public class BulletinBoardV2_0 {
     }
 
 
-    private BulletinBoardV2_0(){
-
+    private BulletinBoardV2_0() {
+        this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
+        this.tallierCount = CONSTANTS.TALLIER_CURRENT.TALLIER_COUNT;
+        this.k = CONSTANTS.TALLIER_CURRENT.K;
+        tallierCommitments = new HashMap<>(this.tallierCount);
+        encryptedSubShares = new HashMap<>(this.tallierCount);
     }
 
 
@@ -79,6 +94,69 @@ public class BulletinBoardV2_0 {
         }
     }
 
+    public int retrieveTallierCount() {
+        return tallierCount;
+    }
+
+    public int retrieveK() {
+        return k;
+    }
+
+    // Compute and return the entire public key from the committed polynomials
+    public ElGamalPK retrievePK() {
+        BigInteger publicKey = BigInteger.ONE;
+
+        // Iterate all commitments
+        for (int i = 0; i < tallierCommitments.keySet().size(); i++) {
+            List<BigInteger> commitmentCoefficients = tallierCommitments.get(i);
+            publicKey = publicKey.multiply(commitmentCoefficients.get(0)).mod(group.p);
+        }
+
+        // group, h
+        return new ElGamalPK(group, publicKey);
+    }
+
+    public ElGamalPK retrievePK(int j) {
+        BigInteger publicKeyShare = BigInteger.ONE;
+
+        // Iterate all commitments
+        for (int i = 0; i < tallierCommitments.keySet().size(); i++) {
+            List<BigInteger> commitmentCoefficients = tallierCommitments.get(i);
+
+            for (int ell = 0; ell < this.k; ell++) {
+                BigInteger j_pow_ell = BigInteger.valueOf(j).pow(ell);
+                publicKeyShare = publicKeyShare.multiply(commitmentCoefficients.get(ell).modPow(j_pow_ell, group.p)).mod(group.p);
+            }
+
+        }
+
+        // group, h_j
+        return new ElGamalPK(group, publicKeyShare);
+    }
+
+
+    // Post commitment to P(X)
+    public void publishPolynomialCommitment(int tallierIndex, List<BigInteger> commitments) {
+        tallierCommitments.put(tallierIndex, commitments);
+    }
+
+    // TODO: Skipper thinks this is redundant, as it can be computed from the committed polynomials
+    public void publishTallierPublicKey(int tallierIndex, ElGamalPK pk) {
+        throw new UnsupportedOperationException("FIXME");
+    }
+
+    public void publishEncSubShare(int j, Ciphertext subShareToTallier_j) {
+        encryptedSubShares.put(j, subShareToTallier_j);
+    }
+
+    public Ciphertext retrieveEncSubShare(int j) {
+        return encryptedSubShares.get(j);
+    }
+
+    public List<BigInteger> retrievePolynomialCommitment(int j) {
+        return tallierCommitments.get(j);
+    }
+
 
     // Construct pfr elements
     class PFR {
@@ -103,12 +181,15 @@ public class BulletinBoardV2_0 {
             decryptionAndProofs.add(obj);
         }
 
-        List<HomoCombinationAndProof> blockingGetHomoCombinationAndProofs(int threshold){return null;}
-        List<DecryptionAndProof> blockingGetDecryptionAndProofs(int threshold){return null;}
+        List<HomoCombinationAndProof> blockingGetHomoCombinationAndProofs(int threshold) {
+            return null;
+        }
+
+        List<DecryptionAndProof> blockingGetDecryptionAndProofs(int threshold) {
+            return null;
+        }
 
     }
-
-
 
 
     // For each tallier
@@ -152,9 +233,17 @@ public class BulletinBoardV2_0 {
             decryptionAndProofs_v.add(obj);
         }
 
-        List<DecryptionAndProof> blockingGetHomoCombAndProofs(int threshold){return null;}
-        List<DecryptionAndProof> blockingGetDecryptionAndProofs_m(int threshold){return null;}
-        List<DecryptionAndProof> blockingGetDecryptionAndProofs_v(int threshold){return null;}
+        List<DecryptionAndProof> blockingGetHomoCombAndProofs(int threshold) {
+            return null;
+        }
+
+        List<DecryptionAndProof> blockingGetDecryptionAndProofs_m(int threshold) {
+            return null;
+        }
+
+        List<DecryptionAndProof> blockingGetDecryptionAndProofs_v(int threshold) {
+            return null;
+        }
     }
 
     class HomoCombinationAndProof {
@@ -174,7 +263,12 @@ public class BulletinBoardV2_0 {
         Sigma3Proof decryptionProof;
     }
 
-
+    /***************************************************
+     *             Distributed stuff below             *
+     **************************************************/
+    public Group getGroup() {
+        return group;
+    }
 
 
 }

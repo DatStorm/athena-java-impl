@@ -2,6 +2,7 @@ package cs.au.athena.athena;
 
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.factory.AthenaFactory;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +39,7 @@ public class TestAthenaVote {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory();
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
 
 
         athena = new AthenaImpl(msFactory);

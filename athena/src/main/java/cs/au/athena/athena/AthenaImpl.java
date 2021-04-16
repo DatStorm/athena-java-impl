@@ -1,5 +1,7 @@
 package cs.au.athena.athena;
 
+import cs.au.athena.CONSTANTS;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.strategy.Strategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +53,7 @@ public class AthenaImpl implements Athena {
         Group group = strategy.getGroup(bitlength, random);
 
         // Create elgamal and generate keys
-        ElGamalSK sk = strategy.getElGamalSK(group, random); // Dependent on the strategy this will be either the full sk or a share of it.
+        ElGamalSK sk = strategy.getElGamalSK(CONSTANTS.TALLIER_INDEX, group, random); // Dependent on the strategy this will be either the full sk or a share of it.
         ElGamalPK pk = strategy.getElGamalPK(sk); // TODO: will this be pk or h_i ?
         ProveKeyInfo rho = strategy.proveKey(pk, sk, new Randomness(random.nextLong()), kappa);
 

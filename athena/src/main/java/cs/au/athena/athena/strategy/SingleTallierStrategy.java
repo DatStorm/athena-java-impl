@@ -33,20 +33,13 @@ public class SingleTallierStrategy implements Strategy {
 
 
     @Override
-    public Generator getGenerator(Random random, int nc, int bitlength) {
-        Generator gen = new Gen(random, nc, bitlength);
-        gen = new MockGenerator(random, nc, bitlength); // TODO: comment out if we want the generate "fresh" group, i.e. primes p and q
-        return gen;
-    }
-
-    @Override
     public Group getGroup(int bitlength, Random random) {
         // return Group.generateGroup(bitlength, random);
         return CONSTANTS.ELGAMAL_CURRENT.GROUP;
     }
 
     @Override
-    public ElGamalSK getElGamalSK(Group group, Random random) {
+    public ElGamalSK getElGamalSK(int i, Group group, Random random) {
         return Elgamal.generateSK(group, random);
     }
 

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.Athena;
 import cs.au.athena.athena.AthenaImpl;
-import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.entities.Registrar;
 import cs.au.athena.athena.entities.Tallier;
 import cs.au.athena.athena.entities.Verifier;
@@ -47,7 +47,7 @@ public class TestAthenaTallierEvilVoter {
         int numVoters = 2; // we only have 2 real voter
 
 
-        AthenaFactory athenaFactory = new MainAthenaFactory();
+        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
         Athena athena = new AthenaImpl(athenaFactory);
         BulletinBoard bb = athenaFactory.getBulletinBoard();
 

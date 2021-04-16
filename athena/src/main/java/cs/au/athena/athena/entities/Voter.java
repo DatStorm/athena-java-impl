@@ -2,7 +2,7 @@ package cs.au.athena.athena.entities;
 
 
 import cs.au.athena.athena.Athena;
-import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.CredentialTuple;
 import cs.au.athena.dao.athena.PK_Vector;

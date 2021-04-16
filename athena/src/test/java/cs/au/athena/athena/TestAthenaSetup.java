@@ -1,5 +1,6 @@
 package cs.au.athena.athena;
 
+import cs.au.athena.factory.AthenaFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -24,7 +25,7 @@ public class TestAthenaSetup {
 
     @BeforeEach
     void setUp() {
-        maFactory = new MainAthenaFactory();
+        maFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
     }
 
 

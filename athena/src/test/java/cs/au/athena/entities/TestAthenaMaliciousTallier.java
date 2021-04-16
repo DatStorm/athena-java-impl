@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import cs.au.athena.athena.Athena;
 import cs.au.athena.athena.AthenaImpl;
-import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.entities.Registrar;
 import cs.au.athena.athena.entities.Tallier;
 import cs.au.athena.athena.entities.Verifier;
@@ -40,7 +40,7 @@ public class TestAthenaMaliciousTallier {
     @Test
     public void TestMaliciousTallier() {
         int nc = 10;
-        AthenaFactory athenaFactory = new MainAthenaFactory();
+        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
         Athena athena = new AthenaImpl(athenaFactory);
         BulletinBoard bb = athenaFactory.getBulletinBoard();
 

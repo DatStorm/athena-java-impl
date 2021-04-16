@@ -81,16 +81,18 @@ public class Elgamal {
         return group;
     }
 
-
-
     /**
      * Precondition: messageElement should be in the group
      * @param messageElement A group element in group G
      * @param pk
      * @return
      */
-    public Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk){
-        BigInteger r = UTIL.getRandomElement(BigInteger.ZERO, group.q, this.random);
+    public Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk) {
+        return encrypt(messageElement, pk, this.random);
+    }
+
+    public static Ciphertext encrypt(BigInteger messageElement, ElGamalPK pk, Random random){
+        BigInteger r = UTIL.getRandomElement(BigInteger.ZERO, pk.group.q, random);
         return encrypt(messageElement, pk, r);
     }
 
@@ -179,25 +181,22 @@ public class Elgamal {
 
     // Generate random sk
     public ElGamalSK generateSK() {
-        if (this.group == null) {
-            System.out.println("group = null");
-        }
-
-        BigInteger q = this.group.getQ();
-        BigInteger sk = UTIL.getRandomElement(q, random);
-
-
-        return new ElGamalSK(this.group, sk);
+        return generateSK(this.group, this.random);
     }
 
+    // Generate random sk
     public static ElGamalSK generateSK(Group group, Random random) {
         if (group == null) {
             System.out.println("group = null");
+            throw new NullPointerException("Group was null");
         }
 
-        BigInteger sk = UTIL.getRandomElement(group.getQ(), random);
+        BigInteger q = group.q;
+        BigInteger sk = UTIL.getRandomElement(q, random);
+
         return new ElGamalSK(group, sk);
     }
+
 
 
     // Generating El Gamal public key from a specified secret key

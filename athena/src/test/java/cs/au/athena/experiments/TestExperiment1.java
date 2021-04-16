@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import cs.au.athena.athena.Athena;
 import cs.au.athena.athena.AthenaImpl;
-import cs.au.athena.athena.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.entities.Registrar;
 import cs.au.athena.athena.entities.Tallier;
 import cs.au.athena.athena.entities.Voter;
@@ -44,7 +44,7 @@ public class TestExperiment1 {
         // Generate pk,sk
         // Run setup
 
-        AthenaFactory athenaFactory = new MainAthenaFactory();
+        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
         athena = new AthenaImpl(athenaFactory);
         bb = athenaFactory.getBulletinBoard();
         nc = 2 ^ 10; // = 1024

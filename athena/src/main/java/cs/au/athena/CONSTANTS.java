@@ -39,7 +39,7 @@ public class CONSTANTS {
     /**
      * Fixed values for the case when elGamal with 64 bits is used.
      */
-    public static class ELGAMAL_32_BITS {
+    private static class ELGAMAL_32_BITS {
         public static final int ELGAMAL_BIT_LENGTH = 32;
         public static final BigInteger ELGAMAL_P = new BigInteger("7951924187");
         public static final BigInteger ELGAMAL_Q = new BigInteger("3975962093");
@@ -51,7 +51,7 @@ public class CONSTANTS {
     /**
      * Fixed values for the case when elGamal with 64 bits is used.
      */
-    public static class ELGAMAL_64_BITS {
+    private static class ELGAMAL_64_BITS {
         public static final int ELGAMAL_BIT_LENGTH = 64;
         public static final BigInteger ELGAMAL_P = new BigInteger("33104598056928515207");
         public static final BigInteger ELGAMAL_Q = new BigInteger("16552299028464257603");
@@ -62,7 +62,7 @@ public class CONSTANTS {
     /**
      * Fixed values for the case when elGamal with 1024 bits is used.
      */
-    public static class ELGAMAL_1024_BITS {
+    private static class ELGAMAL_1024_BITS {
         public static final int ELGAMAL_BIT_LENGTH = 1024;
         public static final BigInteger ELGAMAL_P = new BigInteger("203563861925565177933951527681865992552429014002237425191410266898486184182026619996987894353762119957056230747716582757205994486135986076638697536841048852140992609316787978027688024528962704074922913310302293967528294897853920568227642592344438342607588008139227413464161980201861673136375912646999611663087");
         public static final BigInteger ELGAMAL_Q = new BigInteger("101781930962782588966975763840932996276214507001118712595705133449243092091013309998493947176881059978528115373858291378602997243067993038319348768420524426070496304658393989013844012264481352037461456655151146983764147448926960284113821296172219171303794004069613706732080990100930836568187956323499805831543");
@@ -93,20 +93,26 @@ public class CONSTANTS {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
+    /***************************************************
+     *                 Single tally                    *
+     **************************************************/
+    public static final int TALLIER_INDEX = 0;
 
-    //    public static final int ELGAMAL_BIT_LENGTH = 2048; //SECURE
-//    public static final int ELGAMAL_BIT_LENGTH = 2048/4;
-//    public static final int ELGAMAL_BIT_LENGTH = 8;
-//    public static final int KAPPA = 8;
+    /***************************************************
+     *             Distributed tally                   *
+     **************************************************/
+    public static class TALLIER_CURRENT {
+        public static final int TALLIER_COUNT = TALLIER_10.TALLIER_COUNT;
+        public static final int K = TALLIER_10.K;
+    }
+
+    private static class TALLIER_10 {
+        public static final int TALLIER_COUNT = 10;
+        public static final int K = (TALLIER_COUNT/2) - 1 ; // k < n/2
+    }
+
+
 
 
 }
 
-
-//    OLD NOT USED ANYMORE
-//    public static final int SIGMA2_EL_SECURITY_PARAM_T = 128;   // suggested
-//    public static final int SIGMA2_EL_SECURITY_PARAM_L = 40;    // suggested
-//    public static final int SIGMA2_EL_SECURITY_PARAM_S1 = 40;   // suggested
-//    public static final int SIGMA2_EL_SECURITY_PARAM_S2 = 552;  // suggested
-//    public static final long SIGMA2_SECURITY_PARAM_k1 = 320;    // suggested
-//    public static final long SIGMA2_SECURITY_PARAM_k2 = 2048;   // suggested

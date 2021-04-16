@@ -1,6 +1,7 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.factory.AthenaFactory;
@@ -21,10 +22,6 @@ import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
-import cs.au.athena.mixnet.Mixnet;
-import cs.au.athena.sigma.Sigma1;
-import cs.au.athena.sigma.Sigma3;
-import cs.au.athena.sigma.Sigma4;
 import cs.au.athena.sigma.bulletproof.Bulletproof;
 
 import java.lang.invoke.MethodHandles;

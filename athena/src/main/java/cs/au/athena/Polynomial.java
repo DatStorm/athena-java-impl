@@ -11,20 +11,23 @@ public class Polynomial {
     List<BigInteger> coefficients;
     Group group;
 
+    public Polynomial(Group group) {
+        this.coefficients = new ArrayList<>();
+        this.group = group;
+    }
+
     public Polynomial(List<BigInteger> coefficients, Group group) {
+        this.coefficients = coefficients;
         this.group = group;
     }
 
     // Returns a random polynomial of degree @Param polyDegree, where P(0)=secret
-    public static Polynomial secretShare(BigInteger secret, int polynomialDegree, Group group, Random random) {
+    public static Polynomial newRandom(int polynomialDegree, Group group, Random random) {
         // Compute coefficients
         List<BigInteger> coefficients = new ArrayList<>();
 
-        // The first is the secret
-        coefficients.add(secret);
-
-        // The rest are random
-        for (int i = 1; i < polynomialDegree; i++) {
+        // The coefficiientsare random
+        for (int i = 0; i < polynomialDegree; i++) {
             coefficients.add(UTIL.getRandomElement(group.q, random));
         }
 
@@ -32,16 +35,31 @@ public class Polynomial {
         return new Polynomial(coefficients, group);
     }
 
-    public BigInteger get(BigInteger x) {
+    public BigInteger get(int x) {
         BigInteger result = BigInteger.ZERO;
 
         for (int i = 0; i < coefficients.size(); i++) {
             // compute a_i * x^i (mod p)
-            BigInteger big = coefficients.get(i).multiply(x.pow(i)).mod(group.p);
-            result.add(big);
+            BigInteger power = BigInteger.valueOf((long) Math.pow(x, i));
+            BigInteger big = coefficients.get(i).multiply(power).mod(group.p);
+
+            result.add(big).mod(group.p);
         }
 
-        return null;
+        return result;
+    }
+
+
+    // Returns g^P(X)
+    public List<BigInteger> getCommitmentOfPolynomialCoefficients() {
+        List<BigInteger> commitments = new ArrayList<>();
+
+        for (BigInteger coefficient : this.coefficients){
+            BigInteger commitment = this.group.g.modPow(coefficient, group.p);
+            commitments.add(commitment);
+        }
+
+        return commitments;
     }
 
 
