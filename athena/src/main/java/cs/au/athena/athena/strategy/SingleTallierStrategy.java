@@ -8,14 +8,11 @@ import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.mixnet.MixStatement;
-import cs.au.athena.dao.sigma1.ProveKeyInfo;
+import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
-import cs.au.athena.generator.Gen;
-import cs.au.athena.generator.Generator;
-import cs.au.athena.generator.MockGenerator;
 import cs.au.athena.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
 import cs.au.athena.sigma.Sigma4;
@@ -49,13 +46,13 @@ public class SingleTallierStrategy implements Strategy {
     }
 
     @Override
-    public ProveKeyInfo proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
+    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
         Sigma1 sigma1 = athenaFactory.getSigma1();
         return sigma1.ProveKey(pk, sk, r, kappa);
     }
 
     @Override
-    public boolean verifyKey(ElGamalPK pk, ProveKeyInfo rho, int kappa) {
+    public boolean verifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa) {
         Sigma1 sigma1 = athenaFactory.getSigma1();
         return sigma1.VerifyKey(pk, rho, kappa);
     }

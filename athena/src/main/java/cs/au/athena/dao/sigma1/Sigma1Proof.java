@@ -3,13 +3,13 @@ package cs.au.athena.dao.sigma1;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-public class ProveKeyInfo {
+public class Sigma1Proof {
     private final ArrayList<BigInteger> y1_yk;
     private final ArrayList<CoinFlipInfo> coinFlipInfo_pairs;
     private final ArrayList<BigInteger> s1_sk;
     private final BigInteger zeta;
 
-    public ProveKeyInfo(ArrayList<BigInteger> y1_yk, ArrayList<CoinFlipInfo> coinFlipInfo_pairs, ArrayList<BigInteger> s1_sk, BigInteger zeta) {
+    public Sigma1Proof(ArrayList<BigInteger> y1_yk, ArrayList<CoinFlipInfo> coinFlipInfo_pairs, ArrayList<BigInteger> s1_sk, BigInteger zeta) {
 
         this.y1_yk = y1_yk;
         this.coinFlipInfo_pairs = coinFlipInfo_pairs;

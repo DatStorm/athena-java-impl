@@ -7,12 +7,14 @@ import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Group;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class BulletinBoardV2_0 {
 
@@ -20,9 +22,9 @@ public class BulletinBoardV2_0 {
     private int tallierCount;
     private int k;
     private Group group;
-    private Map<Integer, List<BigInteger>> tallierCommitments;
-    private Map<Integer, Ciphertext> encryptedSubShares;
-    private Map<Integer,ElGamalPK> mapOfIndividualPK;
+    private Map<Integer, CompletableFuture<List<BigInteger>>> tallierCommitments;
+    private Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
+    private Map<Integer, CompletableFuture<ElGamalPK>> mapOfIndividualPK;
 
     // static method to create instance of Singleton class
     public static BulletinBoardV2_0 getInstance() {
@@ -36,12 +38,28 @@ public class BulletinBoardV2_0 {
     private BulletinBoardV2_0() {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
         this.tallierCommitments = new HashMap<>();
-        this.encryptedSubShares = new HashMap<>();
         this.mapOfIndividualPK = new HashMap<>();
+        this.encryptedSubShares = new HashMap<>();
     }
 
-    public void publishTallierCount(int tallierCount) { this.tallierCount = tallierCount; }
-    public void publishK(int k) { this.k = k; }
+    // Set preexisting values, and populate maps with Futures
+    public void init(int tallierCount, int k) {
+        this.tallierCount = tallierCount;
+        this.k = k;
+
+        // Fill with CompletableFutures
+        for(int i = 1; i <= tallierCount; i++) {
+            tallierCommitments.put(i, new CompletableFuture<>());
+            mapOfIndividualPK.put(i, new CompletableFuture<>());
+
+            for(int j = 1; j <= tallierCount; j++) {
+                if(i == j) continue;
+
+                Pair<Integer, Integer> key = Pair.of(i, j);
+                encryptedSubShares.put(key, new CompletableFuture<>());
+            }
+        }
+    }
 
 
 
@@ -113,7 +131,7 @@ public class BulletinBoardV2_0 {
 
         // Iterate all commitments
         for (int i = 0; i < tallierCommitments.keySet().size(); i++) {
-            List<BigInteger> commitmentCoefficients = tallierCommitments.get(i);
+            List<BigInteger> commitmentCoefficients = tallierCommitments.get(i).join();
             publicKey = publicKey.multiply(commitmentCoefficients.get(0)).mod(group.p);
         }
 
@@ -122,12 +140,12 @@ public class BulletinBoardV2_0 {
     }
 
     // Compute and return the public key share h_j from the committed polynomials
-    public ElGamalPK retrievePK(int j) {
+    public ElGamalPK retrievePKShare(int j) {
         BigInteger publicKeyShare = BigInteger.ONE;
 
         // Iterate all commitments
         for (int i = 0; i < tallierCommitments.keySet().size(); i++) {
-            List<BigInteger> commitmentCoefficients = tallierCommitments.get(i);
+            List<BigInteger> commitmentCoefficients = tallierCommitments.get(i).join();
 
             for (int ell = 0; ell < this.k; ell++) {
                 BigInteger j_pow_ell = BigInteger.valueOf(j).pow(ell);
@@ -143,43 +161,32 @@ public class BulletinBoardV2_0 {
 
     // Post commitment to P(X)
     public void publishPolynomialCommitment(int tallierIndex, List<BigInteger> commitments) {
-        tallierCommitments.put(tallierIndex, commitments);
+        tallierCommitments.get(tallierIndex).complete(commitments);
     }
 
     public void publishIndividualPK(int tallierIndex, ElGamalPK pk) {
-       mapOfIndividualPK.put(tallierIndex, pk);
+        mapOfIndividualPK.get(tallierIndex).complete(pk);
     }
 
-    public ElGamalPK retrieveIndividualPK(int tallierIndex) {
-
-        while (!mapOfIndividualPK.containsKey(tallierIndex)) {
-            // wait
-            // TODO: sleep
-        }
+    public CompletableFuture<ElGamalPK> retrieveIndividualPK(int tallierIndex) {
         return mapOfIndividualPK.get(tallierIndex);
-//        if (mapOfIndividualPK.containsKey(tallierIndex)) {
-//            return mapOfIndividualPK.get(tallierIndex);
-//        } else {
-//            throw new RuntimeException(String.format("No pk for tallier %d found.", tallierIndex));
-//        }
-
     }
 
 
-
-    public void publishEncSubShare(int j, Ciphertext subShareToTallier_j) {
-        encryptedSubShares.put(j, subShareToTallier_j);
+    public void publishEncSubShare(int i, int j, Ciphertext subShareToTallier_j) {
+        Pair<Integer, Integer> key = Pair.of(i, j);
+        encryptedSubShares.get(key).complete(subShareToTallier_j);
     }
 
-    public Ciphertext retrieveEncSubShare(int j) {
-        return encryptedSubShares.get(j);
+
+    public CompletableFuture<Ciphertext> retrieveEncSubShare(int i, int j) {
+        Pair<Integer, Integer> key = Pair.of(i, j);
+        return encryptedSubShares.get(key);
     }
 
-    public List<BigInteger> retrievePolynomialCommitment(int j) {
+    public CompletableFuture<List<BigInteger>> retrievePolynomialCommitment(int j) {
         return tallierCommitments.get(j);
     }
-
-
 
 
     // Construct pfr elements

@@ -10,7 +10,7 @@ import org.slf4j.MarkerFactory;
 import cs.au.athena.GENERATOR;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.athena.*;
-import cs.au.athena.dao.sigma1.ProveKeyInfo;
+import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
 
@@ -44,9 +44,12 @@ public class AthenaImpl implements Athena {
             System.err.println("AthenaImpl.Setup => ERROR: System not initialised call .Setup before hand");
             return null;
         }
+        return strategy.setup(nc,kappa);
+
+
 
         int bitlength = kappa * 8;
-//        BulletinBoard bb = athenaFactory.getBulletinBoard();
+//        BulletinBoardV2_0 bb = athenaFactory.getBulletinBoard();
         BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         Random random = athenaFactory.getRandom();
 
@@ -56,7 +59,7 @@ public class AthenaImpl implements Athena {
         // Create elgamal and generate keys
         ElGamalSK sk = strategy.getElGamalSK(CONSTANTS.TALLIER_INDEX, group, random); // Dependent on the strategy this will be either the full sk or a share of it.
         ElGamalPK pk = strategy.getElGamalPK(sk); // TODO: should this be pk or h_i ?
-        ProveKeyInfo rho = strategy.proveKey(pk, sk, new Randomness(random.nextLong()), kappa);
+        Sigma1Proof rho = strategy.proveKey(pk, sk, new Randomness(random.nextLong()), kappa);
 
         this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
 

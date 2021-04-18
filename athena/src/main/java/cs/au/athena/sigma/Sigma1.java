@@ -7,7 +7,7 @@ import cs.au.athena.HASH;
 import cs.au.athena.UTIL;
 import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.sigma1.CoinFlipInfo;
-import cs.au.athena.dao.sigma1.ProveKeyInfo;
+import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 
@@ -22,7 +22,7 @@ public class Sigma1 {
     public Sigma1() {}
 
     //input pk, sk,
-    public ProveKeyInfo ProveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
+    public Sigma1Proof ProveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
         Random random = new SecureRandom();
 
         // lists
@@ -76,7 +76,7 @@ public class Sigma1 {
         // zeta = \alpha(sk) - e[j] mod (p-1)
         BigInteger zeta = alpha.subtract(ej).mod(q);
 
-        return new ProveKeyInfo(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
+        return new Sigma1Proof(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
     }
 
 
@@ -127,7 +127,7 @@ public class Sigma1 {
     }
 
 
-    public boolean VerifyKey(ElGamalPK pk, ProveKeyInfo rho, int kappa) {
+    public boolean VerifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa) {
         // lists
         ArrayList<CoinFlipInfo> coinFlipInfoPairs = rho.getCoinFlipInfoPairs();
         BigInteger zeta = rho.getZeta();

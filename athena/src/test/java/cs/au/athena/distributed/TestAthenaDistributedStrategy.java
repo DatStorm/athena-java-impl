@@ -50,27 +50,31 @@ public class TestAthenaDistributedStrategy {
         Random random = maFactory.getRandom();
         BulletinBoardV2_0 bb = maFactory.getBulletinBoard();
 
-        int talliercount = 2;
+        int talliercount = 3;
         int atMostKBadTalliers = 2;
-        bb.publishTallierCount(talliercount);
-        bb.publishK(atMostKBadTalliers);
+        bb.init(talliercount,atMostKBadTalliers);
 
         Group group = strategy.getGroup(kappa * 8 , random);
 
         CompletableFuture<ElGamalSK> f1 = new CompletableFuture<>();
         CompletableFuture<ElGamalSK> f2 = new CompletableFuture<>();
+        CompletableFuture<ElGamalSK> f3 = new CompletableFuture<>();
         Thread t1 = new Thread(() -> f1.complete(strategy.getElGamalSK(1, group, random)));
         Thread t2 = new Thread(() -> f2.complete(strategy.getElGamalSK(2, group, random)));
+        Thread t3 = new Thread(() -> f3.complete(strategy.getElGamalSK(3, group, random)));
 
         // Start and wait for finish
         t1.start();
         t2.start();
+        t3.start();
         ElGamalSK sk1 = f1.join();
         ElGamalSK sk2 = f2.join();
+        ElGamalSK sk3 = f3.join();
 
         //Test that sk matches pk
         MatcherAssert.assertThat("", sk1.sk,is(not(BigInteger.ZERO)));
         MatcherAssert.assertThat("", sk2.sk,is(not(BigInteger.ZERO)));
+        MatcherAssert.assertThat("", sk3.sk,is(not(BigInteger.ZERO)));
 
         //Test stuff
 

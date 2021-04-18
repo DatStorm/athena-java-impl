@@ -5,7 +5,7 @@ import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.mixnet.MixStatement;
-import cs.au.athena.dao.sigma1.ProveKeyInfo;
+import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.*;
@@ -23,8 +23,8 @@ public interface Strategy {
     /**
      * ProveKey_{SIGMA_1} & VerifyKey_{SIGMA_1}
      */
-    ProveKeyInfo proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa);
-    boolean verifyKey(ElGamalPK pk, ProveKeyInfo rho, int kappa);
+    Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa);
+    boolean verifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa);
 
     /**
      * ProveDec_{SIGMA_3} & VerifyDec_{SIGMA_3}
