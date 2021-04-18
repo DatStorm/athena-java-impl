@@ -11,10 +11,7 @@ import cs.au.athena.elgamal.Group;
 import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.factory.MainAthenaFactory;
 import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.math.BigInteger;
 import java.util.Random;
@@ -37,6 +34,7 @@ public class TestAthenaDistributedStrategy {
     }
 
 
+    @Disabled
     @Test
     void TestAthenaSetup() {
         AthenaImpl athena = new AthenaImpl(maFactory);
@@ -54,14 +52,12 @@ public class TestAthenaDistributedStrategy {
         int atMostKBadTalliers = 2;
         bb.init(talliercount,atMostKBadTalliers);
 
-        Group group = strategy.getGroup(kappa * 8 , random);
-
         CompletableFuture<ElGamalSK> f1 = new CompletableFuture<>();
         CompletableFuture<ElGamalSK> f2 = new CompletableFuture<>();
         CompletableFuture<ElGamalSK> f3 = new CompletableFuture<>();
-        Thread t1 = new Thread(() -> f1.complete(strategy.getElGamalSK(1, group, random)));
-        Thread t2 = new Thread(() -> f2.complete(strategy.getElGamalSK(2, group, random)));
-        Thread t3 = new Thread(() -> f3.complete(strategy.getElGamalSK(3, group, random)));
+        Thread t1 = new Thread(() -> f1.complete(strategy.setup(1, nc, kappa)));
+        Thread t2 = new Thread(() -> f2.complete(strategy.setup(2, nc, kappa)));
+        Thread t3 = new Thread(() -> f3.complete(strategy.setup(3, nc, kappa)));
 
         // Start and wait for finish
         t1.start();

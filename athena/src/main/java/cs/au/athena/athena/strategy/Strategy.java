@@ -17,16 +17,17 @@ import java.util.Random;
 
 public interface Strategy {
 
+    //TODO: Remove random from param. Should be given to constructor.
+    Group getGroup(int kappa, Random random);
 
-    Group getGroup(int bitlength, Random random);
-
-    ElGamalSK setup(int nc, int kappa);
+    //TODO: Move nc to BB
+    ElGamalSK setup(int tallierIndex, int nc, int kappa);
     ElGamalSK getElGamalSK(int tallierIndex, Group group, Random random);
     ElGamalPK getElGamalPK(ElGamalSK sk);
     /**
      * ProveKey_{SIGMA_1} & VerifyKey_{SIGMA_1}
      */
-    Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk,Random random, int kappa);
+    Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, int kappa);
     boolean verifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa);
 
     /**

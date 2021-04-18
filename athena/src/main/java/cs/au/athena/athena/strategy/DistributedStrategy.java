@@ -38,19 +38,18 @@ public class DistributedStrategy implements Strategy {
 
 
     @Override
-    public Group getGroup(int bitlength, Random random) {
+    public Group getGroup(int kappa, Random random) {
         return bb.getGroup();
     }
 
     @Override
-    public ElGamalSK setup(int nc, int kappa) {
-        return null;
-    }
-
-    @Override
-    public ElGamalSK getElGamalSK(int tallierIndex, Group group, Random random) {
+    public ElGamalSK setup(int tallierIndex, int nc, int kappa) {
         logger.info(MARKER, "getElGamalSK(...) => start");
         assert tallierIndex != 0;
+
+        Random random = athenaFactory.getRandom();
+
+        Group group = this.getGroup(kappa, random);
 
 //        logger.info(MARKER, "retrieving Tallier count");
         int tallierCount = bb.retrieveTallierCount();
@@ -71,7 +70,6 @@ public class DistributedStrategy implements Strategy {
         for(int ell = 0; ell <= k; ell++) {
             BigInteger coefficient = polynomial.getCoefficients().get(ell);
             BigInteger commitment = commitments.get(ell);
-            int kappa = 10;
             Sigma1Proof proof = this.proveKey(commitment, coefficient, group, random, kappa);
             commitmentProofs.add(proof);
         }
@@ -97,6 +95,12 @@ public class DistributedStrategy implements Strategy {
         BigInteger share_i = listOfSubShares.stream().reduce(BigInteger.ZERO, (a,b) -> a.add(b).mod(group.q));
 
         return new ElGamalSK(group, share_i);
+    }
+
+
+    @Override
+    public ElGamalSK getElGamalSK(int tallierIndex, Group group, Random random) {
+        return null;
     }
 
     // Compute and publish the subshares P_i(j) for 1 \leq j \leq n
@@ -180,8 +184,9 @@ public class DistributedStrategy implements Strategy {
     }
 
     @Override
-    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Random random, int kappa) {
-        return athenaFactory.getSigma1().ProveKey(pk, sk, random, kappa);
+    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, int kappa) {
+        Random random = athenaFactory.getRandom();
+        return this.proveKey(pk.h, sk.sk, pk.group, random, kappa);
     }
 
     public Sigma1Proof proveKey(BigInteger pk, BigInteger sk, Group group, Random random, int kappa) {

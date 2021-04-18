@@ -12,14 +12,6 @@ public interface AthenaFactory extends SigmaFactory {
         SINGLE, DISTRIBUTED
     }
 
-//    Sigma1 getSigma1();
-//    Sigma2Pedersen getSigma2Pedersen();
-//    Bulletproof getBulletProof();
-//    Sigma3 getSigma3();
-//    Sigma4 getSigma4();
-//    Mixnet getMixnet(ElGamal elgamal, ElGamalPK pk);
-
-
     Random getRandom();
 
     BulletinBoardV2_0 getBulletinBoard();

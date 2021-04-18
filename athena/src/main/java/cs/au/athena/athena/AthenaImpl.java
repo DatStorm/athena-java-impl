@@ -47,7 +47,8 @@ public class AthenaImpl implements Athena {
 
         this.initialised = true;
 
-        return strategy.setup(nc, kappa);
+        // FIXME: What is tallierIndex
+        return strategy.setup(1, nc, kappa);
     }
 
 

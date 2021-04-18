@@ -6,8 +6,6 @@ import cs.au.athena.athena.AthenaCommon;
 
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
-import cs.au.athena.dao.Randomness;
-import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
@@ -34,25 +32,24 @@ public class SingleTallierStrategy implements Strategy {
 
 
     @Override
-    public Group getGroup(int bitlength, Random random) {
+    public Group getGroup(int kappa, Random random) {
         // return Group.generateGroup(bitlength, random);
         return CONSTANTS.ELGAMAL_CURRENT.GROUP;
     }
 
     @Override
-    public ElGamalSK setup(int nc, int kappa) {
-        int bitlength = kappa * 8;
+    public ElGamalSK setup(int tallierIndex, int nc, int kappa) {
 //        BulletinBoardV2_0 bb = athenaFactory.getBulletinBoard();
         BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         Random random = athenaFactory.getRandom();
 
         // Get the group
-        Group group = this.getGroup(bitlength, random);
+        Group group = this.getGroup(kappa, random);
 
         // Create elgamal and generate keys
         ElGamalSK sk = this.getElGamalSK(CONSTANTS.TALLIER_INDEX, group, random); // Dependent on the strategy this will be either the full sk or a share of it.
         ElGamalPK pk = this.getElGamalPK(sk); // TODO: should this be pk or h_i ?
-        Sigma1Proof rho = this.proveKey(pk, sk, random, kappa);
+        Sigma1Proof rho = this.proveKey(pk, sk, kappa);
 
         //this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
 
@@ -64,7 +61,6 @@ public class SingleTallierStrategy implements Strategy {
         List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, nc);
         List<BigInteger> g_vector_vote = generators.get(0);
         List<BigInteger> h_vector_vote = generators.get(1);
-
 
         bb.publishNumberOfCandidates(nc);
         bb.publish_G_VectorVote(g_vector_vote); // TODO: compute on bulletin board when the pk is constructed
@@ -87,9 +83,12 @@ public class SingleTallierStrategy implements Strategy {
     }
 
     @Override
-    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Random random, int kappa) {
+    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, int kappa) {
+        Random random = athenaFactory.getRandom();
         Sigma1 sigma1 = athenaFactory.getSigma1();
+
         return sigma1.ProveKey(pk, sk, random, kappa);
+
     }
 
     @Override

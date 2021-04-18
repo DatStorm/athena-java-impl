@@ -5,24 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/cs.au.athena.athena.iml" beforeDir="false" afterPath="$PROJECT_DIR$/athena/cs.au.athena.athena.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/Athena.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/Athena.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/AthenaImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/BulletinBoardV2_0.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/BulletinBoardV2_0.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/entities/Tallier.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/entities/Tallier.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/SingleTallierStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/SingleTallierStrategy.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/Strategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/Strategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/sigma/Sigma1.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/sigma/Sigma1.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaRegister.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaRegister.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaSetup.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaSetup.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaTally.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaTally.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaVerify.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaVerify.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaVote.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/athena/TestAthenaVote.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/distributed/TestAthenaDistributedStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/distributed/TestAthenaDistributedStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma1.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma1.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/AthenaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/AthenaFactory.java" afterDir="false" />
     </list>
     <list id="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" name="Changes by datstorm" comment="" />
     <option name="SHOW_DIALOG" value="false" />
