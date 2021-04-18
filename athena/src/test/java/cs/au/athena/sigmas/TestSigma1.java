@@ -2,7 +2,6 @@ package cs.au.athena.sigmas;
 
 
 import cs.au.athena.CONSTANTS;
-import cs.au.athena.dao.Randomness;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +19,7 @@ import cs.au.athena.factory.MainFactory;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.is;
 //import java.cs.au.athena.util.SecureRandom;
@@ -31,7 +31,7 @@ public class TestSigma1 {
     private Sigma1 sigma1;
     private ElGamalSK sk;
     private ElGamalPK pk;
-    private Randomness randomness;
+    private Random random;
 
     @BeforeEach
     void setUp() {
@@ -39,7 +39,7 @@ public class TestSigma1 {
         this.sk = factory.getSK();
         this.pk = factory.getPK();
         this.sigma1 = new Sigma1();
-        this.randomness = new Randomness(123);
+        this.random = new Random(123);
     }
 
 
@@ -70,7 +70,7 @@ public class TestSigma1 {
      */
     @Test
     void TestProveKey_Verify_step2() {
-        Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, randomness, this.kappa);
+        Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, random, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         boolean verify = sigma1.checkStep2(coinFlipInfo_pairs);
          MatcherAssert.assertThat("fi ?=? F_i(ri,b_A_i)", verify,  is(true));
@@ -78,7 +78,7 @@ public class TestSigma1 {
 
     @Test
     void TestProveKey_Verify_step3() {
-        Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, randomness, this.kappa);
+        Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, random, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         ArrayList<BigInteger> s1_sk = rho.getS1_Sk();
         ArrayList<BigInteger> y1_yk = rho.getY1_Yk();
@@ -97,7 +97,7 @@ public class TestSigma1 {
 
     @Test
     void TestProveKey_Verify_step4() {
-        Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, randomness, this.kappa);
+        Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, random, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
         ArrayList<BigInteger> s1_sk = rho.getS1_Sk();
         ArrayList<BigInteger> y1_yk = rho.getY1_Yk();
@@ -119,7 +119,7 @@ public class TestSigma1 {
 
     @Test
     void TestProveKey_Verify() {
-        Sigma1Proof rho = sigma1.ProveKey(pk, this.sk, randomness, this.kappa);
+        Sigma1Proof rho = sigma1.ProveKey(pk, this.sk, random, this.kappa);
         boolean verification = sigma1.VerifyKey(pk, rho, this.kappa);
          MatcherAssert.assertThat("Should return 1", verification,  is(true));
     }
@@ -127,7 +127,7 @@ public class TestSigma1 {
 
     @Test
     void TestSigma1() {
-        Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, randomness, this.kappa);
+        Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, random, this.kappa);
         boolean verification = sigma1.VerifyKey(this.pk, rho, this.kappa);
          MatcherAssert.assertThat("Should return 1", verification, is(true));
     }

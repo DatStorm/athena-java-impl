@@ -4,7 +4,6 @@ package cs.au.athena.athena.entities;
 import cs.au.athena.athena.Athena;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.dao.athena.SK_Vector;
-import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.dao.athena.TallyStruct;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
@@ -24,9 +23,9 @@ public class Tallier implements Entity {
     private final int nc;
     private BulletinBoard bulletinBoard;
 
-    private ElectionSetup electionSetup;
-    private ElGamalPK pk;
     private ElGamalSK sk;
+
+    private ElGamalPK pk;
 
     public Tallier(Athena athena, BulletinBoard bulletinBoard, int kappa,  int nc) {
         this.kappa = kappa;
@@ -38,8 +37,7 @@ public class Tallier implements Entity {
 
     public void init() {
         // Run Setup()
-        electionSetup = athena.Setup(this.nc,this.kappa);
-        sk = electionSetup.sk;
+        sk = athena.Setup(this.nc,this.kappa);
         pk = this.bulletinBoard.retrievePK_vector().pk;
     }
 

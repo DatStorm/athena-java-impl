@@ -3,7 +3,7 @@ package cs.au.athena.athena.strategy;
 import cs.au.athena.Polynomial;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
-import cs.au.athena.dao.Randomness;
+import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.mixnet.MixStatement;
@@ -43,6 +43,11 @@ public class DistributedStrategy implements Strategy {
     }
 
     @Override
+    public ElGamalSK setup(int nc, int kappa) {
+        return null;
+    }
+
+    @Override
     public ElGamalSK getElGamalSK(int tallierIndex, Group group, Random random) {
         logger.info(MARKER, "getElGamalSK(...) => start");
         assert tallierIndex != 0;
@@ -62,19 +67,19 @@ public class DistributedStrategy implements Strategy {
         List<BigInteger> commitments = polynomial.getCommitmentOfPolynomialCoefficients();
         //bb.publishPolynomialCommitment(tallierIndex, commitments);
         // For each commitment, coefficient pair, do proof
-        List<Sigma1Proof> commitmentProofs;
+        List<Sigma1Proof> commitmentProofs = new ArrayList<>();
         for(int ell = 0; ell <= k; ell++) {
             BigInteger coefficient = polynomial.getCoefficients().get(ell);
             BigInteger commitment = commitments.get(ell);
             int kappa = 10;
-            Sigma1Proof proof = this.proveKey(commitment, coefficient, kappa);
+            Sigma1Proof proof = this.proveKey(commitment, coefficient, group, random, kappa);
             commitmentProofs.add(proof);
         }
         // Rename to publishPolynomialCommitmentsAndProof meh
         // Rename to publishPolynomial
         // Rename to publishSecretPolynomial
         // Rename to publishCommitments
-        bb.publishPolynomialCommitment(tallierIndex, commitments, commitmentProofs);
+        bb.publishPolynomialCommitmentsAndProofs(tallierIndex, commitments, commitmentProofs);
 
         // Calculate proofs, and publish together
 
@@ -133,7 +138,8 @@ public class DistributedStrategy implements Strategy {
             logger.info(MARKER, String.format("tallier %d received P_%d(%d) encSubshare=%s", tallierIndex, j, tallierIndex, encSubShare.toOneLineString()));
 
             // C_{j,0..k} = g^{a_(j0)}, ... g^{a_(jk)}
-            List<BigInteger> polynomialCommitments_j = bb.retrievePolynomialCommitment(j).join();
+            // TODO: Check the Commitment proofs.   bb.retrieveCommitmentsAndProofs(j).join().getRight()
+            List<BigInteger> polynomialCommitments_j = bb.retrieveCommitmentsAndProofs(j).join().getLeft();
 
             // Check length of polynomial commitment
             if (polynomialCommitments_j.size() != k +1) {
@@ -174,8 +180,12 @@ public class DistributedStrategy implements Strategy {
     }
 
     @Override
-    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
-        return null;
+    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Random random, int kappa) {
+        return athenaFactory.getSigma1().ProveKey(pk, sk, random, kappa);
+    }
+
+    public Sigma1Proof proveKey(BigInteger pk, BigInteger sk, Group group, Random random, int kappa) {
+        return athenaFactory.getSigma1().ProveKey(pk, sk, group, random, kappa);
     }
 
     @Override

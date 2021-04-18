@@ -2,6 +2,7 @@ package cs.au.athena.athena.strategy;
 
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.dao.Randomness;
+import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.mixnet.MixStatement;
@@ -18,12 +19,14 @@ public interface Strategy {
 
 
     Group getGroup(int bitlength, Random random);
-    ElGamalSK getElGamalSK(int i, Group group, Random random);
+
+    ElGamalSK setup(int nc, int kappa);
+    ElGamalSK getElGamalSK(int tallierIndex, Group group, Random random);
     ElGamalPK getElGamalPK(ElGamalSK sk);
     /**
      * ProveKey_{SIGMA_1} & VerifyKey_{SIGMA_1}
      */
-    Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa);
+    Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk,Random random, int kappa);
     boolean verifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa);
 
     /**
@@ -53,8 +56,6 @@ public interface Strategy {
 
 
     BigInteger decrypt(Ciphertext c, ElGamalSK sk);
-
-
 
 
 }

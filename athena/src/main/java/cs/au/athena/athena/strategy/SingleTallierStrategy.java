@@ -1,10 +1,14 @@
 package cs.au.athena.athena.strategy;
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.AthenaCommon;
 
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.dao.Randomness;
+import cs.au.athena.dao.athena.ElectionSetup;
+import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.mixnet.MixStatement;
@@ -36,6 +40,43 @@ public class SingleTallierStrategy implements Strategy {
     }
 
     @Override
+    public ElGamalSK setup(int nc, int kappa) {
+        int bitlength = kappa * 8;
+//        BulletinBoardV2_0 bb = athenaFactory.getBulletinBoard();
+        BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+        Random random = athenaFactory.getRandom();
+
+        // Get the group
+        Group group = this.getGroup(bitlength, random);
+
+        // Create elgamal and generate keys
+        ElGamalSK sk = this.getElGamalSK(CONSTANTS.TALLIER_INDEX, group, random); // Dependent on the strategy this will be either the full sk or a share of it.
+        ElGamalPK pk = this.getElGamalPK(sk); // TODO: should this be pk or h_i ?
+        Sigma1Proof rho = this.proveKey(pk, sk, random, kappa);
+
+        //this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
+
+        // mb, mc is upper-bound by a polynomial in the security parameter.
+        // TODO: Should these be updated
+        int mb = 1024; // TODO: look at the ElGamal test and find a
+        BigInteger mc = BigInteger.valueOf(1024);
+
+        List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, nc);
+        List<BigInteger> g_vector_vote = generators.get(0);
+        List<BigInteger> h_vector_vote = generators.get(1);
+
+
+        bb.publishNumberOfCandidates(nc);
+        bb.publish_G_VectorVote(g_vector_vote); // TODO: compute on bulletin board when the pk is constructed
+        bb.publish_H_VectorVote(h_vector_vote); // TODO: compute on bulletin board when the pk is constructed
+
+        PK_Vector pkv = new PK_Vector(pk, rho); // TODO: Proof of full pk vs proof of public key share h_i? Should this proof be a list of proofs of h_i?
+        bb.publishPKV(pkv);
+
+        return sk;
+    }
+
+    @Override
     public ElGamalSK getElGamalSK(int i, Group group, Random random) {
         return Elgamal.generateSK(group, random);
     }
@@ -46,9 +87,9 @@ public class SingleTallierStrategy implements Strategy {
     }
 
     @Override
-    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
+    public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, Random random, int kappa) {
         Sigma1 sigma1 = athenaFactory.getSigma1();
-        return sigma1.ProveKey(pk, sk, r, kappa);
+        return sigma1.ProveKey(pk, sk, random, kappa);
     }
 
     @Override
@@ -103,6 +144,8 @@ public class SingleTallierStrategy implements Strategy {
     public BigInteger decrypt(Ciphertext c, ElGamalSK sk) {
         return Elgamal.decrypt(c, sk);
     }
+
+
 
 
 }

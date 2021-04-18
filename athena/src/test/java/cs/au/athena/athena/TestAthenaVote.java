@@ -44,7 +44,7 @@ public class TestAthenaVote {
 
 
         athena = new AthenaImpl(msFactory);
-        ElectionSetup setup = athena.Setup(nc, this.kappa);
+        ElGamalSK sk = athena.Setup(nc, this.kappa);
 //        PK_Vector pk_vector = msFactory.getBulletinBoard().retrievePK_vector();
         PK_Vector pk_vector = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         Group group = pk_vector.pk.group;
@@ -52,7 +52,6 @@ public class TestAthenaVote {
         this.elgamal = new Elgamal(group, nc, msFactory.getRandom());
 
         pkv = pk_vector;
-        sk = setup.sk;
 
         RegisterStruct register = athena.Register(pkv, this.kappa);
         dv = register.d;

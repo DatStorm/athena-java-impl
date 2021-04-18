@@ -32,11 +32,10 @@ public class TestAthenaTally {
     void setUp() {
         msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
         athena = new AthenaImpl(msFactory);
-        ElectionSetup setup = athena.Setup(nc, this.kappa);
+        ElGamalSK sk = athena.Setup(nc, this.kappa);
 //        bb = msFactory.getBulletinBoard();
-        bb =BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+        bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
 
-        sk = setup.sk;
         pkv = bb.retrievePK_vector();
         RegisterStruct register = athena.Register(pkv, this.kappa);
         dv = register.d;

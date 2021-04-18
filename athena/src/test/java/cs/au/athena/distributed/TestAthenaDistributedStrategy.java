@@ -40,12 +40,12 @@ public class TestAthenaDistributedStrategy {
     @Test
     void TestAthenaSetup() {
         AthenaImpl athena = new AthenaImpl(maFactory);
-        ElectionSetup setup = athena.Setup(nc, kappa);
-        MatcherAssert.assertThat("Should not be null", setup.sk, notNullValue());
+        ElGamalSK sk = athena.Setup(nc, kappa);
+        MatcherAssert.assertThat("Should not be null", sk, notNullValue());
     }
 
     @Test
-    void TestGetElGamalSK() throws InterruptedException {
+    void TestSetup() {
         Strategy strategy = maFactory.getStrategy();
         Random random = maFactory.getRandom();
         BulletinBoardV2_0 bb = maFactory.getBulletinBoard();

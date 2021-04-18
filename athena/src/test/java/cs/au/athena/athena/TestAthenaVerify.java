@@ -35,9 +35,8 @@ public class TestAthenaVerify {
     void setUp() {
         msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
         athena = new AthenaImpl(msFactory);
-        ElectionSetup setup = athena.Setup(nc, kappa);
+        ElGamalSK sk = athena.Setup(nc, kappa);
 
-        sk = setup.sk;
 
 //        bb = msFactory.getBulletinBoard();
         bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!

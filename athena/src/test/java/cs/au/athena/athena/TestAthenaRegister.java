@@ -3,6 +3,7 @@ package cs.au.athena.athena;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.AthenaFactory;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ public class TestAthenaRegister {
     @Test
     void TestAthenaImplRegister() {
         AthenaImpl athena = new AthenaImpl(msFactory);
-        ElectionSetup setup = athena.Setup(nc,kappa);
+        ElGamalSK sk = athena.Setup(nc, kappa);
 
 //        PK_Vector pkv = msFactory.getBulletinBoard().retrievePK_vector();
         PK_Vector pkv = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!

@@ -10,6 +10,7 @@ import cs.au.athena.dao.sigma1.CoinFlipInfo;
 import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
+import cs.au.athena.elgamal.Group;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -21,9 +22,13 @@ public class Sigma1 {
 
     public Sigma1() {}
 
+    public Sigma1Proof ProveKey(ElGamalPK pk, ElGamalSK sk, Random random, int kappa) {
+        return ProveKey(pk.h, sk.sk, pk.group, random, kappa);
+    }
+
     //input pk, sk,
-    public Sigma1Proof ProveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {
-        Random random = new SecureRandom();
+    public Sigma1Proof ProveKey(BigInteger pk, BigInteger sk, Group group, Random hashRandom, int kappa) {
+        Random secureRandom = new SecureRandom();
 
         // lists
         ArrayList<BigInteger> e1_ek = new ArrayList<>();
@@ -31,22 +36,22 @@ public class Sigma1 {
         ArrayList<BigInteger> s1_sk = new ArrayList<>();
 
         // secret keys
-        BigInteger alpha = sk.toBigInteger();
+        BigInteger alpha = sk;
 
         // public keys
-        BigInteger g = pk.getGroup().getG();
-        BigInteger p = pk.getGroup().getP();
-        BigInteger q = pk.getGroup().getQ();
-        BigInteger h = pk.getH();
+        BigInteger g = group.g;
+        BigInteger p = group.p;
+        BigInteger q = group.q;
+        BigInteger h = pk;
 
 
         for (int i = 0; i < kappa; i++) {
-            BigInteger ei = UTIL.getRandomElement(q, random); //int ei = new rand ei in Z_q;
+            BigInteger ei = UTIL.getRandomElement(q, secureRandom); //int ei = new rand ei in Z_q;
 
             e1_ek.add(ei);
             y1_yk.add(g.modPow(ei, p));
         }
-        ArrayList<CoinFlipInfo> coinFlipInfo_pairs = coinFlippingProtocol(r, g, h, kappa, y1_yk);
+        ArrayList<CoinFlipInfo> coinFlipInfo_pairs = coinFlippingProtocol(hashRandom, g, h, kappa, y1_yk);
 
 
         // j <- min(i: b_i = 1)
@@ -80,10 +85,9 @@ public class Sigma1 {
     }
 
 
-    private ArrayList<CoinFlipInfo> coinFlippingProtocol(Randomness r, BigInteger g, BigInteger h, int kappa, ArrayList<BigInteger> y1_yk) {
+    private ArrayList<CoinFlipInfo> coinFlippingProtocol(Random hashRandom, BigInteger g, BigInteger h, int kappa, ArrayList<BigInteger> y1_yk) {
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = new ArrayList<>();
         Random coinRandom = new SecureRandom();
-        Random hashRandom = new Random(r.getValue());
 
         for (int i = 1; i <= kappa; i++) {
             boolean bA = coinRandom.nextBoolean();
@@ -128,6 +132,7 @@ public class Sigma1 {
 
 
     public boolean VerifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa) {
+        // TODO: Use kappa
         // lists
         ArrayList<CoinFlipInfo> coinFlipInfoPairs = rho.getCoinFlipInfoPairs();
         BigInteger zeta = rho.getZeta();
@@ -137,7 +142,7 @@ public class Sigma1 {
         // index j
         int j = UTIL.findFirstOne(coinFlipInfoPairs, 1); // find index j
 
-        // bigints g,p,yj
+        // bigints g, p, yj
         BigInteger g = pk.getGroup().getG();
         BigInteger p = pk.getGroup().getP();
         BigInteger h = pk.getH();

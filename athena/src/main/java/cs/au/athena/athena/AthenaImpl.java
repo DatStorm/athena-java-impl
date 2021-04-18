@@ -38,53 +38,16 @@ public class AthenaImpl implements Athena {
     }
 
     @Override
-    public ElectionSetup Setup(int nc, int kappa) {
+    public ElGamalSK Setup(int nc, int kappa) {
         logger.info(MARKER, "Setup(...) => start");
         if (this.initialised) {
             System.err.println("AthenaImpl.Setup => ERROR: System not initialised call .Setup before hand");
             return null;
         }
-        return strategy.setup(nc,kappa);
-
-
-
-        int bitlength = kappa * 8;
-//        BulletinBoardV2_0 bb = athenaFactory.getBulletinBoard();
-        BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
-        Random random = athenaFactory.getRandom();
-
-        // Get the group
-        Group group = strategy.getGroup(bitlength, random);
-
-        // Create elgamal and generate keys
-        ElGamalSK sk = strategy.getElGamalSK(CONSTANTS.TALLIER_INDEX, group, random); // Dependent on the strategy this will be either the full sk or a share of it.
-        ElGamalPK pk = strategy.getElGamalPK(sk); // TODO: should this be pk or h_i ?
-        Sigma1Proof rho = strategy.proveKey(pk, sk, new Randomness(random.nextLong()), kappa);
-
-        this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
-
-        // mb, mc is upper-bound by a polynomial in the security parameter.
-        // TODO: Should these be updated
-        int mb = 1024; // TODO: look at the ElGamal test and find a
-        this.mc = BigInteger.valueOf(1024);
-
-        logger.info(MARKER, "Setup(...) => generators");
-        List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, nc);
-        List<BigInteger> g_vector_vote = generators.get(0);
-        List<BigInteger> h_vector_vote = generators.get(1);
-
-
-        logger.info(MARKER, "Setup(...) => publish to BB");
-        bb.publishNumberOfCandidates(nc);
-        bb.publish_G_VectorVote(g_vector_vote); // TODO: compute on bulletin board when the pk is constructed
-        bb.publish_H_VectorVote(h_vector_vote); // TODO: compute on bulletin board when the pk is constructed
-
-        PK_Vector pkv = new PK_Vector(pk, rho); // TODO: Proof of full pk vs proof of public key share h_i? Should this proof be a list of proofs of h_i?
-        bb.publishPKV(pkv);
 
         this.initialised = true;
-        logger.info(MARKER, "Setup(...) => done");
-        return new ElectionSetup(sk);
+
+        return strategy.setup(nc, kappa);
     }
 
 

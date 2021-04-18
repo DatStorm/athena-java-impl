@@ -1,5 +1,6 @@
 package cs.au.athena.athena;
 
+import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.AthenaFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +33,7 @@ public class TestAthenaSetup {
     @Test
     void TestAthenaSetup() {
         AthenaImpl athena = new AthenaImpl(maFactory);
-        ElectionSetup setup = athena.Setup(nc,kappa);
-        assertNotNull("Should not be null", setup.sk);
+        ElGamalSK sk = athena.Setup(nc,kappa);
+        assertNotNull("Should not be null", sk);
     }
 }

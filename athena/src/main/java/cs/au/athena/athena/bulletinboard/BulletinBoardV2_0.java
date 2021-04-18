@@ -2,6 +2,7 @@ package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.Ballot;
+import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
@@ -21,10 +22,10 @@ public class BulletinBoardV2_0 {
     private static BulletinBoardV2_0 single_instance = null;
     private int tallierCount;
     private int k;
-    private Group group;
-    private Map<Integer, CompletableFuture<List<BigInteger>>> tallierCommitments;
-    private Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
-    private Map<Integer, CompletableFuture<ElGamalPK>> mapOfIndividualPK;
+    private final Group group;
+    private final Map<Integer, CompletableFuture<Pair<List<BigInteger>, List<Sigma1Proof>> >> tallierCommitmentsAndProofs;
+    private final Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
+    private final Map<Integer, CompletableFuture<ElGamalPK>> mapOfIndividualPK;
 
     // static method to create instance of Singleton class
     public static BulletinBoardV2_0 getInstance() {
@@ -37,7 +38,7 @@ public class BulletinBoardV2_0 {
 
     private BulletinBoardV2_0() {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
-        this.tallierCommitments = new HashMap<>();
+        this.tallierCommitmentsAndProofs = new HashMap<>();
         this.mapOfIndividualPK = new HashMap<>();
         this.encryptedSubShares = new HashMap<>();
     }
@@ -49,7 +50,7 @@ public class BulletinBoardV2_0 {
 
         // Fill with CompletableFutures
         for(int i = 1; i <= tallierCount; i++) {
-            tallierCommitments.put(i, new CompletableFuture<>());
+            tallierCommitmentsAndProofs.put(i, new CompletableFuture<>());
             mapOfIndividualPK.put(i, new CompletableFuture<>());
 
             for(int j = 1; j <= tallierCount; j++) {
@@ -130,8 +131,8 @@ public class BulletinBoardV2_0 {
         BigInteger publicKey = BigInteger.ONE;
 
         // Iterate all commitments
-        for (int i = 0; i < tallierCommitments.keySet().size(); i++) {
-            List<BigInteger> commitmentCoefficients = tallierCommitments.get(i).join();
+        for (int i = 0; i < tallierCommitmentsAndProofs.keySet().size(); i++) {
+            List<BigInteger> commitmentCoefficients = tallierCommitmentsAndProofs.get(i).join().getLeft();
             publicKey = publicKey.multiply(commitmentCoefficients.get(0)).mod(group.p);
         }
 
@@ -144,8 +145,8 @@ public class BulletinBoardV2_0 {
         BigInteger publicKeyShare = BigInteger.ONE;
 
         // Iterate all commitments
-        for (int i = 0; i < tallierCommitments.keySet().size(); i++) {
-            List<BigInteger> commitmentCoefficients = tallierCommitments.get(i).join();
+        for (int i = 0; i < tallierCommitmentsAndProofs.keySet().size(); i++) {
+            List<BigInteger> commitmentCoefficients = tallierCommitmentsAndProofs.get(i).join().getLeft();
 
             for (int ell = 0; ell < this.k; ell++) {
                 BigInteger j_pow_ell = BigInteger.valueOf(j).pow(ell);
@@ -160,8 +161,8 @@ public class BulletinBoardV2_0 {
 
 
     // Post commitment to P(X)
-    public void publishPolynomialCommitment(int tallierIndex, List<BigInteger> commitments) {
-        tallierCommitments.get(tallierIndex).complete(commitments);
+    public void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<BigInteger> commitments, List<Sigma1Proof> commitmentProofs) {
+        tallierCommitmentsAndProofs.get(tallierIndex).complete(Pair.of(commitments, commitmentProofs));
     }
 
     public void publishIndividualPK(int tallierIndex, ElGamalPK pk) {
@@ -184,8 +185,8 @@ public class BulletinBoardV2_0 {
         return encryptedSubShares.get(key);
     }
 
-    public CompletableFuture<List<BigInteger>> retrievePolynomialCommitment(int j) {
-        return tallierCommitments.get(j);
+    public CompletableFuture<Pair< List<BigInteger>, List<Sigma1Proof> >> retrieveCommitmentsAndProofs(int j) {
+        return tallierCommitmentsAndProofs.get(j);
     }
 
 
