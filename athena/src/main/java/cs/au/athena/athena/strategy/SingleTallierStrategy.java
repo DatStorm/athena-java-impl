@@ -47,8 +47,8 @@ public class SingleTallierStrategy implements Strategy {
         Group group = this.getGroup(kappa, random);
 
         // Create elgamal and generate keys
-        ElGamalSK sk = this.getElGamalSK(CONSTANTS.TALLIER_INDEX, group, random); // Dependent on the strategy this will be either the full sk or a share of it.
-        ElGamalPK pk = this.getElGamalPK(sk); // TODO: should this be pk or h_i ?
+        ElGamalSK sk = Elgamal.generateSK(group, random);
+        ElGamalPK pk = sk.pk;
         Sigma1Proof rho = this.proveKey(pk, sk, kappa);
 
         //this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
@@ -70,16 +70,6 @@ public class SingleTallierStrategy implements Strategy {
         bb.publishPKV(pkv);
 
         return sk;
-    }
-
-    @Override
-    public ElGamalSK getElGamalSK(int i, Group group, Random random) {
-        return Elgamal.generateSK(group, random);
-    }
-
-    @Override
-    public ElGamalPK getElGamalPK(ElGamalSK sk) {
-        return sk.pk; // TODO: retrieve pk/pkv from the bulletin board instead?
     }
 
     @Override

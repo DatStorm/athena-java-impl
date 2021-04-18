@@ -22,8 +22,6 @@ public interface Strategy {
 
     //TODO: Move nc to BB
     ElGamalSK setup(int tallierIndex, int nc, int kappa);
-    ElGamalSK getElGamalSK(int tallierIndex, Group group, Random random);
-    ElGamalPK getElGamalPK(ElGamalSK sk);
     /**
      * ProveKey_{SIGMA_1} & VerifyKey_{SIGMA_1}
      */

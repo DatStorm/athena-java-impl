@@ -98,11 +98,6 @@ public class DistributedStrategy implements Strategy {
     }
 
 
-    @Override
-    public ElGamalSK getElGamalSK(int tallierIndex, Group group, Random random) {
-        return null;
-    }
-
     // Compute and publish the subshares P_i(j) for 1 \leq j \leq n
     private void publishSubShares(int tallierIndex, Group group, Random random, int tallierCount, Polynomial polynomial) {
         // For each other tallier
@@ -176,12 +171,6 @@ public class DistributedStrategy implements Strategy {
         return subShares;
     }
 
-    // Probably redundant. Just use sk.pk. -Mark
-    @Override
-    public ElGamalPK getElGamalPK(ElGamalSK sk) {
-        // return g^P(i) // TODO: we need to be able to retrieve the "regular" pk else we cannot vote!
-        return sk.pk; // TODO: retrieve pk from the bulletin board instead?
-    }
 
     @Override
     public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, int kappa) {
