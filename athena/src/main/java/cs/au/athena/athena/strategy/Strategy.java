@@ -1,8 +1,6 @@
 package cs.au.athena.athena.strategy;
 
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
-import cs.au.athena.dao.Randomness;
-import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.mixnet.MixStatement;
@@ -13,12 +11,11 @@ import cs.au.athena.elgamal.*;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Random;
 
 public interface Strategy {
 
     //TODO: Remove random from param. Should be given to constructor.
-    Group getGroup(int kappa, Random random);
+    Group getGroup(int kappa);
 
     //TODO: Move nc to BB
     ElGamalSK setup(int tallierIndex, int nc, int kappa);

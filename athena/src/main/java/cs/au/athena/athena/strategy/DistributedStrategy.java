@@ -38,7 +38,7 @@ public class DistributedStrategy implements Strategy {
 
 
     @Override
-    public Group getGroup(int kappa, Random random) {
+    public Group getGroup(int kappa) {
         return bb.getGroup();
     }
 
@@ -49,7 +49,7 @@ public class DistributedStrategy implements Strategy {
 
         Random random = athenaFactory.getRandom();
 
-        Group group = this.getGroup(kappa, random);
+        Group group = this.getGroup(kappa);
 
 //        logger.info(MARKER, "retrieving Tallier count");
         int tallierCount = bb.retrieveTallierCount();

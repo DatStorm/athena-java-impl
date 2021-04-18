@@ -5,7 +5,7 @@ import cs.au.athena.elgamal.Group;
 import java.math.BigInteger;
 
 public class CONSTANTS {
-    public static final long RANDOM_SEED = 2;
+    public static final long RANDOM_SEED = 1;
     public static final String ALGORITHM_SHA3_256 = "SHA3-256";
     public static final int NUMBER_OF_CANDIDATES_DEFAULT = 10;
 

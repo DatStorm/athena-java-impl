@@ -32,7 +32,8 @@ public class SingleTallierStrategy implements Strategy {
 
 
     @Override
-    public Group getGroup(int kappa, Random random) {
+    public Group getGroup(int kappa) {
+        Random random = athenaFactory.getRandom();
         // return Group.generateGroup(bitlength, random);
         return CONSTANTS.ELGAMAL_CURRENT.GROUP;
     }
@@ -44,7 +45,7 @@ public class SingleTallierStrategy implements Strategy {
         Random random = athenaFactory.getRandom();
 
         // Get the group
-        Group group = this.getGroup(kappa, random);
+        Group group = this.getGroup(kappa);
 
         // Create elgamal and generate keys
         ElGamalSK sk = Elgamal.generateSK(group, random);
@@ -74,8 +75,8 @@ public class SingleTallierStrategy implements Strategy {
 
     @Override
     public Sigma1Proof proveKey(ElGamalPK pk, ElGamalSK sk, int kappa) {
-        Random random = athenaFactory.getRandom();
         Sigma1 sigma1 = athenaFactory.getSigma1();
+        Random random = athenaFactory.getRandom();
 
         return sigma1.ProveKey(pk, sk, random, kappa);
 
