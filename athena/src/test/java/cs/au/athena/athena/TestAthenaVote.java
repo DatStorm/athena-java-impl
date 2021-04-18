@@ -2,6 +2,7 @@ package cs.au.athena.athena;
 
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.factory.AthenaFactory;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +45,8 @@ public class TestAthenaVote {
 
         athena = new AthenaImpl(msFactory);
         ElectionSetup setup = athena.Setup(nc, this.kappa);
-        PK_Vector pk_vector = msFactory.getBulletinBoard().retrievePK_vector();
+//        PK_Vector pk_vector = msFactory.getBulletinBoard().retrievePK_vector();
+        PK_Vector pk_vector = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         Group group = pk_vector.pk.group;
 
         this.elgamal = new Elgamal(group, nc, msFactory.getRandom());

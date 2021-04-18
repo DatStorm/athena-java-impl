@@ -169,7 +169,8 @@ public class AthenaVote {
             athenaVote.bulletProof = this.athenaFactory.getBulletProof();
             athenaVote.random = this.athenaFactory.getRandom();
             athenaVote.elgamal = this.elgamal;
-            athenaVote.bb = this.athenaFactory.getBulletinBoard();
+//            athenaVote.bb = this.athenaFactory.getBulletinBoard();
+            athenaVote.bb =BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
             athenaVote.kappa = this.kappa;
 
             return athenaVote;

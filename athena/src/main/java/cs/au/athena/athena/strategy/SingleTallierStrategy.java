@@ -44,7 +44,9 @@ public class SingleTallierStrategy implements Strategy {
     }
 
     @Override
-    public ElGamalPK getElGamalPK(ElGamalSK sk) { return sk.pk; }
+    public ElGamalPK getElGamalPK(ElGamalSK sk) {
+        return sk.pk; // TODO: retrieve pk/pkv from the bulletin board instead?
+    }
 
     @Override
     public ProveKeyInfo proveKey(ElGamalPK pk, ElGamalSK sk, Randomness r, int kappa) {

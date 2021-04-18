@@ -33,7 +33,8 @@ public class TestAthenaTally {
         msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
         athena = new AthenaImpl(msFactory);
         ElectionSetup setup = athena.Setup(nc, this.kappa);
-        bb = msFactory.getBulletinBoard();
+//        bb = msFactory.getBulletinBoard();
+        bb =BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
 
         sk = setup.sk;
         pkv = bb.retrievePK_vector();

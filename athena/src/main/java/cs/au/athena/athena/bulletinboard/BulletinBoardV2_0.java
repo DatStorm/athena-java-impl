@@ -1,6 +1,5 @@
 package cs.au.athena.athena.bulletinboard;
 
-import com.google.common.cache.AbstractCache;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
@@ -18,11 +17,12 @@ import java.util.Map;
 public class BulletinBoardV2_0 {
 
     private static BulletinBoardV2_0 single_instance = null;
-    private final int tallierCount;
+    private int tallierCount;
     private int k;
     private Group group;
     private Map<Integer, List<BigInteger>> tallierCommitments;
     private Map<Integer, Ciphertext> encryptedSubShares;
+    private Map<Integer,ElGamalPK> mapOfIndividualPK;
 
     // static method to create instance of Singleton class
     public static BulletinBoardV2_0 getInstance() {
@@ -35,11 +35,16 @@ public class BulletinBoardV2_0 {
 
     private BulletinBoardV2_0() {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
-        this.tallierCount = CONSTANTS.TALLIER_CURRENT.TALLIER_COUNT;
-        this.k = CONSTANTS.TALLIER_CURRENT.K;
-        tallierCommitments = new HashMap<>(this.tallierCount);
-        encryptedSubShares = new HashMap<>(this.tallierCount);
+        this.tallierCommitments = new HashMap<>();
+        this.encryptedSubShares = new HashMap<>();
+        this.mapOfIndividualPK = new HashMap<>();
     }
+
+    public void publishTallierCount(int tallierCount) { this.tallierCount = tallierCount; }
+    public void publishK(int k) { this.k = k; }
+
+
+
 
 
     // Ballots
@@ -116,6 +121,7 @@ public class BulletinBoardV2_0 {
         return new ElGamalPK(group, publicKey);
     }
 
+    // Compute and return the public key share h_j from the committed polynomials
     public ElGamalPK retrievePK(int j) {
         BigInteger publicKeyShare = BigInteger.ONE;
 
@@ -140,10 +146,26 @@ public class BulletinBoardV2_0 {
         tallierCommitments.put(tallierIndex, commitments);
     }
 
-    // TODO: Skipper thinks this is redundant, as it can be computed from the committed polynomials
-    public void publishTallierPublicKey(int tallierIndex, ElGamalPK pk) {
-        throw new UnsupportedOperationException("FIXME");
+    public void publishIndividualPK(int tallierIndex, ElGamalPK pk) {
+       mapOfIndividualPK.put(tallierIndex, pk);
     }
+
+    public ElGamalPK retrieveIndividualPK(int tallierIndex) {
+
+        while (!mapOfIndividualPK.containsKey(tallierIndex)) {
+            // wait
+            // TODO: sleep
+        }
+        return mapOfIndividualPK.get(tallierIndex);
+//        if (mapOfIndividualPK.containsKey(tallierIndex)) {
+//            return mapOfIndividualPK.get(tallierIndex);
+//        } else {
+//            throw new RuntimeException(String.format("No pk for tallier %d found.", tallierIndex));
+//        }
+
+    }
+
+
 
     public void publishEncSubShare(int j, Ciphertext subShareToTallier_j) {
         encryptedSubShares.put(j, subShareToTallier_j);
@@ -156,6 +178,8 @@ public class BulletinBoardV2_0 {
     public List<BigInteger> retrievePolynomialCommitment(int j) {
         return tallierCommitments.get(j);
     }
+
+
 
 
     // Construct pfr elements

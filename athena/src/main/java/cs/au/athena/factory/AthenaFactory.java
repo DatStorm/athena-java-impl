@@ -1,6 +1,7 @@
 package cs.au.athena.factory;
 
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.strategy.Strategy;
 
 import java.util.Random;
@@ -21,7 +22,7 @@ public interface AthenaFactory extends SigmaFactory {
 
     Random getRandom();
 
-    BulletinBoard getBulletinBoard();
+    BulletinBoardV2_0 getBulletinBoard();
 
     Strategy getStrategy();
 }

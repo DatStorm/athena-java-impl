@@ -1,6 +1,8 @@
 package cs.au.athena.distributed;
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.athena.AthenaImpl;
 import cs.au.athena.dao.athena.ElectionSetup;
@@ -14,10 +16,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
 import java.util.Random;
+import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 
 
 @Tag("TestAthenaDistributedStrategy")
@@ -41,16 +45,50 @@ public class TestAthenaDistributedStrategy {
     }
 
     @Test
-    void TestGetElGamalSK() {
+    void TestGetElGamalSK() throws InterruptedException {
         Strategy strategy = maFactory.getStrategy();
         Random random = maFactory.getRandom();
+        BulletinBoardV2_0 bb = maFactory.getBulletinBoard();
+
+        int talliercount = 2;
+        int atMostKBadTalliers = 2;
+        bb.publishTallierCount(talliercount);
+        bb.publishK(atMostKBadTalliers);
+
         Group group = strategy.getGroup(kappa * 8 , random);
 
-        // Should post stuff
-        ElGamalSK sk = strategy.getElGamalSK(0, group, random);
-        // Get g^P(X)
+        CompletableFuture<ElGamalSK> f1 = new CompletableFuture<>();
+        CompletableFuture<ElGamalSK> f2 = new CompletableFuture<>();
+        Thread t1 = new Thread(() -> f1.complete(strategy.getElGamalSK(1, group, random)));
+        Thread t2 = new Thread(() -> f2.complete(strategy.getElGamalSK(2, group, random)));
+
+        // Start and wait for finish
+        t1.start();
+        t2.start();
+        ElGamalSK sk1 = f1.join();
+        ElGamalSK sk2 = f2.join();
+
+        //Test that sk matches pk
+        MatcherAssert.assertThat("", sk1.sk,is(not(BigInteger.ZERO)));
+        MatcherAssert.assertThat("", sk2.sk,is(not(BigInteger.ZERO)));
+
+        //Test stuff
 
 
-        MatcherAssert.assertThat("Should not be null", sk, is(true));
+
+        MatcherAssert.assertThat("Should not be null", BigInteger.ONE, is(not(BigInteger.ZERO)));
     }
+
+
+    // Things to test
+    /*
+    Polinomial matches polinomialCommitment?
+    pk individual pk is published
+    subshare is encrypted correctly
+    subshare is valid compared to polinomialCommitment
+
+    Lack of tallierCount or k on bb, should lead to error or timeout???
+    Wrong polinomial Commitment length leads to error
+    Invalid share leads to error
+     */
 }

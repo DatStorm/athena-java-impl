@@ -94,7 +94,8 @@ public class AthenaRegister {
 
             //Construct Object
             AthenaRegister athenaRegister = new AthenaRegister();
-            athenaRegister.bb = this.factory.getBulletinBoard();
+//            athenaRegister.bb = this.factory.getBulletinBoard();
+            athenaRegister.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
             athenaRegister.strategy = this.factory.getStrategy();
             athenaRegister.random = this.factory.getRandom();
             athenaRegister.elGamal = this.elgamal;

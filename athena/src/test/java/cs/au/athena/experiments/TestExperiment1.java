@@ -46,7 +46,8 @@ public class TestExperiment1 {
 
         AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
         athena = new AthenaImpl(athenaFactory);
-        bb = athenaFactory.getBulletinBoard();
+//        bb = athenaFactory.getBulletinBoard();
+        bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         nc = 2 ^ 10; // = 1024
         tallier = new Tallier(athena, bb, kappa, nc);
         registrar = new Registrar(athena, bb, kappa);

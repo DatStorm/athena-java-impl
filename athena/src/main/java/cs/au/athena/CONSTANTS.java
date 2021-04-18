@@ -23,14 +23,14 @@ public class CONSTANTS {
 
 
     public static class ELGAMAL_CURRENT {
-        public static final BigInteger ELGAMAL_P = ELGAMAL_2048_BITS.ELGAMAL_P;
-        public static final BigInteger ELGAMAL_Q = ELGAMAL_2048_BITS.ELGAMAL_Q;
-        public static final BigInteger ELGAMAL_G = ELGAMAL_2048_BITS.ELGAMAL_G;
+        public static final BigInteger ELGAMAL_P = ELGAMAL_32_BITS.ELGAMAL_P;
+        public static final BigInteger ELGAMAL_Q = ELGAMAL_32_BITS.ELGAMAL_Q;
+        public static final BigInteger ELGAMAL_G = ELGAMAL_32_BITS.ELGAMAL_G;
 
         /**
          * Elgamal bit length specify how big values to use.
          */
-        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_2048_BITS.ELGAMAL_BIT_LENGTH;
+        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_32_BITS.ELGAMAL_BIT_LENGTH;
         public static final Group GROUP = new Group(ELGAMAL_P, ELGAMAL_Q, ELGAMAL_G);
 
     }
@@ -39,7 +39,7 @@ public class CONSTANTS {
     /**
      * Fixed values for the case when elGamal with 64 bits is used.
      */
-    private static class ELGAMAL_32_BITS {
+    public static class ELGAMAL_32_BITS {
         public static final int ELGAMAL_BIT_LENGTH = 32;
         public static final BigInteger ELGAMAL_P = new BigInteger("7951924187");
         public static final BigInteger ELGAMAL_Q = new BigInteger("3975962093");

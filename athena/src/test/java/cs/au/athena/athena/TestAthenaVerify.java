@@ -39,7 +39,8 @@ public class TestAthenaVerify {
 
         sk = setup.sk;
 
-        bb = msFactory.getBulletinBoard();
+//        bb = msFactory.getBulletinBoard();
+        bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
 
 
     }

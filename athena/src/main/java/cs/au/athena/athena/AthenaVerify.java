@@ -352,7 +352,8 @@ public class AthenaVerify {
 
             AthenaVerify athenaVerify = new AthenaVerify();
             athenaVerify.strategy = this.factory.getStrategy();
-            athenaVerify.bb = this.factory.getBulletinBoard();
+//            athenaVerify.bb = this.factory.getBulletinBoard();
+            athenaVerify.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
             athenaVerify.mc = this.mc;
             athenaVerify.kappa = this.kappa;
 

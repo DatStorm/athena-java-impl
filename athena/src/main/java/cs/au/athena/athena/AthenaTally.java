@@ -373,7 +373,8 @@ public class AthenaTally {
             athenaTally.elgamal = elgamal;
             athenaTally.strategy = this.athenaFactory.getStrategy();
             athenaTally.random = this.athenaFactory.getRandom();
-            athenaTally.bb = this.athenaFactory.getBulletinBoard();
+//            athenaTally.bb = this.athenaFactory.getBulletinBoard();
+            athenaTally.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
             athenaTally.kappa = kappa;
 
             return athenaTally;
