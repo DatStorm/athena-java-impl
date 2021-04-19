@@ -46,6 +46,7 @@ public class TestAthenaVerify {
      * -DO NOT RUN WITH LOW VALUES ELGAMAL VALUES-
      * -------------------------------------------
      ********************************************/
+    @Disabled
     @RepeatedTest(100)
     void TestAthenaVerify() {
 
