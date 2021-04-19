@@ -4,41 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/CONSTANTS.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/CONSTANTS.java" afterDir="false" />
+    <list default="true" id="ead49b1b-058d-44e7-9212-98a7a385564d" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/BulletinBoardV2_0.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/BulletinBoardV2_0.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/AthenaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/AthenaFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/MainAthenaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/factory/MainAthenaFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/sigma/Sigma1.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/sigma/Sigma1.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/distributed/TestAthenaDistributedStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/distributed/TestAthenaDistributedStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma1.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma1.java" afterDir="false" />
     </list>
-    <list id="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" name="Changes by datstorm" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitSEFilterConfiguration">
-    <file-type-list>
-      <filtered-out-file-type name="LOCAL_BRANCH" />
-      <filtered-out-file-type name="REMOTE_BRANCH" />
-      <filtered-out-file-type name="TAG" />
-      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
-    </file-type-list>
-  </component>
-  <component name="ProjectId" id="1onWj3UkFJYBfeeJjUMsfTqwSX9" />
+  <component name="ProjectId" id="1rPDIET9Vh5fZtCzn7kdIJr2cG1" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -46,138 +25,16 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="codeWithMe.voiceChat.enabledByDefault" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="project.structure.last.edited" value="Modules" />
-    <property name="project.structure.proportion" value="0.0" />
-    <property name="project.structure.side.proportion" value="0.0" />
-  </component>
-  <component name="RecentsManager">
-    <key name="CreateClassDialog.RecentsKey">
-      <recent name="project.dao.bulletproof" />
-      <recent name="project.dao.mixnet" />
-    </key>
-    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
-      <recent name="cs.au.athena.athena" />
-    </key>
-    <key name="MoveInnerDialog.RECENTS_KEY">
-      <recent name="cs.au.athena.athena.bulletinboard" />
-    </key>
-  </component>
-  <component name="RunManager" selected="JUnit.TestAthenaDistributedStrategy">
-    <configuration name="TestAthenaDistributedStrategy" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="cs.au.athena.athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="cs.au.athena.distributed.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="cs.au.athena.distributed" />
-      <option name="MAIN_CLASS_NAME" value="cs.au.athena.distributed.TestAthenaDistributedStrategy" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestSigma1" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="cs.au.athena.athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="cs.au.athena.sigmas.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="cs.au.athena.sigmas" />
-      <option name="MAIN_CLASS_NAME" value="cs.au.athena.sigmas.TestSigma1" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestSigma1.TestSigma1Polinomial" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="cs.au.athena.athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="cs.au.athena.sigmas.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="cs.au.athena.sigmas" />
-      <option name="MAIN_CLASS_NAME" value="cs.au.athena.sigmas.TestSigma1" />
-      <option name="METHOD_NAME" value="TestSigma1Polinomial" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="cs.au.athena.athena in cs.au.athena.athena" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="cs.au.athena.athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="cs.au.athena.athena.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="cs.au.athena.athena" />
-      <option name="TEST_OBJECT" value="package" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="cs.au.athena.distributed in cs.au.athena.athena" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="cs.au.athena.athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="cs.au.athena.distributed.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="cs.au.athena.distributed" />
-      <option name="TEST_OBJECT" value="package" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <list>
-      <item itemvalue="JUnit.TestSigma1" />
-      <item itemvalue="JUnit.TestAthenaDistributedStrategy" />
-      <item itemvalue="JUnit.cs.au.athena.athena in cs.au.athena.athena" />
-      <item itemvalue="JUnit.cs.au.athena.distributed in cs.au.athena.athena" />
-      <item itemvalue="JUnit.TestSigma1.TestSigma1Polinomial" />
-    </list>
-    <recent_temporary>
-      <list>
-        <item itemvalue="JUnit.TestAthenaDistributedStrategy" />
-        <item itemvalue="JUnit.TestSigma1.TestSigma1Polinomial" />
-        <item itemvalue="JUnit.cs.au.athena.distributed in cs.au.athena.athena" />
-        <item itemvalue="JUnit.cs.au.athena.athena in cs.au.athena.athena" />
-        <item itemvalue="JUnit.TestSigma1" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="" />
-      <created>1613922969452</created>
+      <changelist id="ead49b1b-058d-44e7-9212-98a7a385564d" name="Default Changelist" comment="" />
+      <created>1618868751768</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1613922969452</updated>
+      <updated>1618868751768</updated>
     </task>
     <servers />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>

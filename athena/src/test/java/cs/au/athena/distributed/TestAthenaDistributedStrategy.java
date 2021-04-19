@@ -46,7 +46,6 @@ public class TestAthenaDistributedStrategy {
     void TestSetup() {
         Strategy strategy = factory.getStrategy();
         Random random = factory.getRandom();
-
         BulletinBoardV2_0 bb = factory.getBulletinBoard();
 
 
@@ -69,8 +68,8 @@ public class TestAthenaDistributedStrategy {
 
         //Test that sk matches pk
         MatcherAssert.assertThat("", sk1.sk,is(not(BigInteger.ZERO)));
-        //MatcherAssert.assertThat("", sk2.sk,is(not(BigInteger.ZERO)));
-        //MatcherAssert.assertThat("", sk3.sk,is(not(BigInteger.ZERO)));
+        MatcherAssert.assertThat("", sk2.sk,is(not(BigInteger.ZERO)));
+        MatcherAssert.assertThat("", sk3.sk,is(not(BigInteger.ZERO)));
 
         //Test stuff
 

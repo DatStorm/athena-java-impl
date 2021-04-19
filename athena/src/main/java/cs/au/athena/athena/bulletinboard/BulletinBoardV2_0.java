@@ -168,6 +168,7 @@ public class BulletinBoardV2_0 {
 
     // Post commitment to P(X)
     public void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<BigInteger> commitments, List<Sigma1Proof> commitmentProofs) {
+        assert tallierIndex <= tallierCount;
 
         if (tallierCommitmentsAndProofs.containsKey(tallierIndex)) {
             tallierCommitmentsAndProofs.get(tallierIndex).complete(Pair.of(commitments, commitmentProofs));
