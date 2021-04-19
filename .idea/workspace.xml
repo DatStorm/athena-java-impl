@@ -6,10 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="33926536-3b19-4dc0-9128-337d753f37db" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/CONSTANTS.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/CONSTANTS.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/HASH.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/HASH.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/Polynomial.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/Polynomial.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/BulletinBoardV2_0.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/bulletinboard/BulletinBoardV2_0.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/DistributedStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/SingleTallierStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/SingleTallierStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/Strategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/athena/strategy/Strategy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/sigma/Sigma1.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/main/java/cs/au/athena/sigma/Sigma1.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/distributed/TestAthenaDistributedStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/distributed/TestAthenaDistributedStrategy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma1.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/sigmas/TestSigma1.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/util/TestPolynomial.java" beforeDir="false" afterPath="$PROJECT_DIR$/athena/src/test/java/cs/au/athena/util/TestPolynomial.java" afterDir="false" />
     </list>
     <list id="2d06f14b-6a46-48b5-a28c-8b8d510e71d9" name="Changes by datstorm" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -62,7 +66,7 @@
       <recent name="cs.au.athena.athena.bulletinboard" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.cs.au.athena.distributed in cs.au.athena.athena">
+  <component name="RunManager" selected="JUnit.TestAthenaDistributedStrategy">
     <configuration name="TestAthenaDistributedStrategy" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="cs.au.athena.athena" />
       <extension name="coverage">
@@ -78,22 +82,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestAthenaDistributedStrategy.TestGetElGamalSK" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="cs.au.athena.athena" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="cs.au.athena.distributed.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="cs.au.athena.distributed" />
-      <option name="MAIN_CLASS_NAME" value="cs.au.athena.distributed.TestAthenaDistributedStrategy" />
-      <option name="METHOD_NAME" value="TestGetElGamalSK" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="TestSigma1" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="cs.au.athena.athena" />
       <extension name="coverage">
@@ -105,6 +93,22 @@
       <option name="PACKAGE_NAME" value="cs.au.athena.sigmas" />
       <option name="MAIN_CLASS_NAME" value="cs.au.athena.sigmas.TestSigma1" />
       <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestSigma1.TestSigma1Polinomial" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="cs.au.athena.athena" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="cs.au.athena.sigmas.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="cs.au.athena.sigmas" />
+      <option name="MAIN_CLASS_NAME" value="cs.au.athena.sigmas.TestSigma1" />
+      <option name="METHOD_NAME" value="TestSigma1Polinomial" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -138,19 +142,19 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="JUnit.TestAthenaDistributedStrategy.TestGetElGamalSK" />
       <item itemvalue="JUnit.TestSigma1" />
       <item itemvalue="JUnit.TestAthenaDistributedStrategy" />
       <item itemvalue="JUnit.cs.au.athena.athena in cs.au.athena.athena" />
       <item itemvalue="JUnit.cs.au.athena.distributed in cs.au.athena.athena" />
+      <item itemvalue="JUnit.TestSigma1.TestSigma1Polinomial" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.TestAthenaDistributedStrategy" />
+        <item itemvalue="JUnit.TestSigma1.TestSigma1Polinomial" />
         <item itemvalue="JUnit.cs.au.athena.distributed in cs.au.athena.athena" />
         <item itemvalue="JUnit.cs.au.athena.athena in cs.au.athena.athena" />
-        <item itemvalue="JUnit.TestAthenaDistributedStrategy" />
         <item itemvalue="JUnit.TestSigma1" />
-        <item itemvalue="JUnit.TestAthenaDistributedStrategy.TestGetElGamalSK" />
       </list>
     </recent_temporary>
   </component>

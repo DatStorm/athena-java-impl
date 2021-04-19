@@ -3,7 +3,6 @@ package cs.au.athena.athena.strategy;
 import cs.au.athena.Polynomial;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
-import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
@@ -24,7 +23,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 
 public class DistributedStrategy implements Strategy {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -65,18 +63,21 @@ public class DistributedStrategy implements Strategy {
 
         // Post commitment to P_i(X)
         logger.info(MARKER, "publishing polynomial commitment");
-        List<BigInteger> commitments = polynomial.getCommitmentOfPolynomialCoefficients();
 
         // For each commitment, coefficient pair, do proof
+        List<BigInteger> coefficients = polynomial.getCoefficients();
+        List<BigInteger> commitments = polynomial.getCommitments();
+
         List<Sigma1Proof> commitmentProofs = new ArrayList<>();
         for(int ell = 0; ell <= k; ell++) {
-            BigInteger coefficient = polynomial.getCoefficients().get(ell);
+            BigInteger coefficient = coefficients.get(ell);
             BigInteger commitment = commitments.get(ell);
-            logger.info(MARKER, "commitment is " + commitment);
-            logger.info(MARKER, "coefficient is " + coefficient);
+
             Sigma1Proof proof = this.proveKey(commitment, coefficient, kappa);
             commitmentProofs.add(proof);
         }
+
+
 
         logger.info(MARKER, "publishing polynomial commitment and proofs");
         bb.publishPolynomialCommitmentsAndProofs(tallierIndex, commitments, commitmentProofs);
@@ -208,6 +209,8 @@ public class DistributedStrategy implements Strategy {
         Sigma1 sigma1 = athenaFactory.getSigma1();
         Random random = athenaFactory.getRandom();
         Group group = this.getGroup();
+
+        assert group.g.modPow(sk, group.p).equals(pk);
 
 //        System.out.println("PK: " + pk);
 //        System.out.println("SK: " + sk);

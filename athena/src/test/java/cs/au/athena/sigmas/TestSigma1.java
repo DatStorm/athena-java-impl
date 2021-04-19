@@ -2,6 +2,8 @@ package cs.au.athena.sigmas;
 
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.Polynomial;
+import cs.au.athena.elgamal.Group;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +21,7 @@ import cs.au.athena.factory.MainFactory;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -137,5 +140,38 @@ public class TestSigma1 {
         Sigma1Proof rho = sigma1.ProveKey(this.pk.h, this.sk.sk, pk.group, random, this.kappa);
         boolean verification = sigma1.VerifyKey(this.pk.h, rho, pk.group, this.kappa);
         MatcherAssert.assertThat("Should return 1", verification, is(true));
+    }
+
+    @Test
+    void TestSigma1Arbitrary() {
+        Group group = pk.group;
+        BigInteger coefficient = UTIL.getRandomElement(group.q, random);
+        BigInteger commitment = group.g.modPow(coefficient, group.p);
+
+        Sigma1Proof rho = sigma1.ProveKey(commitment, coefficient, group, random, this.kappa);
+        boolean verification = sigma1.VerifyKey(commitment, rho, group, this.kappa);
+        MatcherAssert.assertThat("Should return 1", verification, is(true));
+    }
+
+    @Test
+    void TestSigma1Polinomial() {
+        Group group = pk.group;
+        int k = 5;
+        Polynomial polynomial = Polynomial.newRandom(k, group, random);
+
+
+        // For each commitment, coefficient pair, do proof
+        List<BigInteger> coefficients = polynomial.getCoefficients();
+        List<BigInteger> commitments = polynomial.getCommitments();
+
+        List<Sigma1Proof> commitmentProofs = new ArrayList<>();
+        for(int ell = 0; ell <= k; ell++) {
+            BigInteger coefficient = coefficients.get(ell);
+            BigInteger commitment = commitments.get(ell);
+
+            Sigma1Proof proof = sigma1.ProveKey(commitment, coefficient, group, random, kappa);
+            commitmentProofs.add(proof);
+        }
+
     }
 }

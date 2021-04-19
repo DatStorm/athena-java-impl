@@ -51,7 +51,7 @@ public class Polynomial {
 
 
     // Returns g^P(X)
-    public List<BigInteger> getCommitmentOfPolynomialCoefficients() {
+    public List<BigInteger> getCommitments() {
         // [0: 1943345851, 1:3634149401, 2:1863252840]
         int size = coefficients.size();
         List<BigInteger> commitments = new ArrayList<>();
@@ -65,7 +65,7 @@ public class Polynomial {
     }
 
     public  BigInteger getPointCommitment(int index) {
-        return getPointCommitment(index, getCommitmentOfPolynomialCoefficients(), group);
+        return getPointCommitment(index, getCommitments(), group);
     }
 
     public static BigInteger getPointCommitment(int index, List<BigInteger> polynomialCommitments, Group group) {

@@ -13,7 +13,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -40,7 +39,7 @@ public class TestPolynomial {
         // P(X) = 1 + 10x
         //Polynomial poly = new Polynomial(Arrays.asList(BigInteger.ONE, BigInteger.TEN), group);
         Polynomial poly = Polynomial.newRandom(k, group, random);
-        List<BigInteger> commitments = poly.getCommitmentOfPolynomialCoefficients();
+        List<BigInteger> commitments = poly.getCommitments();
 
         // Commitment to P(4)
         int x = 4;
@@ -63,7 +62,7 @@ public class TestPolynomial {
         // P(X) = 1 + 2x
         Polynomial poly = Polynomial.newRandom(k, group, random);
         List<BigInteger> coefficients = poly.getCoefficients();
-        List<BigInteger> committedCoefficients = poly.getCommitmentOfPolynomialCoefficients();
+        List<BigInteger> committedCoefficients = poly.getCommitments();
 
         // Check that the commitments are valid for all coefficients.
         for(int i = 0; i <= k; i++) {
@@ -96,7 +95,7 @@ public class TestPolynomial {
 
         // P(X) = 1 + 2x
         Polynomial poly = new Polynomial(Arrays.asList(BigInteger.TWO, BigInteger.ONE, BigInteger.TEN), group);
-        List<BigInteger> commitments = poly.getCommitmentOfPolynomialCoefficients();
+        List<BigInteger> commitments = poly.getCommitments();
 
         int x = random.nextInt(1000);
         BigInteger bigy = poly.eval(x);

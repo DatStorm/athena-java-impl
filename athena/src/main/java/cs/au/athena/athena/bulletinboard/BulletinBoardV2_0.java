@@ -34,6 +34,7 @@ public class BulletinBoardV2_0 {
         if (single_instance == null) {
             single_instance = new BulletinBoardV2_0(tallierCount);
         }
+
         return single_instance;
     }
 
@@ -172,7 +173,7 @@ public class BulletinBoardV2_0 {
             tallierCommitmentsAndProofs.get(tallierIndex).complete(Pair.of(commitments, commitmentProofs));
 
         } else {
-            throw new IllegalStateException("Does not exists...");
+            throw new IllegalStateException("TallierIndex does not exists..." + tallierIndex + tallierCommitmentsAndProofs.size());
         }
 
     }

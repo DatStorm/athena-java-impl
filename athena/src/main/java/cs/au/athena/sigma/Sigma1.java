@@ -81,7 +81,10 @@ public class Sigma1 {
         // zeta = \alpha(sk) - e[j] mod (p-1)
         BigInteger zeta = alpha.subtract(ej).mod(q);
 
-        return new Sigma1Proof(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
+        Sigma1Proof proof = new Sigma1Proof(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
+
+        assert VerifyKey(pk, proof, group, kappa) : "ProveKey produced invalid proof";
+        return proof;
     }
 
 

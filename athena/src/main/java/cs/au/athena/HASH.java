@@ -1,7 +1,6 @@
 package cs.au.athena;
 
 import com.google.common.primitives.Bytes;
-import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.UVector;
 import cs.au.athena.dao.mixnet.MixBallot;
 
@@ -14,9 +13,9 @@ import java.util.BitSet;
 import java.util.List;
 
 public class HASH {
-    private static final MessageDigest hashH = GET_HASH_FUNCTION();
+    private static final MessageDigest hashH = getHashInstance();
 
-    private static MessageDigest GET_HASH_FUNCTION() {
+    private static MessageDigest getHashInstance() {
         MessageDigest sha3_256 = null;
         try {
             sha3_256 = MessageDigest.getInstance(CONSTANTS.ALGORITHM_SHA3_256);
@@ -58,7 +57,7 @@ public class HASH {
 
 
     public static byte[] hash(byte[] bytes) {
-        return hashH.digest(bytes);
+        return getHashInstance().digest(bytes);
     }
 
 
