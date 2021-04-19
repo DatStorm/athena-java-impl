@@ -15,6 +15,7 @@ import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.factory.Factory;
 import cs.au.athena.factory.MainFactory;
+import cs.au.athena.elgamal.Group;
 
 
 import java.math.BigInteger;
@@ -136,6 +137,17 @@ public class TestSigma1 {
     void TestSigma1a() {
         Sigma1Proof rho = sigma1.ProveKey(this.pk.h, this.sk.sk, pk.group, random, this.kappa);
         boolean verification = sigma1.VerifyKey(this.pk.h, rho, pk.group, this.kappa);
+        MatcherAssert.assertThat("Should return 1", verification, is(true));
+    }
+
+    @Test
+    void TestSigma1Arbitrary() {
+        Group group = pk.group;
+        BigInteger coefficient = UTIL.getRandomElement(group.q, random);
+        BigInteger commitment = group.g.modPow(coefficient, group.p);
+
+        Sigma1Proof rho = sigma1.ProveKey(commitment, coefficient, group, random, this.kappa);
+        boolean verification = sigma1.VerifyKey(commitment, rho, group, this.kappa);
         MatcherAssert.assertThat("Should return 1", verification, is(true));
     }
 }

@@ -20,9 +20,11 @@ import java.util.Random;
 public class MainAthenaFactory implements AthenaFactory {
     private final Random random;
     private final Strategy strategy;
+    private final int tallierCount;
 
 
     public MainAthenaFactory(AthenaFactory.STRATEGY strategyChoice, int tallierCount) {
+        this.tallierCount = tallierCount;
         this.random = new Random(CONSTANTS.RANDOM_SEED);
 
         switch (strategyChoice) {
@@ -30,7 +32,7 @@ public class MainAthenaFactory implements AthenaFactory {
                 this.strategy = new SingleTallierStrategy(this);
                 break;
             case DISTRIBUTED:
-                this.strategy = new DistributedStrategy(this, tallierCount);
+                this.strategy = new DistributedStrategy(this);
                 break;
             default:
                 throw new IllegalArgumentException("Not a valid strategy");
@@ -73,8 +75,8 @@ public class MainAthenaFactory implements AthenaFactory {
     public Random getRandom() { return this.random; }
 
     @Override
-    public BulletinBoardV2_0 getBulletinBoard(int tallierCount) {
-        return BulletinBoardV2_0.getInstance(tallierCount);
+    public BulletinBoardV2_0 getBulletinBoard() {
+        return BulletinBoardV2_0.getInstance(this.tallierCount);
     }
 
     @Override

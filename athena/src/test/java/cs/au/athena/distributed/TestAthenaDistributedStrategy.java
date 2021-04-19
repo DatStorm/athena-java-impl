@@ -23,10 +23,12 @@ public class TestAthenaDistributedStrategy {
     private final int kappa = CONSTANTS.KAPPA;
     private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
     MainAthenaFactory factory;
+    private          int tallierCount;
+
 
     @BeforeEach
     void setUp() {
-        int tallierCount = 2;
+        tallierCount = 3;
         factory = new MainAthenaFactory(AthenaFactory.STRATEGY.DISTRIBUTED, tallierCount);
     }
 
@@ -36,7 +38,7 @@ public class TestAthenaDistributedStrategy {
         AthenaImpl athena = new AthenaImpl(factory);
 
         int tallierIndex = 1;
-        ElGamalSK sk = athena.Setup(tallierIndex,nc, kappa);
+        ElGamalSK sk = athena.Setup(tallierIndex, nc, kappa);
         MatcherAssert.assertThat("Should not be null", sk, notNullValue());
     }
 
@@ -45,8 +47,7 @@ public class TestAthenaDistributedStrategy {
         Strategy strategy = factory.getStrategy();
         Random random = factory.getRandom();
 
-        int talliercount = 3;
-        BulletinBoardV2_0 bb = factory.getBulletinBoard(talliercount);
+        BulletinBoardV2_0 bb = factory.getBulletinBoard();
 
 
         CompletableFuture<ElGamalSK> f1 = new CompletableFuture<>();

@@ -28,6 +28,8 @@ public class Sigma1 {
 
     //input pk, sk,
     public Sigma1Proof ProveKey(BigInteger pk, BigInteger sk, Group group, Random hashRandom, int kappa) {
+        System.out.println("KAPPA      " + kappa);
+
         Random secureRandom = new SecureRandom();
 
         // lists
@@ -81,7 +83,11 @@ public class Sigma1 {
         // zeta = \alpha(sk) - e[j] mod (p-1)
         BigInteger zeta = alpha.subtract(ej).mod(q);
 
-        return new Sigma1Proof(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
+        Sigma1Proof proof = new Sigma1Proof(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
+
+        assert VerifyKey(pk, proof, group, kappa) : "MARK ".repeat(20);
+
+        return proof;
     }
 
 
@@ -156,12 +162,16 @@ public class Sigma1 {
 
         // Step 2 verify
         boolean checkStep2 = checkStep2(coinFlipInfoPairs, kappa);
+        System.out.println("VerifyKey.checkStep2 = " + checkStep2);
 
         // Step 3 verify
         boolean checkStep3 = checkStep3(coinFlipInfoPairs, s1_sk, y1_yk, g, p, yj);
+        System.out.println("VerifyKey.checkStep3 = " + checkStep3);
 
         // step 4 check
         boolean checkStep4 = checkStep4(g, h, p, yj, zeta);
+        System.out.println("VerifyKey.checkStep4 = " + checkStep4);
+
 
         return checkStep2 && checkStep3 && checkStep4;
     }
