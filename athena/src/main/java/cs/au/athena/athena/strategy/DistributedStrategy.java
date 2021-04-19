@@ -31,9 +31,9 @@ public class DistributedStrategy implements Strategy {
 
     AthenaFactory athenaFactory;
     BulletinBoardV2_0 bb;
-    public DistributedStrategy(AthenaFactory athenaFactory, int tallierCount) {
+    public DistributedStrategy(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
-        this.bb = this.athenaFactory.getBulletinBoard(tallierCount);
+        this.bb = this.athenaFactory.getBulletinBoard();
     }
 
 
@@ -46,9 +46,9 @@ public class DistributedStrategy implements Strategy {
     public ElGamalSK setup(int tallierIndex, int nc, int kappa) {
         logger.info(MARKER, "getElGamalSK(...) => start");
         assert tallierIndex != 0 : "DistributedStrategy.Setup(...).tallierIndex can not be 0 and was " + tallierIndex;
+        assert tallierIndex <= bb.retrieveTallierCount();
 
         Random random = athenaFactory.getRandom();
-
         Group group = this.getGroup();
 
         logger.info(MARKER, "retrieving Tallier count");

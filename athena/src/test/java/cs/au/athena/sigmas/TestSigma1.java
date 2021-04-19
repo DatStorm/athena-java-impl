@@ -17,6 +17,7 @@ import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.factory.Factory;
 import cs.au.athena.factory.MainFactory;
+import cs.au.athena.elgamal.Group;
 
 
 import java.math.BigInteger;

@@ -52,7 +52,7 @@ public class BulletinBoardV2_0 {
     // Set preexisting values, and populate maps with Futures
     private void init(int tallierCount) {
         this.tallierCount = tallierCount;
-        this.threshold_k = tallierCount / 2;
+        this.threshold_k = tallierCount / 2; //TODO: is this correct? It must satisfy k < n/2
 
         // Fill with CompletableFutures
         for(int i = 1; i <= tallierCount; i++) {
@@ -171,9 +171,8 @@ public class BulletinBoardV2_0 {
 
         if (tallierCommitmentsAndProofs.containsKey(tallierIndex)) {
             tallierCommitmentsAndProofs.get(tallierIndex).complete(Pair.of(commitments, commitmentProofs));
-
         } else {
-            throw new IllegalStateException("TallierIndex does not exists..." + tallierIndex + tallierCommitmentsAndProofs.size());
+            throw new IllegalStateException("TallierIndex does not exists...    tallierIndex: " + tallierIndex + tallierCommitmentsAndProofs.size());
         }
 
     }
