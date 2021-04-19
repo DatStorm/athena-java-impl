@@ -22,7 +22,6 @@ import java.util.stream.IntStream;
 public class AthenaVerify {
     private Strategy strategy;
     private BulletinBoard bb;
-    private BigInteger mc;
     private Integer kappa;
 
     private AthenaVerify() {
@@ -54,7 +53,8 @@ public class AthenaVerify {
         }
 
         // Check that the number of candidates nc in the given election does not exceed the maximum number mc.
-        if (BigInteger.valueOf(nc).compareTo(this.mc) > 0) { // if nc > mc
+        int mc = bb.retrieveMaxCandidates();
+        if (nc > mc) { // if nc > mc
             System.err.println("AthenaVerify:=> ERROR: nc= " + nc + " > mc=" + mc);
             return false;
         }
@@ -322,16 +322,10 @@ public class AthenaVerify {
 
     public static class Builder {
         private AthenaFactory factory;
-        private BigInteger mc;
         private Integer kappa;
         
         public Builder setFactory(AthenaFactory factory) {
             this.factory = factory;
-            return this;
-        }
-
-        public Builder setMc(BigInteger mc) {
-            this.mc = mc;
             return this;
         }
 
@@ -344,8 +338,7 @@ public class AthenaVerify {
             //Check that all fields are set
             if (
                     factory == null ||
-                            kappa == null ||
-                            mc == null
+                            kappa == null
             ) {
                 throw new IllegalArgumentException("AthenaVerify.Builder: Not all fields have been set");
             }
@@ -354,7 +347,6 @@ public class AthenaVerify {
             athenaVerify.strategy = this.factory.getStrategy();
 //            athenaVerify.bb = this.factory.getBulletinBoard();
             athenaVerify.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
-            athenaVerify.mc = this.mc;
             athenaVerify.kappa = this.kappa;
 
             //Construct Object

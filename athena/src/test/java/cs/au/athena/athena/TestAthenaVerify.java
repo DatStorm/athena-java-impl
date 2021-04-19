@@ -4,10 +4,7 @@ package cs.au.athena.athena;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.factory.AthenaFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.MainAthenaFactory;
@@ -33,9 +30,9 @@ public class TestAthenaVerify {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
         athena = new AthenaImpl(msFactory);
-        ElGamalSK sk = athena.Setup(nc, kappa);
+        sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, kappa);
 
 
 //        bb = msFactory.getBulletinBoard();
@@ -44,7 +41,12 @@ public class TestAthenaVerify {
 
     }
 
-    @Test
+    /*********************************************
+     * -------------------------------------------
+     * -DO NOT RUN WITH LOW VALUES ELGAMAL VALUES-
+     * -------------------------------------------
+     ********************************************/
+    @RepeatedTest(100)
     void TestAthenaVerify() {
 
         PK_Vector pkv = bb.retrievePK_vector();

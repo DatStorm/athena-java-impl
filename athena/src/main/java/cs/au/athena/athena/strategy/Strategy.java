@@ -15,7 +15,7 @@ import java.util.List;
 public interface Strategy {
 
     //TODO: Remove random from param. Should be given to constructor.
-    Group getGroup(int kappa);
+    Group getGroup();
 
     //TODO: Move nc to BB
     ElGamalSK setup(int tallierIndex, int nc, int kappa);

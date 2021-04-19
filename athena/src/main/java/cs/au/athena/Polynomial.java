@@ -54,7 +54,6 @@ public class Polynomial {
     public List<BigInteger> getCommitmentOfPolynomialCoefficients() {
         // [0: 1943345851, 1:3634149401, 2:1863252840]
         int size = coefficients.size();
-
         List<BigInteger> commitments = new ArrayList<>();
 
         for (int i = 0; i < size; i++){

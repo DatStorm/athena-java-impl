@@ -32,7 +32,7 @@ public class SingleTallierStrategy implements Strategy {
 
 
     @Override
-    public Group getGroup(int kappa) {
+    public Group getGroup() {
         Random random = athenaFactory.getRandom();
         // return Group.generateGroup(bitlength, random);
         return CONSTANTS.ELGAMAL_CURRENT.GROUP;
@@ -40,34 +40,36 @@ public class SingleTallierStrategy implements Strategy {
 
     @Override
     public ElGamalSK setup(int tallierIndex, int nc, int kappa) {
+        if (tallierIndex != 0) {
+            System.out.println("SingleTallierStrategy.setup: You only have one tallierSo it should be 1.");
+        }
 //        BulletinBoardV2_0 bb = athenaFactory.getBulletinBoard();
         BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         Random random = athenaFactory.getRandom();
 
         // Get the group
-        Group group = this.getGroup(kappa);
+        Group group = this.getGroup();
 
         // Create elgamal and generate keys
         ElGamalSK sk = Elgamal.generateSK(group, random);
         ElGamalPK pk = sk.pk;
         Sigma1Proof rho = this.proveKey(pk, sk, kappa);
 
-        //this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
 
-        // mb, mc is upper-bound by a polynomial in the security parameter.
-        // TODO: Should these be updated
-        int mb = 1024; // TODO: look at the ElGamal test and find a
-        BigInteger mc = BigInteger.valueOf(1024);
+
+        // mb, mc is upper-bound by a polynomial in the security parameter
+//        int mb =CONSTANTS.MB;
+//        BigInteger mc = BigInteger.valueOf(CONSTANTS.MC);
 
         List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, nc);
         List<BigInteger> g_vector_vote = generators.get(0);
         List<BigInteger> h_vector_vote = generators.get(1);
 
         bb.publishNumberOfCandidates(nc);
-        bb.publish_G_VectorVote(g_vector_vote); // TODO: compute on bulletin board when the pk is constructed
-        bb.publish_H_VectorVote(h_vector_vote); // TODO: compute on bulletin board when the pk is constructed
+        bb.publish_G_VectorVote(g_vector_vote);
+        bb.publish_H_VectorVote(h_vector_vote);
 
-        PK_Vector pkv = new PK_Vector(pk, rho); // TODO: Proof of full pk vs proof of public key share h_i? Should this proof be a list of proofs of h_i?
+        PK_Vector pkv = new PK_Vector(pk, rho);
         bb.publishPKV(pkv);
 
         return sk;

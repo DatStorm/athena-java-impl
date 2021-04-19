@@ -85,9 +85,11 @@ public class Sigma1 {
     }
 
 
+
     private ArrayList<CoinFlipInfo> coinFlippingProtocol(Random hashRandom, BigInteger g, BigInteger h, int kappa, ArrayList<BigInteger> y1_yk) {
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = new ArrayList<>();
         Random coinRandom = new SecureRandom();
+//        Random hashRandom = new Random(r.getValue());
 
         for (int i = 1; i <= kappa; i++) {
             boolean bA = coinRandom.nextBoolean();
@@ -104,7 +106,10 @@ public class Sigma1 {
 
     public BigInteger hashH(byte[] fi, BigInteger g, BigInteger h, ArrayList<BigInteger> y1_yk)  {
         // f -> F(r,b_A)
-        byte[] hashbytes = HASH.hash(Bytes.concat(fi, UTIL.ARRAYLIST_TO_BYTE_ARRAY(y1_yk)));
+        byte[] y1_yk_bytes = UTIL.ARRAYLIST_TO_BYTE_ARRAY(y1_yk);
+        byte[] concat = Bytes.concat(fi, y1_yk_bytes);
+
+        byte[] hashbytes = HASH.hash(concat);
 
         // BigInteger class, which have a constructor that takes a signum and a magnitude expressed as a byte[]
         return new BigInteger(1, hashbytes);
@@ -125,14 +130,16 @@ public class Sigma1 {
         byte[] bA_bytes = new byte[]{(byte) (bA ? 1 : 0)};
 
         // f -> F(r,b_A)
-        byte[] hashbytes = HASH.hash(Bytes.concat(rand_bytes, bA_bytes));
+        byte[] concat = Bytes.concat(rand_bytes, bA_bytes);
+
+        byte[] hashbytes = HASH.hash(concat);
 
         return hashbytes;
     }
 
-
-    public boolean VerifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa) {
+    public boolean VerifyKey(BigInteger h, Sigma1Proof rho, Group group, int kappa) {
         // TODO: Use kappa
+
         // lists
         ArrayList<CoinFlipInfo> coinFlipInfoPairs = rho.getCoinFlipInfoPairs();
         BigInteger zeta = rho.getZeta();
@@ -143,13 +150,12 @@ public class Sigma1 {
         int j = UTIL.findFirstOne(coinFlipInfoPairs, 1); // find index j
 
         // bigints g, p, yj
-        BigInteger g = pk.getGroup().getG();
-        BigInteger p = pk.getGroup().getP();
-        BigInteger h = pk.getH();
+        BigInteger g = group.g;
+        BigInteger p = group.p;
         BigInteger yj = y1_yk.get(j);
 
         // Step 2 verify
-        boolean checkStep2 = checkStep2(coinFlipInfoPairs);
+        boolean checkStep2 = checkStep2(coinFlipInfoPairs, kappa);
 
         // Step 3 verify
         boolean checkStep3 = checkStep3(coinFlipInfoPairs, s1_sk, y1_yk, g, p, yj);
@@ -158,6 +164,10 @@ public class Sigma1 {
         boolean checkStep4 = checkStep4(g, h, p, yj, zeta);
 
         return checkStep2 && checkStep3 && checkStep4;
+    }
+
+    public boolean VerifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa) {
+        return VerifyKey(pk.h, rho, pk.group, kappa);
     }
 
     public boolean checkStep4(BigInteger g, BigInteger h, BigInteger p, BigInteger yj, BigInteger zeta) {
@@ -193,7 +203,11 @@ public class Sigma1 {
         return true;
     }
 
-    public boolean checkStep2(ArrayList<CoinFlipInfo> coinFlipInfoPairs) {
+    public boolean checkStep2(ArrayList<CoinFlipInfo> coinFlipInfoPairs, int kappa) {
+        if(coinFlipInfoPairs.size() != kappa) {
+            return false;
+        }
+
         for (CoinFlipInfo coinFlipInfo : coinFlipInfoPairs) {
             byte[] prover_fi = coinFlipInfo.getFi();
             Randomness prover_ri = coinFlipInfo.getRi();

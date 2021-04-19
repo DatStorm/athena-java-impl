@@ -2,6 +2,7 @@ package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.Ballot;
+import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
@@ -21,37 +22,42 @@ public class BulletinBoardV2_0 {
 
     private static BulletinBoardV2_0 single_instance = null;
     private int tallierCount;
-    private int k;
+    private int threshold_k;
     private final Group group;
     private final Map<Integer, CompletableFuture<Pair<List<BigInteger>, List<Sigma1Proof>> >> tallierCommitmentsAndProofs;
     private final Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
-    private final Map<Integer, CompletableFuture<ElGamalPK>> mapOfIndividualPK;
+//    private final Map<Integer, CompletableFuture<ElGamalPK>> mapOfIndividualPK;
+    private final Map<Integer, CompletableFuture<PK_Vector>> mapOfIndividualPK_vector;
 
     // static method to create instance of Singleton class
-    public static BulletinBoardV2_0 getInstance() {
+    public static BulletinBoardV2_0 getInstance(int tallierCount) {
         if (single_instance == null) {
-            single_instance = new BulletinBoardV2_0();
+            single_instance = new BulletinBoardV2_0(tallierCount);
         }
         return single_instance;
     }
 
 
-    private BulletinBoardV2_0() {
+    private BulletinBoardV2_0(int tallierCount) {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
         this.tallierCommitmentsAndProofs = new HashMap<>();
-        this.mapOfIndividualPK = new HashMap<>();
+//        this.mapOfIndividualPK = new HashMap<>(); // TODO: remove? and use pk-vector below
+        this.mapOfIndividualPK_vector = new HashMap<>();
         this.encryptedSubShares = new HashMap<>();
+
+        this.init(tallierCount);
     }
 
     // Set preexisting values, and populate maps with Futures
-    public void init(int tallierCount, int k) {
+    private void init(int tallierCount) {
         this.tallierCount = tallierCount;
-        this.k = k;
+        this.threshold_k = tallierCount / 2;
 
         // Fill with CompletableFutures
         for(int i = 1; i <= tallierCount; i++) {
             tallierCommitmentsAndProofs.put(i, new CompletableFuture<>());
-            mapOfIndividualPK.put(i, new CompletableFuture<>());
+//            mapOfIndividualPK.put(i, new CompletableFuture<>());
+            mapOfIndividualPK_vector.put(i, new CompletableFuture<>());
 
             for(int j = 1; j <= tallierCount; j++) {
                 if(i == j) continue;
@@ -123,7 +129,7 @@ public class BulletinBoardV2_0 {
     }
 
     public int retrieveK() {
-        return k;
+        return threshold_k;
     }
 
     // Compute and return the entire public key from the committed polynomials
@@ -148,11 +154,10 @@ public class BulletinBoardV2_0 {
         for (int i = 0; i < tallierCommitmentsAndProofs.keySet().size(); i++) {
             List<BigInteger> commitmentCoefficients = tallierCommitmentsAndProofs.get(i).join().getLeft();
 
-            for (int ell = 0; ell < this.k; ell++) {
+            for (int ell = 0; ell < this.threshold_k; ell++) {
                 BigInteger j_pow_ell = BigInteger.valueOf(j).pow(ell);
                 publicKeyShare = publicKeyShare.multiply(commitmentCoefficients.get(ell).modPow(j_pow_ell, group.p)).mod(group.p);
             }
-
         }
 
         // group, h_j
@@ -162,15 +167,30 @@ public class BulletinBoardV2_0 {
 
     // Post commitment to P(X)
     public void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<BigInteger> commitments, List<Sigma1Proof> commitmentProofs) {
-        tallierCommitmentsAndProofs.get(tallierIndex).complete(Pair.of(commitments, commitmentProofs));
+
+        if (tallierCommitmentsAndProofs.containsKey(tallierIndex)) {
+            tallierCommitmentsAndProofs.get(tallierIndex).complete(Pair.of(commitments, commitmentProofs));
+
+        } else {
+            throw new IllegalStateException("Does not exists...");
+        }
+
     }
 
-    public void publishIndividualPK(int tallierIndex, ElGamalPK pk) {
-        mapOfIndividualPK.get(tallierIndex).complete(pk);
+//    public void publishIndividualPK(int tallierIndex, ElGamalPK pk) { // TODO: remove?
+//        mapOfIndividualPK.get(tallierIndex).complete(pk);
+//    }
+//
+//    public CompletableFuture<ElGamalPK> retrieveIndividualPK(int tallierIndex) { // TODO: remove?
+//        return mapOfIndividualPK.get(tallierIndex);
+//    }
+
+    public void publishIndividualPKvector(int tallierIndex, PK_Vector pkv) {
+        mapOfIndividualPK_vector.get(tallierIndex).complete(pkv);
     }
 
-    public CompletableFuture<ElGamalPK> retrieveIndividualPK(int tallierIndex) {
-        return mapOfIndividualPK.get(tallierIndex);
+    public CompletableFuture<PK_Vector> retrieveIndividualPKvector(int tallierIndex) {
+        return mapOfIndividualPK_vector.get(tallierIndex);
     }
 
 

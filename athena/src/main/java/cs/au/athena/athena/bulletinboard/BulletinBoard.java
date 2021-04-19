@@ -23,6 +23,9 @@ public class BulletinBoard {
     private List<BigInteger> h_vector_vote;
     private PK_Vector pkv;
 
+    private final int mc;
+    private final int mb;
+
 
     // static method to create instance of Singleton class
     public static BulletinBoard getInstance() {
@@ -37,6 +40,9 @@ public class BulletinBoard {
     private BulletinBoard() {
         this.ballots = new ArrayList<>();
         this.electoralRoll = new ElectoralRoll();
+
+        this.mc = CONSTANTS.MC;
+        this.mb = CONSTANTS.MB;
     }
 
 
@@ -54,7 +60,9 @@ public class BulletinBoard {
     public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
     public void addPublicCredentialToL(Ciphertext publicCredential_pd) { d();this.electoralRoll.add(publicCredential_pd); }
     public Map<Integer, Integer> retrieveTallyOfVotes() { return this.getTallyOfVotes(); }
-
+    public int retrieveMaxCandidates() {
+        return this.mc;
+    }
 
     /*
      * Public Publish values
@@ -151,6 +159,4 @@ public class BulletinBoard {
     private void setPf(PFStruct pf) { this.pf = pf; }
     private void setTallyOfVotes(Map<Integer, Integer> tallyOfVotes) { this.tallyOfVotes = tallyOfVotes; }
     private void setPkv(PK_Vector pkv) { this.pkv = pkv; }
-
-
 }

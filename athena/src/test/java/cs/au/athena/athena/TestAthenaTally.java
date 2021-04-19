@@ -30,9 +30,9 @@ public class TestAthenaTally {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
         athena = new AthenaImpl(msFactory);
-        ElGamalSK sk = athena.Setup(nc, this.kappa);
+        ElGamalSK sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, this.kappa);
 //        bb = msFactory.getBulletinBoard();
         bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
 

@@ -72,7 +72,7 @@ public class TestSigma1 {
     void TestProveKey_Verify_step2() {
         Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, random, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
-        boolean verify = sigma1.checkStep2(coinFlipInfo_pairs);
+        boolean verify = sigma1.checkStep2(coinFlipInfo_pairs, this.kappa);
          MatcherAssert.assertThat("fi ?=? F_i(ri,b_A_i)", verify,  is(true));
     }
 
@@ -129,8 +129,13 @@ public class TestSigma1 {
     void TestSigma1() {
         Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, random, this.kappa);
         boolean verification = sigma1.VerifyKey(this.pk, rho, this.kappa);
-         MatcherAssert.assertThat("Should return 1", verification, is(true));
+        MatcherAssert.assertThat("Should return 1", verification, is(true));
     }
 
-
+    @Test
+    void TestSigma1a() {
+        Sigma1Proof rho = sigma1.ProveKey(this.pk.h, this.sk.sk, pk.group, random, this.kappa);
+        boolean verification = sigma1.VerifyKey(this.pk.h, rho, pk.group, this.kappa);
+        MatcherAssert.assertThat("Should return 1", verification, is(true));
+    }
 }

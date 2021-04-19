@@ -1,13 +1,10 @@
 package cs.au.athena.distributed;
 
 import cs.au.athena.CONSTANTS;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.athena.AthenaImpl;
-import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.elgamal.ElGamalSK;
-import cs.au.athena.elgamal.Group;
 import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.factory.MainAthenaFactory;
 import org.hamcrest.MatcherAssert;
@@ -15,7 +12,6 @@ import org.junit.jupiter.api.*;
 
 import java.math.BigInteger;
 import java.util.Random;
-import java.util.concurrent.Future;
 import java.util.concurrent.CompletableFuture;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -26,31 +22,32 @@ import static org.hamcrest.CoreMatchers.*;
 public class TestAthenaDistributedStrategy {
     private final int kappa = CONSTANTS.KAPPA;
     private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
-    MainAthenaFactory maFactory;
+    MainAthenaFactory factory;
 
     @BeforeEach
     void setUp() {
-        maFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.DISTRIBUTED);
+        int tallierCount = 2;
+        factory = new MainAthenaFactory(AthenaFactory.STRATEGY.DISTRIBUTED, tallierCount);
     }
 
 
     @Disabled
-    @Test
     void TestAthenaSetup() {
-        AthenaImpl athena = new AthenaImpl(maFactory);
-        ElGamalSK sk = athena.Setup(nc, kappa);
+        AthenaImpl athena = new AthenaImpl(factory);
+
+        int tallierIndex = 1;
+        ElGamalSK sk = athena.Setup(tallierIndex,nc, kappa);
         MatcherAssert.assertThat("Should not be null", sk, notNullValue());
     }
 
     @Test
     void TestSetup() {
-        Strategy strategy = maFactory.getStrategy();
-        Random random = maFactory.getRandom();
-        BulletinBoardV2_0 bb = maFactory.getBulletinBoard();
+        Strategy strategy = factory.getStrategy();
+        Random random = factory.getRandom();
 
         int talliercount = 3;
-        int atMostKBadTalliers = 2;
-        bb.init(talliercount,atMostKBadTalliers);
+        BulletinBoardV2_0 bb = factory.getBulletinBoard(talliercount);
+
 
         CompletableFuture<ElGamalSK> f1 = new CompletableFuture<>();
         CompletableFuture<ElGamalSK> f2 = new CompletableFuture<>();
@@ -79,6 +76,12 @@ public class TestAthenaDistributedStrategy {
         MatcherAssert.assertThat("Should not be null", BigInteger.ONE, is(not(BigInteger.ZERO)));
     }
 
+
+    @Test
+    void TestNext() {
+
+
+    }
 
     // Things to test
     /*

@@ -26,7 +26,7 @@ public class AthenaImpl implements Athena {
     private final AthenaFactory athenaFactory;
     private final Strategy strategy;
     private Elgamal elgamalWithLookUpTable;
-    private BigInteger mc;
+    //private BigInteger mc;
     private boolean initialised;
 
 
@@ -38,17 +38,20 @@ public class AthenaImpl implements Athena {
     }
 
     @Override
-    public ElGamalSK Setup(int nc, int kappa) {
+    public ElGamalSK Setup(int tallierIndex, int nc, int kappa) {
         logger.info(MARKER, "Setup(...) => start");
         if (this.initialised) {
             System.err.println("AthenaImpl.Setup => ERROR: System not initialised call .Setup before hand");
             return null;
         }
 
-        this.initialised = true;
+        Random random = athenaFactory.getRandom();
+        Group group = strategy.getGroup();
 
-        // FIXME: What is tallierIndex
-        return strategy.setup(1, nc, kappa);
+        this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
+        //this.mc = this.athenaFactory.getBulletinBoard(???).retrieveMaxCanditates();
+        this.initialised = true;
+        return strategy.setup(tallierIndex, nc, kappa);
     }
 
 
@@ -116,7 +119,7 @@ public class AthenaImpl implements Athena {
         }
         return new AthenaVerify.Builder()
                 .setFactory(this.athenaFactory)
-                .setMc(this.mc)
+                //.setMc(this.mc)
                 .setKappa(kappa)
                 .build()
                 .Verify(pkv);

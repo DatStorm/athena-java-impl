@@ -40,9 +40,12 @@ public class TestSigma4 {
     }
 
 
-    /**
+    /*********************************************
      * Test equivalent to ProveComb of Tally step3
-     */
+     * -------------------------------------------
+     * -DO NOT RUN WITH LOW VALUES ELGAMAL VALUES-
+     * -------------------------------------------
+     ********************************************/
     @Test
     void TestSigma4_Tally_single() {
         //(c1,c2) = (b1^n,b2^n)

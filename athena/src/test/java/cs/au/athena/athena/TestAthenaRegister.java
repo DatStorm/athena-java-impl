@@ -30,13 +30,13 @@ public class TestAthenaRegister {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
     }
 
     @Test
     void TestAthenaImplRegister() {
         AthenaImpl athena = new AthenaImpl(msFactory);
-        ElGamalSK sk = athena.Setup(nc, kappa);
+        ElGamalSK sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, kappa);
 
 //        PK_Vector pkv = msFactory.getBulletinBoard().retrievePK_vector();
         PK_Vector pkv = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!

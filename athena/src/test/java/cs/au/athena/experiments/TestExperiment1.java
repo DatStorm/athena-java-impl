@@ -44,7 +44,7 @@ public class TestExperiment1 {
         // Generate pk,sk
         // Run setup
 
-        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
+        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
         athena = new AthenaImpl(athenaFactory);
 //        bb = athenaFactory.getBulletinBoard();
         bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!

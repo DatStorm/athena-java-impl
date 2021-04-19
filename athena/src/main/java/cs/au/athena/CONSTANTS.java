@@ -20,17 +20,19 @@ public class CONSTANTS {
 
 
     public static final BigInteger BULLET_PROOF_R = BigInteger.ZERO;
+    public static final int MC = 1024;
+    public static final int MB = 1024;
 
 
     public static class ELGAMAL_CURRENT {
-        public static final BigInteger ELGAMAL_P = ELGAMAL_32_BITS.ELGAMAL_P;
-        public static final BigInteger ELGAMAL_Q = ELGAMAL_32_BITS.ELGAMAL_Q;
-        public static final BigInteger ELGAMAL_G = ELGAMAL_32_BITS.ELGAMAL_G;
+        public static final BigInteger ELGAMAL_P = ELGAMAL_1024_BITS.ELGAMAL_P;
+        public static final BigInteger ELGAMAL_Q = ELGAMAL_1024_BITS.ELGAMAL_Q;
+        public static final BigInteger ELGAMAL_G = ELGAMAL_1024_BITS.ELGAMAL_G;
 
         /**
          * Elgamal bit length specify how big values to use.
          */
-        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_32_BITS.ELGAMAL_BIT_LENGTH;
+        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_1024_BITS.ELGAMAL_BIT_LENGTH;
         public static final Group GROUP = new Group(ELGAMAL_P, ELGAMAL_Q, ELGAMAL_G);
 
     }
@@ -96,7 +98,10 @@ public class CONSTANTS {
     /***************************************************
      *                 Single tally                    *
      **************************************************/
-    public static final int TALLIER_INDEX = 0;
+    public static class SINGLE_TALLIER {
+        public static final int TALLIER_INDEX = 0;
+        public static final int TALLIER_COUNT = 1;
+    }
 
     /***************************************************
      *             Distributed tally                   *
@@ -110,7 +115,6 @@ public class CONSTANTS {
         public static final int TALLIER_COUNT = 10;
         public static final int K = (TALLIER_COUNT/2) - 1 ; // k < n/2
     }
-
 
 
 

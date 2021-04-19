@@ -1,6 +1,7 @@
 package cs.au.athena.athena.entities;
 
 
+import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.Athena;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.dao.athena.SK_Vector;
@@ -37,7 +38,7 @@ public class Tallier implements Entity {
 
     public void init() {
         // Run Setup()
-        sk = athena.Setup(this.nc,this.kappa);
+        sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX, this.nc,this.kappa);
         pk = this.bulletinBoard.retrievePK_vector().pk;
     }
 

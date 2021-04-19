@@ -26,14 +26,14 @@ public class TestAthenaSetup {
 
     @BeforeEach
     void setUp() {
-        maFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
+        maFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
     }
 
 
     @Test
     void TestAthenaSetup() {
         AthenaImpl athena = new AthenaImpl(maFactory);
-        ElGamalSK sk = athena.Setup(nc,kappa);
+        ElGamalSK sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc,kappa);
         assertNotNull("Should not be null", sk);
     }
 }

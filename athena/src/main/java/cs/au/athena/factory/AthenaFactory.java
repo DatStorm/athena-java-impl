@@ -14,7 +14,7 @@ public interface AthenaFactory extends SigmaFactory {
 
     Random getRandom();
 
-    BulletinBoardV2_0 getBulletinBoard();
+    BulletinBoardV2_0 getBulletinBoard(int tallierCount);
 
     Strategy getStrategy();
 }

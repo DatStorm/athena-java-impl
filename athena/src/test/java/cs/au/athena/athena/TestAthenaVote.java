@@ -40,11 +40,11 @@ public class TestAthenaVote {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE);
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
 
 
         athena = new AthenaImpl(msFactory);
-        ElGamalSK sk = athena.Setup(nc, this.kappa);
+        sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, this.kappa);
 //        PK_Vector pk_vector = msFactory.getBulletinBoard().retrievePK_vector();
         PK_Vector pk_vector = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         Group group = pk_vector.pk.group;
@@ -79,7 +79,7 @@ public class TestAthenaVote {
 
         // Enc_pk(d) * Enc_pk(-d) = g^0
         Ciphertext combinedCredential = ballot.publicCredential.multiply(ballot.encryptedNegatedPrivateCredential, sk.pk.group.p);
-        BigInteger m = elgamal.decrypt(combinedCredential, sk);
+        BigInteger m = Elgamal.decrypt(combinedCredential, sk);
         assertEquals("m is equal to 1 ", BigInteger.ONE, m);
 
 
