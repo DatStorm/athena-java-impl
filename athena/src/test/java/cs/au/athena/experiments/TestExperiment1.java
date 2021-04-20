@@ -59,7 +59,7 @@ public class TestExperiment1 {
 
     @AfterEach
     public void tally() {
-        tallier.tallyVotes();
+        tallier.tallyVotes(1);
         endTime = System.nanoTime();
         UTIL.printEvalMetrics("Athena Tally: ", startTime, endTime);
 

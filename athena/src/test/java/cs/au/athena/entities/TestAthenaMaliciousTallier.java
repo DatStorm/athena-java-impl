@@ -77,7 +77,7 @@ public class TestAthenaMaliciousTallier {
 
         //Tally the votes
         System.out.println("--> Tally all votes");
-        tallier.tallyVotes();
+        tallier.tallyVotes(1);
 
         // tallyOfVotes deviates and changes the tally posted to the bulletin board.
         Map<Integer, Integer> tallyOfVotes = bb.retrieveTallyOfVotes();

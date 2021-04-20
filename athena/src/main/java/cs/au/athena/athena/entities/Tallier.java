@@ -42,13 +42,13 @@ public class Tallier implements Entity {
         pk = this.bulletinBoard.retrievePK_vector().pk;
     }
 
-    public void tallyVotes() {
+    public void tallyVotes(int tallierIndex) {
         // Run Tally()
         if (sk == null){
             System.err.println("Tallier.tallyVotes => sk is null! Please run Tallier.init()");
         }
         
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc, this.kappa);
+        TallyStruct tallyStruct = athena.Tally(tallierIndex, new SK_Vector(sk), nc, this.kappa);
     }
 
 }

@@ -5,6 +5,7 @@ import cs.au.athena.athena.AthenaCommon;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.dao.athena.PK_Vector;
+import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.mixnet.MixStatement;
@@ -202,7 +203,7 @@ public class DistributedStrategy implements Strategy {
         Random random = athenaFactory.getRandom();
         Group group = this.getGroup();
 
-        assert group.g.modPow(sk, group.p).equals(pk);
+        assert group.g.modPow(sk, group.p).equals(pk) : "pk and sk does not match";
 
 //        System.out.println("PK: " + pk);
 //        System.out.println("SK: " + sk);
@@ -259,10 +260,11 @@ public class DistributedStrategy implements Strategy {
 
     /**
      * @param skShare is the shamir secret sharing share: P(i)
+     * @param kappa
      * @return decrypted message
      */
     @Override
-    public BigInteger decrypt(int tallierIndex, Ciphertext c, ElGamalSK skShare) {
+    public BigInteger decrypt(int tallierIndex, Ciphertext c, ElGamalSK skShare, int kappa) {
         Group group = this.getGroup();
         int k = bb.retrieveK();
 
@@ -272,17 +274,21 @@ public class DistributedStrategy implements Strategy {
 
         // Retrieve decryption shares for ciphertext c when there is k+1 shares on the bulletin board.
         // get k+1 shares from BB.
-        List<Pair<BigInteger, Sigma3Proof>> shares = bb.retrieveDecryptionSharesAndProofWithThreshold(c, k).join();
-
-        this.verifyDecryption(cipher, plaintext, pk, phi, kappa);
+        List<DecryptionShareAndProof> shares = bb.retrieveValidDecryptionSharesAndProofWithThreshold(c, k).join();
         assert shares.size() == k+1;
 
-        // compute the c1^sk
-        BigInteger productOfDecryptionShares = shares.stream()
-                .map(ElGamalSK::toBigInteger)
-                .reduce(BigInteger.ONE,(a, b) -> a.multiply(b).mod(group.p));
+        // Verify that the decryption shares are valid, and
+        BigInteger prodSumOfDecryptionShares = BigInteger.ONE;
+        for (int j = 1; j <= k; j++) {
+            DecryptionShareAndProof share = shares.get(j);
+            ElGamalPK h_j = bb.retrievePKShare(j);
+            this.verifyDecryption(c, share.share, h_j, share.proof, kappa);
+
+            prodSumOfDecryptionShares = prodSumOfDecryptionShares.multiply(share.share).mod(group.p);
+        }
+
 
         // Decrypt the ciphertext with the new sk.
-        return c.c2.multiply(productOfDecryptionShares).mod(group.p);
+        return c.c2.multiply(prodSumOfDecryptionShares).mod(group.p);
     }
 }

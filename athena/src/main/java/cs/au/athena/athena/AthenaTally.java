@@ -43,7 +43,7 @@ public class AthenaTally {
     // Construct using builder
     private AthenaTally() {}
 
-    public TallyStruct Tally(SK_Vector skv, int nc) {
+    public TallyStruct Tally(int tallierIndex, SK_Vector skv, int nc) {
         ElGamalSK sk = skv.sk;
         ElGamalPK pk = sk.pk;
 
@@ -65,7 +65,7 @@ public class AthenaTally {
         logger.info(MARKER, "Tally(...) => step2");
 
         //Filter ReVotes and pfr proof of same nonce
-        Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterResult = filterReVotesAndProveSameNonce(validBallots, sk);
+        Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterResult = filterReVotesAndProveSameNonce(tallierIndex, validBallots, sk);
         Map<MapAKey, MapAValue> A = filterResult.getLeft();
         List<PFRStruct> pfr = filterResult.getRight();
 
@@ -191,7 +191,7 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
-    private Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterReVotesAndProveSameNonce(List<Ballot> ballots, ElGamalSK sk) {
+    private Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterReVotesAndProveSameNonce(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
         int ell = ballots.size();
 
         List<PFRStruct> pfr = new ArrayList<>();
@@ -209,7 +209,7 @@ public class AthenaTally {
             Ciphertext ci_prime = this.strategy.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group);
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = this.strategy.decrypt(tallierIndex, ci_prime, sk);
+            BigInteger noncedNegatedPrivateCredentialElement = this.strategy.decrypt(tallierIndex, ci_prime, sk, kappa);
 
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);
@@ -338,6 +338,7 @@ public class AthenaTally {
     public static class Builder {
         private Elgamal elgamal;
         private AthenaFactory athenaFactory;
+        private int tallierIndex;
         private int kappa;
 
 
@@ -355,6 +356,11 @@ public class AthenaTally {
 
         public Builder setKappa(int kappa) {
             this.kappa = kappa;
+            return this;
+        }
+
+        public Builder setTallierIndex(int tallierIndex) {
+            this.tallierIndex = tallierIndex;
             return this;
         }
 

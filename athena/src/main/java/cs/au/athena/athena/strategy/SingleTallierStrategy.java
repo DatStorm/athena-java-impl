@@ -18,7 +18,6 @@ import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
 import cs.au.athena.sigma.Sigma4;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -134,7 +133,7 @@ public class SingleTallierStrategy implements Strategy {
     }
 
     @Override
-    public BigInteger decrypt(int tallierIndex, Ciphertext c, ElGamalSK sk) {
+    public BigInteger decrypt(int tallierIndex, Ciphertext c, ElGamalSK sk, int kappa) {
         return Elgamal.decrypt(c, sk);
     }
 

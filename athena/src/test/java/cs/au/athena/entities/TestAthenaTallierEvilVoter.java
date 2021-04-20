@@ -89,7 +89,7 @@ public class TestAthenaTallierEvilVoter {
 
         //Tally the votes
         System.out.println("--> Tally all votes");
-        tallier.tallyVotes(); // Tallier should not count evilVote since this does not satsify m=1 in step3 of Tally
+        tallier.tallyVotes(1); // Tallier should not count evilVote since this does not satsify m=1 in step3 of Tally
 
         // Verify tally
         Verifier verifier = new Verifier(athena, bb,kappa);

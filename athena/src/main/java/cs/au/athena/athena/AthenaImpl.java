@@ -1,22 +1,16 @@
 package cs.au.athena.athena;
 
-import cs.au.athena.CONSTANTS;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.strategy.Strategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import cs.au.athena.GENERATOR;
-import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.athena.*;
-import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
 
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigInteger;
 import java.util.*;
 
 public class AthenaImpl implements Athena {
@@ -91,7 +85,7 @@ public class AthenaImpl implements Athena {
 
 
     @Override
-    public TallyStruct Tally(SK_Vector skv, int nc, int kappa) {
+    public TallyStruct Tally(int tallierIndex, SK_Vector skv, int nc, int kappa) {
         logger.info(MARKER, "Tally(...) => start");
 
         if (!this.initialised) {
@@ -104,9 +98,10 @@ public class AthenaImpl implements Athena {
         return new AthenaTally.Builder()
                 .setFactory(this.athenaFactory)
                 .setElgamal(this.elgamalWithLookUpTable)
+                .setTallierIndex(tallierIndex)
                 .setKappa(kappa)
                 .build()
-                .Tally(skv, nc);
+                .Tally(tallierIndex, skv, nc);
     }
 
     @Override

@@ -77,7 +77,7 @@ public class TestAthenaVerify {
 
 
         System.out.println("--> Tally: ");
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc, kappa);
+        TallyStruct tallyStruct = athena.Tally(1, new SK_Vector(sk), nc, kappa);
         System.out.println("--> Tally done ");
 
         Map<Integer, Integer> b = tallyStruct.tallyOfVotes;

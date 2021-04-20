@@ -3,6 +3,7 @@ package cs.au.athena.athena.bulletinboard;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.PK_Vector;
+import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
 import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
@@ -95,7 +96,7 @@ public class BulletinBoardV2_0 {
         return new ElGamalPK(group, publicKey);
     }
 
-    // Compute and return the public key share h_j from the committed polynomials
+    // Compute and return the public key share h_j=g^P(j) from the committed polynomials
     public ElGamalPK retrievePKShare(int j) {
         BigInteger publicKeyShare = BigInteger.ONE;
 
@@ -159,8 +160,8 @@ public class BulletinBoardV2_0 {
         return group;
     }
 
-    public CompletableFuture<List<ElGamalSK>> retrieveDecryptionSharesAndProofWithThreshold(Ciphertext c, int k) {
-        throw new UnsupportedOperationException("TODO! ".repeat(30));
+    public CompletableFuture<List<DecryptionShareAndProof>> retrieveValidDecryptionSharesAndProofWithThreshold(Ciphertext c, int k) {
+        throw new UnsupportedOperationException("TODO! ".repeat(5));
 //        return null;
     }
 
