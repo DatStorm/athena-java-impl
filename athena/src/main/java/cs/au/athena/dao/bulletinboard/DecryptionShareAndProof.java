@@ -5,11 +5,25 @@ import java.math.BigInteger;
 
 
 public class DecryptionShareAndProof {// Decryption shares
+    public final int index;
     public final BigInteger share;
     public final Sigma3Proof proof;
 
-    public DecryptionShareAndProof(BigInteger share, Sigma3Proof proof) {
+    public DecryptionShareAndProof(int index, BigInteger share, Sigma3Proof proof) {
+        this.index = index;
         this.share = share;
         this.proof = proof;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public BigInteger getShare() {
+        return share;
+    }
+
+    public Sigma3Proof getProof() {
+        return proof;
     }
 }

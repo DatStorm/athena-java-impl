@@ -83,4 +83,15 @@ public class Polynomial {
 
         return commitment;
     }
+
+    // TODO: do it with Bigintegers?!?!??!
+    public static BigInteger getLambda(int x, int i, List<Integer> S) {
+        int prod = 1;
+        for(int j : S) {
+            if(j == i) continue;
+            // j-x / j-i
+            prod = (j-x) / (j-i);
+        }
+        return BigInteger.valueOf(prod);
+    }
 }

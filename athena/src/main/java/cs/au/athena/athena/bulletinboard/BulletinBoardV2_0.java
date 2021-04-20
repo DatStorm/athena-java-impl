@@ -1,50 +1,52 @@
 package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.CONSTANTS;
-import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.PK_Vector;
+import cs.au.athena.dao.bulletinboard.CommitmentAndProof;
 import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
 import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
-import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
-import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.elgamal.Group;
+import cs.au.athena.sigma.Sigma3;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class BulletinBoardV2_0 {
 
     private static BulletinBoardV2_0 single_instance = null;
+    private final Sigma3 sigma3;
     private int tallierCount;
     private int threshold_k;
     private final Group group;
-    private final Map<Integer, CompletableFuture<Pair<List<BigInteger>, List<Sigma1Proof>> >> tallierCommitmentsAndProofs;
+    private final Map<Integer, CompletableFuture<List<CommitmentAndProof>>> tallierCommitmentsAndProofs;
     private final Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
     private final Map<Integer, CompletableFuture<PK_Vector>> mapOfIndividualPK_vector;
+    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
+    private int kappa;
 
     // static method to create instance of Singleton class
-    public static BulletinBoardV2_0 getInstance(int tallierCount) {
+    public static BulletinBoardV2_0 getInstance(int tallierCount, int kappa) {
         if (single_instance == null) {
-            single_instance = new BulletinBoardV2_0(tallierCount);
+            single_instance = new BulletinBoardV2_0(tallierCount, kappa);
         }
 
         return single_instance;
     }
 
 
-    private BulletinBoardV2_0(int tallierCount) {
+    private BulletinBoardV2_0(int tallierCount, int kappa) {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
         this.tallierCommitmentsAndProofs = new HashMap<>();
         this.mapOfIndividualPK_vector = new HashMap<>();
         this.encryptedSubShares = new HashMap<>();
+        this.decryptionShareMap = new HashMap<>();
+        this.sigma3 = new Sigma3();
+        this.kappa = kappa;
 
         this.init(tallierCount);
     }
@@ -69,11 +71,6 @@ public class BulletinBoardV2_0 {
     }
 
 
-
-
-
-
-
     public int retrieveTallierCount() {
         return tallierCount;
     }
@@ -84,12 +81,19 @@ public class BulletinBoardV2_0 {
 
     // Compute and return the entire public key from the committed polynomials
     public ElGamalPK retrievePK() {
+        // Have all commitments been published?
+        if (tallierCommitmentsAndProofs.keySet().size() != tallierCount) {
+            // Not ready
+        }
+
         BigInteger publicKey = BigInteger.ONE;
 
         // Iterate all commitments
         for (int i = 0; i < tallierCommitmentsAndProofs.keySet().size(); i++) {
-            List<BigInteger> commitmentCoefficients = tallierCommitmentsAndProofs.get(i).join().getLeft();
-            publicKey = publicKey.multiply(commitmentCoefficients.get(0)).mod(group.p);
+            List<CommitmentAndProof> commitmentAndProofs = tallierCommitmentsAndProofs.get(i).join();
+            CommitmentAndProof commitmentAndProof = commitmentAndProofs.get(0);
+
+            publicKey = publicKey.multiply(commitmentAndProof.commitment).mod(group.p);
         }
 
         // group, h
@@ -102,11 +106,13 @@ public class BulletinBoardV2_0 {
 
         // Iterate all commitments
         for (int i = 0; i < tallierCommitmentsAndProofs.keySet().size(); i++) {
-            List<BigInteger> commitmentCoefficients = tallierCommitmentsAndProofs.get(i).join().getLeft();
+            List<CommitmentAndProof> commitmentAndProofs = tallierCommitmentsAndProofs.get(i).join();
 
             for (int ell = 0; ell < this.threshold_k; ell++) {
                 BigInteger j_pow_ell = BigInteger.valueOf(j).pow(ell);
-                publicKeyShare = publicKeyShare.multiply(commitmentCoefficients.get(ell).modPow(j_pow_ell, group.p)).mod(group.p);
+                BigInteger commitment = commitmentAndProofs.get(ell).commitment;
+
+                publicKeyShare = publicKeyShare.multiply(commitment.modPow(j_pow_ell, group.p)).mod(group.p);
             }
         }
 
@@ -114,17 +120,15 @@ public class BulletinBoardV2_0 {
         return new ElGamalPK(group, publicKeyShare);
     }
 
-
     // Post commitment to P(X)
-    public void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<BigInteger> commitments, List<Sigma1Proof> commitmentProofs) {
+    public void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<CommitmentAndProof> commitmentAndProof) {
         assert tallierIndex <= tallierCount;
 
         if (tallierCommitmentsAndProofs.containsKey(tallierIndex)) {
-            tallierCommitmentsAndProofs.get(tallierIndex).complete(Pair.of(commitments, commitmentProofs));
+            tallierCommitmentsAndProofs.get(tallierIndex).complete(commitmentAndProof);
         } else {
             throw new IllegalStateException("TallierIndex does not exists...    tallierIndex: " + tallierIndex + tallierCommitmentsAndProofs.size());
         }
-
     }
 
     public void publishIndividualPKvector(int tallierIndex, PK_Vector pkv) {
@@ -135,24 +139,24 @@ public class BulletinBoardV2_0 {
         return mapOfIndividualPK_vector.get(tallierIndex);
     }
 
-
     public void publishEncSubShare(int i, int j, Ciphertext subShareToTallier_j) {
         Pair<Integer, Integer> key = Pair.of(i, j);
         encryptedSubShares.get(key).complete(subShareToTallier_j);
     }
-
 
     public CompletableFuture<Ciphertext> retrieveEncSubShare(int i, int j) {
         Pair<Integer, Integer> key = Pair.of(i, j);
         return encryptedSubShares.get(key);
     }
 
-    public CompletableFuture<Pair< List<BigInteger>, List<Sigma1Proof> >> retrieveCommitmentsAndProofs(int j) {
+    public CompletableFuture<List<CommitmentAndProof>> retrieveCommitmentsAndProofs(int j) {
         return tallierCommitmentsAndProofs.get(j);
     }
 
-    public void publishDecryptionShare(int tallierIndex, Ciphertext c, BigInteger decryptionShare) {
-        throw new UnsupportedOperationException("TODO! ".repeat(30));
+    public void publishDecryptionShareAndProof(int tallierIndex, Ciphertext c, DecryptionShareAndProof decryptionShareAndProof) {
+        Pair<Ciphertext, Integer> key = Pair.of(c, tallierIndex);
+        this.decryptionShareMap.put(key, new CompletableFuture<>()); // TODO: THIS IS REALLY BAD I THINK
+        decryptionShareMap.get(key).complete(decryptionShareAndProof);
     }
 
 
@@ -160,9 +164,67 @@ public class BulletinBoardV2_0 {
         return group;
     }
 
-    public CompletableFuture<List<DecryptionShareAndProof>> retrieveValidDecryptionSharesAndProofWithThreshold(Ciphertext c, int k) {
-        throw new UnsupportedOperationException("TODO! ".repeat(5));
-//        return null;
+    public CompletableFuture<List<DecryptionShareAndProof>> retrieveValidDecryptionSharesAndProofWithThreshold(Ciphertext ciphertext, int k) {
+        ElGamalPK publicKey = this.retrievePK(); //FIXME: a little slow
+
+        // Stores shares as they become available
+        List<DecryptionShareAndProof> synchronizedResultList = Collections.synchronizedList(new ArrayList<>());
+
+        // Adds shares to synchronizedResultList, as they become available
+        List<CompletableFuture<DecryptionShareAndProof>> futures = new ArrayList<>();
+
+        // Is completed when k+1 shares are available, so we can return them
+        CompletableFuture<Void> enoughSharesAreAvailable = new CompletableFuture<>();
+
+
+        // For each tallier, wait for the decryption share to be set
+        for (int i = 1; i < tallierCount; i++) {
+            Pair<Ciphertext, Integer> key = Pair.of(ciphertext, i);
+            CompletableFuture<DecryptionShareAndProof> future = this.decryptionShareMap.get(key);
+
+            // When the future completes, add decryption share to list
+            future.thenAccept(decryptionShare -> {
+                // if is valid then add, else not
+                boolean isDecValid = this.sigma3.verifyDecryption(ciphertext, decryptionShare.share, publicKey, decryptionShare.proof, this.kappa);
+
+                if (isDecValid) {
+                    synchronizedResultList.add(decryptionShare);
+                }
+
+                if (synchronizedResultList.size() >= k+1) {
+                    enoughSharesAreAvailable.complete(null);
+                }
+            });
+
+            futures.add(future);
+        }
+
+
+
+        CompletableFuture<List<DecryptionShareAndProof>> resultFuture = new CompletableFuture<>();
+        List<DecryptionShareAndProof> resultList = new ArrayList<>();
+
+        // We are done when isDone is completed above.
+        // Copy elements into non synchronized list
+        // Finally complete result future
+        enoughSharesAreAvailable.thenRun(() -> {
+            synchronized (synchronizedResultList) {
+                // Copy first k+1 elements
+                for (int i = 0; i <= k; i++) {
+                    resultList.add(synchronizedResultList.get(i));
+                }
+
+                // Cancel other futures
+                for (int i = 0; i < tallierCount; i++) {
+                    futures.get(i).cancel(false);
+                }
+
+                // Complete result future
+                resultFuture.complete(resultList);
+            }
+        });
+
+       return resultFuture;
     }
 
 

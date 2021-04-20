@@ -124,7 +124,6 @@ public class Sigma3 {
      */
     public static Sigma3Statement createStatement(ElGamalPK pk, Ciphertext ciphertext, BigInteger plaintextElement) {
         BigInteger p = pk.getGroup().getP();
-        BigInteger g = pk.getGroup().getG();
 
         // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
         BigInteger alpha = pk.getH();

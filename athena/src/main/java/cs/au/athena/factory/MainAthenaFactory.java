@@ -1,7 +1,6 @@
 package cs.au.athena.factory;
 
 import cs.au.athena.CONSTANTS;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.strategy.DistributedStrategy;
 import cs.au.athena.athena.strategy.SingleTallierStrategy;
@@ -76,7 +75,7 @@ public class MainAthenaFactory implements AthenaFactory {
 
     @Override
     public BulletinBoardV2_0 getBulletinBoard() {
-        return BulletinBoardV2_0.getInstance(this.tallierCount);
+        return BulletinBoardV2_0.getInstance(this.tallierCount, kappa);
     }
 
     @Override
