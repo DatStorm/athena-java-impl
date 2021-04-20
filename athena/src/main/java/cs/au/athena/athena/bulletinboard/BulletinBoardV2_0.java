@@ -8,6 +8,7 @@ import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
+import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.elgamal.Group;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -26,7 +27,6 @@ public class BulletinBoardV2_0 {
     private final Group group;
     private final Map<Integer, CompletableFuture<Pair<List<BigInteger>, List<Sigma1Proof>> >> tallierCommitmentsAndProofs;
     private final Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
-//    private final Map<Integer, CompletableFuture<ElGamalPK>> mapOfIndividualPK;
     private final Map<Integer, CompletableFuture<PK_Vector>> mapOfIndividualPK_vector;
 
     // static method to create instance of Singleton class
@@ -42,7 +42,6 @@ public class BulletinBoardV2_0 {
     private BulletinBoardV2_0(int tallierCount) {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
         this.tallierCommitmentsAndProofs = new HashMap<>();
-//        this.mapOfIndividualPK = new HashMap<>(); // TODO: remove? and use pk-vector below
         this.mapOfIndividualPK_vector = new HashMap<>();
         this.encryptedSubShares = new HashMap<>();
 
@@ -57,7 +56,6 @@ public class BulletinBoardV2_0 {
         // Fill with CompletableFutures
         for(int i = 1; i <= tallierCount; i++) {
             tallierCommitmentsAndProofs.put(i, new CompletableFuture<>());
-//            mapOfIndividualPK.put(i, new CompletableFuture<>());
             mapOfIndividualPK_vector.put(i, new CompletableFuture<>());
 
             for(int j = 1; j <= tallierCount; j++) {
@@ -73,57 +71,7 @@ public class BulletinBoardV2_0 {
 
 
 
-    // Ballots
-    List<Ballot> ballots;
 
-    // For each ballot (generation pfr)
-    private List<PFR> pfr = new ArrayList<>();
-    private List<PFD> pfd = new ArrayList<>();
-
-
-    // Returns the PFR index, and grows PFR list if needed
-    public PFR getPfr(int index) {
-        // Check
-        boolean indexIsOnePastTheEnd = index == pfr.size();
-        if (indexIsOnePastTheEnd) {
-            // Object does not already exist
-            // Add a new object to the end
-            PFR obj = new PFR();
-            pfr.add(obj);
-
-            //Return the new object
-            return obj;
-
-        } else if (index < pfr.size()) {
-            // Object already exists
-            return pfr.get(index);
-
-        } else {
-            throw new IllegalArgumentException("getPfr() !!");
-        }
-    }
-
-    // Returns the PFD index, and grows PFR list if needed
-    public PFD getPfd(int index) {
-        // Check
-        boolean indexIsOnePastTheEnd = index == pfd.size();
-        if (indexIsOnePastTheEnd) {
-            // Object does not already exist
-            // Add a new object to the end
-            PFD obj = new PFD();
-            pfd.add(obj);
-
-            //Return the new object
-            return obj;
-
-        } else if (index < pfd.size()) {
-            // Object already exists
-            return pfd.get(index);
-
-        } else {
-            throw new IllegalArgumentException("getPfd() !!");
-        }
-    }
 
     public int retrieveTallierCount() {
         return tallierCount;
@@ -178,14 +126,6 @@ public class BulletinBoardV2_0 {
 
     }
 
-//    public void publishIndividualPK(int tallierIndex, ElGamalPK pk) { // TODO: remove?
-//        mapOfIndividualPK.get(tallierIndex).complete(pk);
-//    }
-//
-//    public CompletableFuture<ElGamalPK> retrieveIndividualPK(int tallierIndex) { // TODO: remove?
-//        return mapOfIndividualPK.get(tallierIndex);
-//    }
-
     public void publishIndividualPKvector(int tallierIndex, PK_Vector pkv) {
         mapOfIndividualPK_vector.get(tallierIndex).complete(pkv);
     }
@@ -210,118 +150,177 @@ public class BulletinBoardV2_0 {
         return tallierCommitmentsAndProofs.get(j);
     }
 
-
-    // Construct pfr elements
-    class PFR {
-        // list of HomoAndProof
-        List<HomoCombinationAndProof> homoCombAndProofs;
-
-        // List of DecryptionAndProof{
-        List<DecryptionAndProof> decryptionAndProofs;
-
-        public PFR() {
-            homoCombAndProofs = new ArrayList<>();
-            decryptionAndProofs = new ArrayList<>();
-        }
-
-        // Add a homoComb pair
-        void addHomoCombinationAndProof(HomoCombinationAndProof obj) {
-            homoCombAndProofs.add(obj);
-        }
-
-        // Add a Decryption pair
-        void addHomoCombinationAndProof(DecryptionAndProof obj) {
-            decryptionAndProofs.add(obj);
-        }
-
-        List<HomoCombinationAndProof> blockingGetHomoCombinationAndProofs(int threshold) {
-            return null;
-        }
-
-        List<DecryptionAndProof> blockingGetDecryptionAndProofs(int threshold) {
-            return null;
-        }
-
+    public void publishDecryptionShare(int tallierIndex, Ciphertext c, BigInteger decryptionShare) {
+        throw new UnsupportedOperationException("TODO! ".repeat(30));
     }
 
 
-    // For each tallier
-    List<MixedBallotsAndProof> mixAndProofs;
-
-    // For each ballot (generation pfd)
-    class PFD {
-        // list of Pair
-        private List<HomoCombinationAndProof> homoCombAndProofs;
-        // homo combination c'
-        // homo proof
-
-        // list of Pair
-        private List<DecryptionAndProof> decryptionAndProofs_m;
-        // Decryption m
-        // Decryption proof 1 m
-
-        // list of Pair
-        private List<DecryptionAndProof> decryptionAndProofs_v;
-        // Decryption v          (optional)
-        // Decryption proof 2 v' (optional, i.e. only done if m=1)
-
-        public PFD() {
-            this.homoCombAndProofs = new ArrayList<>();
-            this.decryptionAndProofs_m = new ArrayList<>();
-            this.decryptionAndProofs_v = new ArrayList<>();
-        }
-
-        // Add a homoComb pair
-        void addHomoCombinationAndProof(HomoCombinationAndProof obj) {
-            homoCombAndProofs.add(obj);
-        }
-
-        // Add a homoComb pair
-        void addDecryptionAndProof_m(DecryptionAndProof obj) {
-            decryptionAndProofs_m.add(obj);
-        }
-
-        // Add a homoComb pair
-        void addDecryptionAndProof_v(DecryptionAndProof obj) {
-            decryptionAndProofs_v.add(obj);
-        }
-
-        List<DecryptionAndProof> blockingGetHomoCombAndProofs(int threshold) {
-            return null;
-        }
-
-        List<DecryptionAndProof> blockingGetDecryptionAndProofs_m(int threshold) {
-            return null;
-        }
-
-        List<DecryptionAndProof> blockingGetDecryptionAndProofs_v(int threshold) {
-            return null;
-        }
+    public Group getGroup() {
+        return group;
     }
 
-    class HomoCombinationAndProof {
-        // ciphertext homo
-        Ciphertext homoComb;
-
-        // Proof of homo
-        Sigma4Proof homoProof;
-
+    public CompletableFuture<List<ElGamalSK>> retrieveDecryptionSharesAndProofWithThreshold(Ciphertext c, int k) {
+        throw new UnsupportedOperationException("TODO! ".repeat(30));
+//        return null;
     }
 
-    class DecryptionAndProof {
-        // Decryption shares
-        BigInteger d;
-
-        // Proof of decryption share
-        Sigma3Proof decryptionProof;
-    }
 
     /***************************************************
      *             Distributed stuff below             *
      **************************************************/
-    public Group getGroup() {
-        return group;
-    }
+//
+//    // Ballots
+//    List<Ballot> ballots;
+//
+//    // For each ballot (generation pfr)
+//    private List<PFR> pfr = new ArrayList<>();
+//    private List<PFD> pfd = new ArrayList<>();
+//
+//
+//    // Returns the PFR index, and grows PFR list if needed
+//    public PFR getPfr(int index) {
+//        // Check
+//        boolean indexIsOnePastTheEnd = index == pfr.size();
+//        if (indexIsOnePastTheEnd) {
+//            // Object does not already exist
+//            // Add a new object to the end
+//            PFR obj = new PFR();
+//            pfr.add(obj);
+//
+//            //Return the new object
+//            return obj;
+//
+//        } else if (index < pfr.size()) {
+//            // Object already exists
+//            return pfr.get(index);
+//
+//        } else {
+//            throw new IllegalArgumentException("getPfr() !!");
+//        }
+//    }
+//
+//    // Returns the PFD index, and grows PFR list if needed
+//    public PFD getPfd(int index) {
+//        // Check
+//        boolean indexIsOnePastTheEnd = index == pfd.size();
+//        if (indexIsOnePastTheEnd) {
+//            // Object does not already exist
+//            // Add a new object to the end
+//            PFD obj = new PFD();
+//            pfd.add(obj);
+//
+//            //Return the new object
+//            return obj;
+//
+//        } else if (index < pfd.size()) {
+//            // Object already exists
+//            return pfd.get(index);
+//
+//        } else {
+//            throw new IllegalArgumentException("getPfd() !!");
+//        }
+//    }
+//
+//
+//    // Construct pfr elements
+//    class PFR {
+//        // list of HomoAndProof
+//        List<HomoCombinationAndProof> homoCombAndProofs;
+//
+//        // List of DecryptionAndProof{
+//        List<DecryptionAndProof> decryptionAndProofs;
+//
+//        public PFR() {
+//            homoCombAndProofs = new ArrayList<>();
+//            decryptionAndProofs = new ArrayList<>();
+//        }
+//
+//        // Add a homoComb pair
+//        void addHomoCombinationAndProof(HomoCombinationAndProof obj) {
+//            homoCombAndProofs.add(obj);
+//        }
+//
+//        // Add a Decryption pair
+//        void addHomoCombinationAndProof(DecryptionAndProof obj) {
+//            decryptionAndProofs.add(obj);
+//        }
+//
+//        List<HomoCombinationAndProof> blockingGetHomoCombinationAndProofs(int threshold) {
+//            return null;
+//        }
+//
+//        List<DecryptionAndProof> blockingGetDecryptionAndProofs(int threshold) {
+//            return null;
+//        }
+//
+//    }
+//
+//
+//    // For each tallier
+//    List<MixedBallotsAndProof> mixAndProofs;
+//
+//    // For each ballot (generation pfd)
+//    class PFD {
+//        // list of Pair
+//        private List<HomoCombinationAndProof> homoCombAndProofs;
+//        // homo combination c'
+//        // homo proof
+//
+//        // list of Pair
+//        private List<DecryptionAndProof> decryptionAndProofs_m;
+//        // Decryption m
+//        // Decryption proof 1 m
+//
+//        // list of Pair
+//        private List<DecryptionAndProof> decryptionAndProofs_v;
+//        // Decryption v          (optional)
+//        // Decryption proof 2 v' (optional, i.e. only done if m=1)
+//
+//        public PFD() {
+//            this.homoCombAndProofs = new ArrayList<>();
+//            this.decryptionAndProofs_m = new ArrayList<>();
+//            this.decryptionAndProofs_v = new ArrayList<>();
+//        }
+//
+//        // Add a homoComb pair
+//        void addHomoCombinationAndProof(HomoCombinationAndProof obj) {
+//            homoCombAndProofs.add(obj);
+//        }
+//
+//        // Add a homoComb pair
+//        void addDecryptionAndProof_m(DecryptionAndProof obj) {
+//            decryptionAndProofs_m.add(obj);
+//        }
+//
+//        // Add a homoComb pair
+//        void addDecryptionAndProof_v(DecryptionAndProof obj) {
+//            decryptionAndProofs_v.add(obj);
+//        }
+//
+//        List<DecryptionAndProof> blockingGetHomoCombAndProofs(int threshold) {
+//            return null;
+//        }
+//
+//        List<DecryptionAndProof> blockingGetDecryptionAndProofs_m(int threshold) {
+//            return null;
+//        }
+//
+//        List<DecryptionAndProof> blockingGetDecryptionAndProofs_v(int threshold) {
+//            return null;
+//        }
+//    }
+//
+//    class HomoCombinationAndProof {
+//        // ciphertext homo
+//        Ciphertext homoComb;
+//
+//        // Proof of homo
+//        Sigma4Proof homoProof;
+//
+//    }
+//
+
+
 
 
 }

@@ -8,6 +8,7 @@ import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.*;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -51,7 +52,7 @@ public interface Strategy {
     Ciphertext homoCombination(Ciphertext c, BigInteger nonce, Group group);
 
 
-    BigInteger decrypt(Ciphertext c, ElGamalSK sk);
+    BigInteger decrypt(int tallierIndex, Ciphertext c, ElGamalSK sk);
 
 
 }

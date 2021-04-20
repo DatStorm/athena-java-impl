@@ -209,8 +209,7 @@ public class AthenaTally {
             Ciphertext ci_prime = this.strategy.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group);
 
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = this.strategy.decrypt(ci_prime, sk);
-
+            BigInteger noncedNegatedPrivateCredentialElement = this.strategy.decrypt(tallierIndex, ci_prime, sk);
 
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);
@@ -221,7 +220,7 @@ public class AthenaTally {
             // Prove decryption
             Sigma3Proof decryptionProof = this.strategy.proveDecryption(ci_prime, noncedNegatedPrivateCredentialElement, sk, kappa);
 
-            // Proove that the same nonce was used for all ballots.
+            // Prove that the same nonce was used for all ballots.
             if (pfr.size() > 0) {
                 // Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
                 List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
@@ -289,15 +288,15 @@ public class AthenaTally {
             BigInteger nonce = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
             Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
 
-            // Decrypt nonced combinedCredential
-            BigInteger m = Elgamal.decrypt(c_prime, sk);
-
             // Prove that c' is a homomorphic combination of combinedCredential
             Sigma4Proof combinationProof = this.strategy.proveCombination(List.of(c_prime),
                     List.of(combinedCredential),
                     nonce,
                     sk,
                     kappa);
+
+            // Decrypt nonced combinedCredential
+            BigInteger m = Elgamal.decrypt(c_prime, sk);
 
             // Prove that msg m is the correct decryption of c'
             Sigma3Proof combinationDecryptionProof = this.strategy.proveDecryption(c_prime, m, sk, kappa);

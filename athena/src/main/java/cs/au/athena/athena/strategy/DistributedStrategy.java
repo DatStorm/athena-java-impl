@@ -1,6 +1,7 @@
 package cs.au.athena.athena.strategy;
 
 import cs.au.athena.Polynomial;
+import cs.au.athena.athena.AthenaCommon;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.dao.athena.PK_Vector;
@@ -13,6 +14,7 @@ import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.sigma.Sigma1;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -51,10 +53,7 @@ public class DistributedStrategy implements Strategy {
         Random random = athenaFactory.getRandom();
         Group group = this.getGroup();
 
-        logger.info(MARKER, "retrieving Tallier count");
         int tallierCount = bb.retrieveTallierCount();
-
-        logger.info(MARKER, "retrieving secret share threshold k");
         int k = bb.retrieveK();
 
         // Generate random polynomial P_i(X)
@@ -68,47 +67,40 @@ public class DistributedStrategy implements Strategy {
         List<BigInteger> coefficients = polynomial.getCoefficients();
         List<BigInteger> commitments = polynomial.getCommitments();
 
+        // Generate proofs for the commitments
         List<Sigma1Proof> commitmentProofs = new ArrayList<>();
         for(int ell = 0; ell <= k; ell++) {
-            BigInteger coefficient = coefficients.get(ell);
-            BigInteger commitment = commitments.get(ell);
-
-            Sigma1Proof proof = this.proveKey(commitment, coefficient, kappa);
+            Sigma1Proof proof = this.proveKey(coefficients.get(ell), commitments.get(ell), kappa);
             commitmentProofs.add(proof);
         }
 
-
-
+        // Publish commitments and proofs
         logger.info(MARKER, "publishing polynomial commitment and proofs");
         bb.publishPolynomialCommitmentsAndProofs(tallierIndex, commitments, commitmentProofs);
-
-        // Calculate proofs, and publish together
-        logger.info(MARKER, "generate sk's");
 
         // Generate talliers own private (sk, pk)
         ElGamalSK sk_i = Elgamal.generateSK(group, random);
         ElGamalPK pk_i = sk_i.pk;
         Sigma1Proof rho_i = this.proveKey(pk_i, sk_i, kappa);
 
-        bb.publishIndividualPKvector(tallierIndex, new PK_Vector(pk_i, rho_i));
+        // Publish my individual public key, so others can send me a subShare
         logger.info(MARKER, "publish pk_i to bb.");
-
+        bb.publishIndividualPKvector(tallierIndex, new PK_Vector(pk_i, rho_i));
 
         // Send subshares P_i(j) to T_j
         logger.info(MARKER, "publishSubShares start");
         this.publishSubShares(tallierIndex, group, random, tallierCount, polynomial, kappa);
-        logger.info(MARKER, "publishSubShares end");
 
-        // Receive subshare, and compute our share
-        List<BigInteger> listOfSubShares = this.receiveSubShare(tallierIndex, group, tallierCount, k, sk_i, kappa);
+        // Receive subshares, add our own, and compute our final share
+        List<BigInteger> listOfSubShares = this.receiveSubShares(tallierIndex, group, tallierCount, k, sk_i, kappa);
+        listOfSubShares.add(polynomial.eval(tallierIndex));
         BigInteger share_i = listOfSubShares.stream().reduce(BigInteger.ZERO, (a,b) -> a.add(b).mod(group.q));
 
-        logger.info(MARKER, "returning sk.");
         return new ElGamalSK(group, share_i);
     }
 
 
-    // Compute and publish the subshares P_i(j) for 1 \leq j \leq n
+    // Compute and publish the subshares P_i(j) to all talliers j
     private void publishSubShares(int tallierIndex, Group group, Random random, int tallierCount, Polynomial polynomial, int kappa) {
         // For each other tallier
         for (int j = 1; j <= tallierCount; j++) {
@@ -122,7 +114,7 @@ public class DistributedStrategy implements Strategy {
             boolean isPK_jValid = this.verifyKey(pk_j, pk_j_vector.rho, kappa);
 
             if (!isPK_jValid) {
-                throw new RuntimeException("Tallier T_i retrieved an invalid public pk_j from tallier T_j.");
+                throw new RuntimeException("Tallier T_i retrieved an invalid public key pk_j from tallier T_j.");
             }
 
             BigInteger subShare = polynomial.eval(j);
@@ -133,13 +125,13 @@ public class DistributedStrategy implements Strategy {
 //            logger.info(MARKER, String.format("tallier encrypted subshare P_%d(%d): enc(%d) -> %d , pk=%d", tallierIndex, j, subShare, encSubShare.c1, pk_j.h));
 
             // Send subshare, by encrypting and positing
-            logger.info(MARKER, String.format("tallier %d publishing P_%d(%d) = encSubshare=%s", tallierIndex, tallierIndex ,j, encSubShare.toOneLineString()));
+            logger.info(MARKER, String.format("tallier %d publishing P_%d(%d)", tallierIndex, tallierIndex ,j));
             bb.publishEncSubShare(tallierIndex, j, encSubShare); // key = (i,j)
         }
     }
 
     // Receive, decrypt and verify the encrypted subshares
-    private List<BigInteger> receiveSubShare(int tallierIndex, Group group, int tallierCount, int k, ElGamalSK sk_i, int kappa) {
+    private List<BigInteger> receiveSubShares(int tallierIndex, Group group, int tallierCount, int k, ElGamalSK sk_i, int kappa) {
         List<BigInteger> subShares = new ArrayList<>(tallierCount);
 
         // For each other tallier
@@ -149,33 +141,35 @@ public class DistributedStrategy implements Strategy {
             }
 
             // Receive subshare
+
+            // Retrieve commitments and proofs from BB
             Ciphertext encSubShare = bb.retrieveEncSubShare(j, tallierIndex).join();
-            logger.info(MARKER, String.format("tallier %d received P_%d(%d) encSubshare=%s", tallierIndex, j, tallierIndex, encSubShare.toOneLineString()));
+            Pair<List<BigInteger>, List<Sigma1Proof>> commitmentProofPairs = bb.retrieveCommitmentsAndProofs(j).join();
+            List<BigInteger> commitments_j = commitmentProofPairs.getLeft();
+            List<Sigma1Proof> commitmentProofs_j = commitmentProofPairs.getRight();
 
-            // C_{j,0..k} = g^{a_(j0)}, ... g^{a_(jk)}
+            logger.info(MARKER, String.format("tallier %d received P_%d(%d)", tallierIndex, j, tallierIndex));
 
-            // TODO: Check the Commitment proofs. left, right
-            List<BigInteger> commitments_j = bb.retrieveCommitmentsAndProofs(j).join().getLeft();
-            List<Sigma1Proof> commitmentProofs_j = bb.retrieveCommitmentsAndProofs(j).join().getRight();
+            // Check length of polynomial commitment
+            if (commitments_j.size() != k +1 || commitmentProofs_j.size() != k+1) {
+                // FUTUREWORK: If the commitment is invalid or incorrect length, T_j is malicious and should be removed.
+                throw new RuntimeException(String.format("Tallier %d published commitments of %d degree polynomial. Should be k=%d ", j, commitments_j.size(), k));
+            }
 
             // VerifyKey on polynomial commitments
-            for(int i = 0; i < k+1; i++) {
+            for(int i = 0; i <= k; i++) {
                 BigInteger commitment = commitments_j.get(i);
                 Sigma1Proof proof = commitmentProofs_j.get(i);
                 boolean isValid = this.verifyKey(commitment, proof, kappa);
-                if (!isValid) {
-                    System.out.println("DistributedStrategy.receiveSubShare: Coefficients commitment is not valid for P_"+ i);
-                }
-            }
 
-            // Check length of polynomial commitment
-            if (commitments_j.size() != k +1) {
-                throw new RuntimeException("Tallier " + j + " did not publish polynomialCommitment of length k: "+ k);
+                if (!isValid) {
+                    // FUTUREWORK: If the proofs are invalid, T_j is malicious and should be removed.
+                    throw new RuntimeException(String.format("Tallier %d published commitments with invalid proofs", j));
+                }
             }
 
             // Decrypt encrypted subshare
             BigInteger subShareFromTallier_j = GroupTheory.fromGToZq(Elgamal.decrypt(encSubShare, sk_i), group);
-//            logger.info(MARKER, String.format("tallier decrypted subshare P_%d(%d): dec(%d) -> %d, pk=%d", j, tallierIndex, encSubShare.c1, subShareFromTallier_j, sk_i.pk.h));
 
             // Verify subshare
             // - First calculate the subshare commitment from the commitments on BB
@@ -186,8 +180,6 @@ public class DistributedStrategy implements Strategy {
 
             // - Verify the received subshare
             if (!commitmentToSubShare_a.equals(commitmentToSubShare_b)) {
-//                logger.info(MARKER, "commitmentToSubShare_a: " + commitmentToSubShare_a);
-//                logger.info(MARKER, "commitmentToSubShare_b: " + commitmentToSubShare_b);
                 //TODO: Post (subShareFromTallier_j_GroupElement, ProveDec(subShareFromTallier_j_GroupElement, sk_i), to convince others that T_j is corrupt
                 throw new RuntimeException("A subshare was inconsistent with the commitments");
             }
@@ -262,11 +254,35 @@ public class DistributedStrategy implements Strategy {
 
     @Override
     public Ciphertext homoCombination(Ciphertext c, BigInteger nonce, Group group) {
-        throw new UnsupportedOperationException();
+        return AthenaCommon.homoCombination(c, nonce, group.p);
     }
 
+    /**
+     * @param skShare is the shamir secret sharing share: P(i)
+     * @return decrypted message
+     */
     @Override
-    public BigInteger decrypt(Ciphertext c, ElGamalSK sk) {
-        throw new UnsupportedOperationException();
+    public BigInteger decrypt(int tallierIndex, Ciphertext c, ElGamalSK skShare) {
+        Group group = this.getGroup();
+        int k = bb.retrieveK();
+
+        // Publish decryption share
+        BigInteger decryptionShare = c.c1.modPow(skShare.toBigInteger().negate(),group.p);
+        bb.publishDecryptionShare(tallierIndex, c, decryptionShare);
+
+        // Retrieve decryption shares for ciphertext c when there is k+1 shares on the bulletin board.
+        // get k+1 shares from BB.
+        List<Pair<BigInteger, Sigma3Proof>> shares = bb.retrieveDecryptionSharesAndProofWithThreshold(c, k).join();
+
+        this.verifyDecryption(cipher, plaintext, pk, phi, kappa);
+        assert shares.size() == k+1;
+
+        // compute the c1^sk
+        BigInteger productOfDecryptionShares = shares.stream()
+                .map(ElGamalSK::toBigInteger)
+                .reduce(BigInteger.ONE,(a, b) -> a.multiply(b).mod(group.p));
+
+        // Decrypt the ciphertext with the new sk.
+        return c.c2.multiply(productOfDecryptionShares).mod(group.p);
     }
 }
