@@ -71,7 +71,7 @@ public class DistributedStrategy implements Strategy {
         // Generate proofs for the commitments
         List<Sigma1Proof> commitmentProofs = new ArrayList<>();
         for(int ell = 0; ell <= k; ell++) {
-            Sigma1Proof proof = this.proveKey(coefficients.get(ell), commitments.get(ell), kappa);
+            Sigma1Proof proof = this.proveKey(commitments.get(ell), coefficients.get(ell), kappa);
             commitmentProofs.add(proof);
         }
 
@@ -203,7 +203,7 @@ public class DistributedStrategy implements Strategy {
         Random random = athenaFactory.getRandom();
         Group group = this.getGroup();
 
-        assert group.g.modPow(sk, group.p).equals(pk) : "pk and sk does not match";
+        assert group.g.modPow(sk, group.p).equals(pk) : "ProveKey: pk and sk does not match";
 
 //        System.out.println("PK: " + pk);
 //        System.out.println("SK: " + sk);
