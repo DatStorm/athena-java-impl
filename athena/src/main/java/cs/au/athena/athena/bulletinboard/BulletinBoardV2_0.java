@@ -309,18 +309,5 @@ public class BulletinBoardV2_0 {
 //            return null;
 //        }
 //    }
-//
-//    class HomoCombinationAndProof {
-//        // ciphertext homo
-//        Ciphertext homoComb;
-//
-//        // Proof of homo
-//        Sigma4Proof homoProof;
-//
-//    }
-//
-
-
-
 
 }
