@@ -3,7 +3,7 @@ package cs.au.athena.athena;
 import cs.au.athena.dao.athena.PFStruct;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.sigma.Sigma1;
+import cs.au.athena.elgamal.Group;
 
 import java.math.BigInteger;
 import java.util.Map;
@@ -26,8 +26,8 @@ public class AthenaCommon {
         return true;
     }
 
-    public static Ciphertext homoCombination(Ciphertext cipherText, BigInteger n, BigInteger p) {
-        return cipherText.modPow(n, p);
+    public static Ciphertext homoCombination(Ciphertext cipherText, BigInteger n, Group group) {
+        return cipherText.modPow(n, group.p);
     }
 
     public static boolean parsePF(PFStruct pf) {

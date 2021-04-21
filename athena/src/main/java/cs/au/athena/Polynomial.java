@@ -83,4 +83,22 @@ public class Polynomial {
 
         return commitment;
     }
+
+    public static BigInteger getLambda(int x, int i, List<Integer> S) {
+        BigInteger prod = BigInteger.ONE;
+        BigInteger xBigInt = BigInteger.valueOf(x);
+        BigInteger iBigInt = BigInteger.valueOf(i);
+
+        for(int j : S) {
+            BigInteger jBigInt = BigInteger.valueOf(j);
+            if (iBigInt.equals(jBigInt)) {
+                continue;
+            }
+            // j-x / j-i
+            BigInteger j_sub_x = jBigInt.subtract(xBigInt);
+            BigInteger j_sub_i = jBigInt.subtract(iBigInt);
+            prod = j_sub_x.divide(j_sub_i);
+        }
+        return prod;
+    }
 }

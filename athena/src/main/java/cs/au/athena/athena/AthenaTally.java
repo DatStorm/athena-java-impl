@@ -3,7 +3,7 @@ package cs.au.athena.athena;
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
-import cs.au.athena.athena.strategy.Strategy;
+import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
@@ -37,13 +37,13 @@ public class AthenaTally {
     private Random random;
     private Elgamal elgamal;
     private BulletinBoard bb;
-    private Strategy strategy;
+    private AthenaDistributed distributed;
     private int kappa;
 
     // Construct using builder
     private AthenaTally() {}
 
-    public TallyStruct Tally(SK_Vector skv, int nc) {
+    public TallyStruct Tally(int tallierIndex, SK_Vector skv, int nc) {
         ElGamalSK sk = skv.sk;
         ElGamalPK pk = sk.pk;
 
@@ -65,7 +65,7 @@ public class AthenaTally {
         logger.info(MARKER, "Tally(...) => step2");
 
         //Filter ReVotes and pfr proof of same nonce
-        Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterResult = filterReVotesAndProveSameNonce(validBallots, sk);
+        Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterResult = filterReVotesAndProveSameNonce(tallierIndex, validBallots, sk);
         Map<MapAKey, MapAValue> A = filterResult.getLeft();
         List<PFRStruct> pfr = filterResult.getRight();
 
@@ -78,7 +78,7 @@ public class AthenaTally {
 
         // Perform random mix
         MixedBallotsAndProof mixPair = mixnet(A, pk);
-        List<MixBallot> mixedBallots = mixPair.mixedBallots; // TODO: strategy
+        List<MixBallot> mixedBallots = mixPair.mixedBallots;
         MixProof mixProof = mixPair.mixProof;
 
 
@@ -191,14 +191,20 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
-    private Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterReVotesAndProveSameNonce(List<Ballot> ballots, ElGamalSK sk) {
+    private Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterReVotesAndProveSameNonce(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
         int ell = ballots.size();
 
-        List<PFRStruct> pfr = new ArrayList<>();
         Map<MapAKey, MapAValue> A = new HashMap<>();
 
         // Pick a nonce to mask public credentials.
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
+
+        // Here we should pick a nonceShare, post combinedCiphertextShare to BB, retrieve others, combine to agreed upon combinedCiphertext
+        List<Ciphertext> combinedCiphertexts = AthenaDistributed.combineCiphertext(ciphertexts, nonce_n, group);
+
+/*
+        We choose T1 T3 T4 for homoCombine
+        for each ballot c = c1 * c3 * c4
 
         // For each ballot.
         Ciphertext ci_prime_previous = null;
@@ -206,11 +212,24 @@ public class AthenaTally {
             Ballot ballot = ballots.get(i);
 
             // Homomorpically reencrypt(by raising to power n) ballot and decrypt
-            Ciphertext ci_prime = this.strategy.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group);
+            // TODO: Here first
 
+            //Ciphertext ci_prime = this.distributed.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group);
+            Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group);
+        }
+
+*/
+
+
+
+
+
+        List<PFRStruct> pfr = new ArrayList<>();
+        for (int i = 0; i < ell; i++) {
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = this.strategy.decrypt(ci_prime, sk);
+            BigInteger noncedNegatedPrivateCredentialElement = this.distributed.decrypt(tallierIndex, i, ci_prime, sk, kappa);
 
+            // OLD: ProveDec
 
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);
@@ -218,21 +237,19 @@ public class AthenaTally {
             MapAValue updatedValue = getHighestCounterEntry(existingValue, ballot, sk.pk.group.p);
             A.put(key, updatedValue);
 
-            // Prove decryption
-            Sigma3Proof decryptionProof = this.strategy.proveDecryption(ci_prime, noncedNegatedPrivateCredentialElement, sk, kappa);
 
-            // Proove that the same nonce was used for all ballots.
+            // Prove that the same nonce was used for all ballots.
             if (pfr.size() > 0) {
-                // Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
+                //Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
                 List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
                 List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
-                Sigma4Proof omega = this.strategy.proveCombination(listCombined, listCiphertexts, nonce_n, sk, kappa);
+                Sigma4Proof omega = this.distributed.proveCombination(listCombined, listCiphertexts, nonce_n, sk, kappa);  // Moved to distributed
 
-                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, omega));
+                //pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, omega));
             } else {
                 // The else case does not create the ProveComb since this else case is only used in the first iteration
                 // of the loop true case is used the remaining time.
-                pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, null));
+                //pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, null));
             }
 
             ci_prime_previous = ci_prime;
@@ -268,7 +285,7 @@ public class AthenaTally {
                 .map(MapAValue::toMixBallot)
                 .collect(Collectors.toList());
 
-        return this.strategy.proveMix(ballots, pk, kappa);
+        return this.distributed.proveMix(ballots, pk, kappa);
 
     }
 
@@ -289,18 +306,18 @@ public class AthenaTally {
             BigInteger nonce = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
             Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
 
-            // Decrypt nonced combinedCredential
-            BigInteger m = Elgamal.decrypt(c_prime, sk);
-
             // Prove that c' is a homomorphic combination of combinedCredential
-            Sigma4Proof combinationProof = this.strategy.proveCombination(List.of(c_prime),
+            Sigma4Proof combinationProof = this.distributed.proveCombination(List.of(c_prime),
                     List.of(combinedCredential),
                     nonce,
                     sk,
                     kappa);
 
+            // Decrypt nonced combinedCredential
+            BigInteger m = Elgamal.decrypt(c_prime, sk);
+
             // Prove that msg m is the correct decryption of c'
-            Sigma3Proof combinationDecryptionProof = this.strategy.proveDecryption(c_prime, m, sk, kappa);
+            Sigma3Proof combinationDecryptionProof = this.distributed.proveDecryption(c_prime, m, sk, kappa);
 
             // Check validity of private credential. (decrypted combinedCredential = 1)
             if (m.equals(BigInteger.ONE)) {
@@ -317,7 +334,7 @@ public class AthenaTally {
                 }
 
                 // Prove correct decryption of vote
-                Sigma3Proof voteDecryptionProof = this.strategy.proveDecryption(encryptedVote, voteElement, sk, kappa);
+                Sigma3Proof voteDecryptionProof = this.distributed.proveDecryption(encryptedVote, voteElement, sk, kappa);
 
                 // Store proofs
                 PFDStruct value = PFDStruct.newValid(c_prime, voteElement, combinationProof, combinationDecryptionProof, voteDecryptionProof);
@@ -339,6 +356,7 @@ public class AthenaTally {
     public static class Builder {
         private Elgamal elgamal;
         private AthenaFactory athenaFactory;
+        private int tallierIndex;
         private int kappa;
 
 
@@ -359,6 +377,11 @@ public class AthenaTally {
             return this;
         }
 
+        public Builder setTallierIndex(int tallierIndex) {
+            this.tallierIndex = tallierIndex;
+            return this;
+        }
+
         public AthenaTally build() {
             //Check that all fields are set
             if (athenaFactory == null ||
@@ -371,11 +394,12 @@ public class AthenaTally {
             //Construct Object
             AthenaTally athenaTally = new AthenaTally();
             athenaTally.elgamal = elgamal;
-            athenaTally.strategy = this.athenaFactory.getStrategy();
+            athenaTally.distributed = this.athenaFactory.getDistributedAthena();
             athenaTally.random = this.athenaFactory.getRandom();
 //            athenaTally.bb = this.athenaFactory.getBulletinBoard();
             athenaTally.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
             athenaTally.kappa = kappa;
+            athenaTally.tallierIndex = tallierIndex;
 
             return athenaTally;
         }

@@ -26,7 +26,7 @@ public class TestAthenaSetup {
 
     @BeforeEach
     void setUp() {
-        maFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
+        maFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
     }
 
 

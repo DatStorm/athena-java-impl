@@ -1,22 +1,16 @@
 package cs.au.athena.athena;
 
-import cs.au.athena.CONSTANTS;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
-import cs.au.athena.athena.strategy.Strategy;
+import cs.au.athena.athena.distributed.AthenaDistributed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import cs.au.athena.GENERATOR;
-import cs.au.athena.dao.Randomness;
 import cs.au.athena.dao.athena.*;
-import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
 
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigInteger;
 import java.util.*;
 
 public class AthenaImpl implements Athena {
@@ -24,7 +18,7 @@ public class AthenaImpl implements Athena {
     private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-IMPL");
 
     private final AthenaFactory athenaFactory;
-    private final Strategy strategy;
+    private final AthenaDistributed distributed;
     private Elgamal elgamalWithLookUpTable;
     //private BigInteger mc;
     private boolean initialised;
@@ -33,7 +27,7 @@ public class AthenaImpl implements Athena {
 
     public AthenaImpl(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
-        this.strategy = athenaFactory.getStrategy();
+        this.distributed = athenaFactory.getDistributedAthena();
         this.initialised = false;
     }
 
@@ -46,12 +40,12 @@ public class AthenaImpl implements Athena {
         }
 
         Random random = athenaFactory.getRandom();
-        Group group = strategy.getGroup();
+        Group group = distributed.getGroup();
 
         this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
         //this.mc = this.athenaFactory.getBulletinBoard(???).retrieveMaxCanditates();
         this.initialised = true;
-        return strategy.setup(tallierIndex, nc, kappa);
+        return distributed.setup(tallierIndex, nc, kappa);
     }
 
 
@@ -91,7 +85,7 @@ public class AthenaImpl implements Athena {
 
 
     @Override
-    public TallyStruct Tally(SK_Vector skv, int nc, int kappa) {
+    public TallyStruct Tally(int tallierIndex, SK_Vector skv, int nc, int kappa) {
         logger.info(MARKER, "Tally(...) => start");
 
         if (!this.initialised) {
@@ -104,9 +98,10 @@ public class AthenaImpl implements Athena {
         return new AthenaTally.Builder()
                 .setFactory(this.athenaFactory)
                 .setElgamal(this.elgamalWithLookUpTable)
+                .setTallierIndex(tallierIndex)
                 .setKappa(kappa)
                 .build()
-                .Tally(skv, nc);
+                .Tally(tallierIndex, skv, nc);
     }
 
     @Override

@@ -30,7 +30,7 @@ public class TestAthenaTally {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         athena = new AthenaImpl(msFactory);
         ElGamalSK sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, this.kappa);
 //        bb = msFactory.getBulletinBoard();
@@ -57,7 +57,7 @@ public class TestAthenaTally {
         int cnt2_1 = 0;
         Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
 
-        TallyStruct tallyStruct = athena.Tally(new SK_Vector(sk), nc, this.kappa);
+        TallyStruct tallyStruct = athena.Tally(1, new SK_Vector(sk), nc, this.kappa);
         assertNotNull("Should not be null", tallyStruct.pf.mixBallotList);
         assertNotNull("Should not be null", tallyStruct.pf.pfd);
         assertNotNull("Should not be null", tallyStruct.pf.pfr);

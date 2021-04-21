@@ -40,7 +40,7 @@ public class TestAthenaVote {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
+        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
 
 
         athena = new AthenaImpl(msFactory);

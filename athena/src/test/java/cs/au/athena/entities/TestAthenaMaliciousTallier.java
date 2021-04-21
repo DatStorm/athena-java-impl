@@ -40,7 +40,7 @@ public class TestAthenaMaliciousTallier {
     @Test
     public void TestMaliciousTallier() {
         int nc = 10;
-        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
+        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         Athena athena = new AthenaImpl(athenaFactory);
 //        BulletinBoard bb = athenaFactory.getBulletinBoard();
         BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
@@ -77,7 +77,7 @@ public class TestAthenaMaliciousTallier {
 
         //Tally the votes
         System.out.println("--> Tally all votes");
-        tallier.tallyVotes();
+        tallier.tallyVotes(1);
 
         // tallyOfVotes deviates and changes the tally posted to the bulletin board.
         Map<Integer, Integer> tallyOfVotes = bb.retrieveTallyOfVotes();

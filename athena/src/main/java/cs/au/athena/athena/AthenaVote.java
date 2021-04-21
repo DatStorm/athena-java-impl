@@ -2,7 +2,7 @@ package cs.au.athena.athena;
 
 import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
-import cs.au.athena.athena.strategy.Strategy;
+import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenProof;
 import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.sigma.Sigma2Pedersen;
@@ -37,7 +37,7 @@ public class AthenaVote {
     private Random random;
     private Elgamal elgamal;
     private int kappa;
-    private Strategy strategy;
+    private AthenaDistributed distributed;
     private BulletinBoard bb;
     private Sigma2Pedersen sigma2Pedersen;
 
@@ -56,7 +56,7 @@ public class AthenaVote {
             return null;
         }
 
-        if (!this.strategy.verifyKey(pkv.pk, pkv.rho, kappa)) {
+        if (!this.distributed.verifyKey(pkv.pk, pkv.rho, kappa)) {
             System.err.println("AthenaImpl.Vote => ERROR: VerifyKey(...) => false");
             return null;
         }
@@ -164,7 +164,7 @@ public class AthenaVote {
 
             //Construct Object
             AthenaVote athenaVote = new AthenaVote();
-            athenaVote.strategy = this.athenaFactory.getStrategy();
+            athenaVote.distributed = this.athenaFactory.getDistributedAthena();
             athenaVote.sigma2Pedersen = this.athenaFactory.getSigma2Pedersen();
             athenaVote.bulletProof = this.athenaFactory.getBulletProof();
             athenaVote.random = this.athenaFactory.getRandom();

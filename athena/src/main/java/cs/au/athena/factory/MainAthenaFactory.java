@@ -1,11 +1,8 @@
 package cs.au.athena.factory;
 
 import cs.au.athena.CONSTANTS;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
-import cs.au.athena.athena.strategy.DistributedStrategy;
-import cs.au.athena.athena.strategy.SingleTallierStrategy;
-import cs.au.athena.athena.strategy.Strategy;
+import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
 import cs.au.athena.sigma.Sigma2Pedersen;
@@ -19,24 +16,18 @@ import java.util.Random;
 // Factory for constructing Sigma objects
 public class MainAthenaFactory implements AthenaFactory {
     private final Random random;
-    private final Strategy strategy;
+    private final AthenaDistributed distributed;
     private final int tallierCount;
+    private int kappa;
 
 
-    public MainAthenaFactory(AthenaFactory.STRATEGY strategyChoice, int tallierCount) {
+    public MainAthenaFactory(int tallierCount, int kappa) {
         this.tallierCount = tallierCount;
+        this.kappa = kappa;
         this.random = new Random(CONSTANTS.RANDOM_SEED);
+        this.distributed = new AthenaDistributed(this);
 
-        switch (strategyChoice) {
-            case SINGLE:
-                this.strategy = new SingleTallierStrategy(this);
-                break;
-            case DISTRIBUTED:
-                this.strategy = new DistributedStrategy(this);
-                break;
-            default:
-                throw new IllegalArgumentException("Not a valid strategy");
-        }
+
 
 
     }
@@ -76,12 +67,12 @@ public class MainAthenaFactory implements AthenaFactory {
 
     @Override
     public BulletinBoardV2_0 getBulletinBoard() {
-        return BulletinBoardV2_0.getInstance(this.tallierCount);
+        return BulletinBoardV2_0.getInstance(this.tallierCount, this.kappa);
     }
 
     @Override
-    public Strategy getStrategy() {
-        return this.strategy;
+    public  AthenaDistributed getDistributedAthena() {
+        return this.distributed;
     }
 
 

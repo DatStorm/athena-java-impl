@@ -1,20 +1,16 @@
 package cs.au.athena.factory;
 
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
-import cs.au.athena.athena.strategy.Strategy;
+import cs.au.athena.athena.distributed.AthenaDistributed;
 
 import java.util.Random;
 
 public interface AthenaFactory extends SigmaFactory {
 
-    enum STRATEGY {
-        SINGLE, DISTRIBUTED
-    }
 
     Random getRandom();
 
     BulletinBoardV2_0 getBulletinBoard();
 
-    Strategy getStrategy();
+    AthenaDistributed getDistributedAthena();
 }

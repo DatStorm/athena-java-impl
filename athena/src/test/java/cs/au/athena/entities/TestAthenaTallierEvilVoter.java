@@ -47,7 +47,7 @@ public class TestAthenaTallierEvilVoter {
         int numVoters = 2; // we only have 2 real voter
 
 
-        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT);
+        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         Athena athena = new AthenaImpl(athenaFactory);
 //        BulletinBoard bb = athenaFactory.getBulletinBoard();
         BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
@@ -89,7 +89,7 @@ public class TestAthenaTallierEvilVoter {
 
         //Tally the votes
         System.out.println("--> Tally all votes");
-        tallier.tallyVotes(); // Tallier should not count evilVote since this does not satsify m=1 in step3 of Tally
+        tallier.tallyVotes(1); // Tallier should not count evilVote since this does not satsify m=1 in step3 of Tally
 
         // Verify tally
         Verifier verifier = new Verifier(athena, bb,kappa);

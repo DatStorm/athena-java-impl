@@ -28,4 +28,6 @@ public class GroupTheory {
 
         return y.subtract(BigInteger.ONE);
     }
+
+
 }

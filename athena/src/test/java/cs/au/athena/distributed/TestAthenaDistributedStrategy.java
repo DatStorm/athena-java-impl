@@ -2,7 +2,6 @@ package cs.au.athena.distributed;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
-import cs.au.athena.athena.strategy.Strategy;
 import cs.au.athena.athena.AthenaImpl;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.AthenaFactory;
@@ -11,7 +10,6 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.*;
 
 import java.math.BigInteger;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -29,7 +27,7 @@ public class TestAthenaDistributedStrategy {
     @BeforeEach
     void setUp() {
         tallierCount = 3;
-        factory = new MainAthenaFactory(AthenaFactory.STRATEGY.DISTRIBUTED, tallierCount);
+        factory = new MainAthenaFactory(AthenaFactory.STRATEGY.DISTRIBUTED, tallierCount,kappa);
     }
 
 

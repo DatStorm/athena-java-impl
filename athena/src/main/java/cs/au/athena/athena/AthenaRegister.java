@@ -2,7 +2,7 @@ package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
-import cs.au.athena.athena.strategy.Strategy;
+import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.factory.AthenaFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class AthenaRegister {
     private Random random;
     private Elgamal elGamal;
     private int kappa;
-    private Strategy strategy;
+    private AthenaDistributed distributed;
 
 
     private AthenaRegister() {
@@ -38,7 +38,7 @@ public class AthenaRegister {
             return null;
         }
 
-        if (!this.strategy.verifyKey(pkv.pk, pkv.rho, this.kappa)) {
+        if (!this.distributed.verifyKey(pkv.pk, pkv.rho, this.kappa)) {
             System.err.println("AthenaRegister.Register => ERROR: VerifyKey(...) => false");
             return null;
         }
@@ -96,7 +96,7 @@ public class AthenaRegister {
             AthenaRegister athenaRegister = new AthenaRegister();
 //            athenaRegister.bb = this.factory.getBulletinBoard();
             athenaRegister.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
-            athenaRegister.strategy = this.factory.getStrategy();
+            athenaRegister.distributed = this.factory.getDistributedAthena();
             athenaRegister.random = this.factory.getRandom();
             athenaRegister.elGamal = this.elgamal;
             athenaRegister.kappa = this.kappa;
