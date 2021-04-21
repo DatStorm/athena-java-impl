@@ -1,20 +1,22 @@
 package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.PK_Vector;
-import cs.au.athena.dao.bulletinboard.CommitmentAndProof;
-import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
-import cs.au.athena.dao.bulletinboard.PFR;
-import cs.au.athena.dao.bulletinboard.PFD;
+import cs.au.athena.dao.bulletinboard.*;
+import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Group;
 import cs.au.athena.sigma.Sigma3;
+import cs.au.athena.sigma.Sigma4;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class BulletinBoardV2_0 {
 
@@ -24,6 +26,8 @@ public class BulletinBoardV2_0 {
     private int threshold_k;
     private final Group group;
 
+    List<Ballot> ballots;
+
     private final Map<Integer, CompletableFuture<List<CommitmentAndProof>>> tallierCommitmentsAndProofs;
     private final Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
     private final Map<Integer, CompletableFuture<PK_Vector>> mapOfIndividualPK_vector;
@@ -32,8 +36,8 @@ public class BulletinBoardV2_0 {
 
     // Activated when a tallier posts homocomb or decryption shares
 
-    private final List<PFR> synchronizedPFR;
-    private final List<PFD> synchronizedPFD;
+    private List<PFR> synchronizedPFR;
+    private List<PFD> synchronizedPFD;
 
 //    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
     private int kappa;
@@ -56,8 +60,8 @@ public class BulletinBoardV2_0 {
         this.encryptedSubShares = new HashMap<>();
 //        this.decryptionShareMap = new HashMap<>();
 
-        this.synchronizedPFR = Collections.synchronizedList(new ArrayList<>());
-        this.synchronizedPFD = Collections.synchronizedList(new ArrayList<>());
+        this.synchronizedPFR = null; // Set on call to publishCombinedCiphertext
+        this.synchronizedPFD = null;
 
 
         this.sigma3 = new Sigma3();
@@ -174,6 +178,129 @@ public class BulletinBoardV2_0 {
         return tallierCommitmentsAndProofs.get(j);
     }
 
+    private synchronized void initPFR() {
+        int ell = ballots.size();
+
+        // Create list
+        if(synchronizedPFR == null) {
+            synchronizedPFR = Collections.synchronizedList(new ArrayList<>(ell));
+        }
+
+        // Init all elements
+        for (int i = 0; i < ell; i++) {
+            synchronizedPFR.add(new PFR(tallierCount));
+        }
+    }
+
+    public void publishCombinedCiphertextAndProofToPFR_PFD(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
+        int ell = ballots.size();
+
+        if(listOfCombinedCiphertextAndProof.size() == ell) {
+            throw new IllegalArgumentException("list must be the same length as ballots");
+        }
+
+        initPFR();
+
+        // Set values in pfr
+        for (int i = 0; i < ell; i++) {
+            PFR pfr = synchronizedPFR.get(i);
+            CombinedCiphertextAndProof combinedCiphertextAndProof = listOfCombinedCiphertextAndProof.get(i);
+
+            pfr.setCiphertextCombinationAndProof(tallierIndex, combinedCiphertextAndProof);
+        }
+
+        notifyOnPublish(listOfCombinedCiphertextAndProof); // TODO: How to eventlistener
+    }
+
+    public List<List<CombinedCiphertextAndProof>> retrieveCombinedCiphertextAndProofFromPFR_PFR(int thresholdK) {
+        int ell = ballots.size();
+        ElGamalPK pk = this.retrievePK();
+
+        if (synchronizedPFR == null) {
+            throw new RuntimeException("publishCombinedCiphertextAndProof must be called first");
+        }
+
+        // A list(for each ballot) containing a list of valid CombinedCiphertextAndProof(one from each honest tallier)
+        List<List<CombinedCiphertextAndProof>> result = new ArrayList<>(ell);
+        for (int i = 0; i <= thresholdK; i++) {
+            result.add(new ArrayList<>(thresholdK+1));
+        }
+
+        // When a taller posts, check if honest. EventListener.
+        // When T1 publishes -> call onPublish(...)
+        // TODO: How to eventlistener
+
+        // MISSION: make a list of valid homoComb's.
+        Consumer<List<CombinedCiphertextAndProof>> onPublish = (List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) -> {
+            /*
+            // Beware! Here be dragons
+
+            //Get the list from a tallierIndex
+            List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = synchronizedPFR.stream()
+                    .map(PFR::getCombinedCiphertext)
+                    .filter(list -> list.stream().filter(obj -> obj.tallierIndex == tallierIndex))
+                    .collect(Collectors.toList());
+             */
+
+            //PFC list of talliers
+            /* Homo combinations
+            T3 publishes all shares first
+            PfrPhaseOne[0] list from Tallier T_3. If invalid T_3=null
+            PRC[1] list from Tallier T_2. If invalid T_2=null
+            */
+
+            /* decryptions
+            T4 publishes all decryption shares first
+            PfrPhaseTwo[0] list from Tallier T_4. If invalid T_4=null
+            PfrPhaseTwo[1] list from Tallier T_2. If invalid T_2=null
+             */
+
+            // Check proof of each
+            Sigma4 sigma4 = new Sigma4();
+
+            // First iteration
+            CombinedCiphertextAndProof previousObj = listOfCombinedCiphertextAndProof.get(0);
+            Ballot previousBallot = ballots.get(0);
+
+            for (int i = 1; i < ell; i++) {
+                CombinedCiphertextAndProof currentObj = listOfCombinedCiphertextAndProof.get(i);
+                Ballot currentBallot = ballots.get(i);
+
+                // Make proof statement
+                List<Ciphertext> listCombinedCiphertext = Arrays.asList(previousObj.combinedCiphertext, currentObj.combinedCiphertext);
+                List<Ciphertext> listCiphertexts = Arrays.asList(previousBallot.getEncryptedNegatedPrivateCredential(), currentBallot.getEncryptedNegatedPrivateCredential());
+
+                // Verify proof
+                boolean isValid = sigma4.verifyCombination(pk, listCombinedCiphertext, listCiphertexts, currentObj.proof, kappa);
+
+                // If a proof fails, STOP
+                if (!isValid) return;
+            }
+
+            // If we made it to here, all proofs are valid
+
+            // if all honest, add to result list
+            result.
+        };
+
+
+
+
+
+
+
+
+        // T1 not done publishing. Then he is skipped
+        // If T1 is done later, the he is kept
+
+        // publishCombinedCiphertextAndProofToPFR_PFD(int tallierIndex, int ballotIndex);
+
+
+
+
+    }
+
+
 
     public void publishDecryptionShareAndProofToPFR_PFD(int tallierIndex, int ballotIndex, Ciphertext c, DecryptionShareAndProof decryptionShareAndProof) {
         Pair<Ciphertext, Integer> key = Pair.of(c, tallierIndex);
@@ -260,34 +387,33 @@ public class BulletinBoardV2_0 {
      **************************************************/
 //
 //    // Ballots
-//    List<Ballot> ballots;
 //
 //    // For each ballot (generation pfr)
 //    private List<PFR> pfr = new ArrayList<>();
 //    private List<PFD> pfd = new ArrayList<>();
 //
 //
-//    // Returns the PFR index, and grows PFR list if needed
-//    public PFR getPfr(int index) {
-//        // Check
-//        boolean indexIsOnePastTheEnd = index == pfr.size();
-//        if (indexIsOnePastTheEnd) {
-//            // Object does not already exist
-//            // Add a new object to the end
-//            PFR obj = new PFR();
-//            pfr.add(obj);
-//
-//            //Return the new object
-//            return obj;
-//
-//        } else if (index < pfr.size()) {
-//            // Object already exists
-//            return pfr.get(index);
-//
-//        } else {
-//            throw new IllegalArgumentException("getPfr() !!");
-//        }
-//    }
+    // Returns the PFR index, and grows PFR list if needed
+    public PFR getPfr(int index) {
+        // Check
+        boolean indexIsOnePastTheEnd = index == pfr.size();
+        if (indexIsOnePastTheEnd) {
+            // Object does not already exist
+            // Add a new object to the end
+            PFR obj = new PFR();
+            pfr.add(obj);
+
+            //Return the new object
+            return obj;
+
+        } else if (index < pfr.size()) {
+            // Object already exists
+            return pfr.get(index);
+
+        } else {
+            throw new IllegalArgumentException("getPfr() !!");
+        }
+    }
 //
 //    // Returns the PFD index, and grows PFR list if needed
 //    public PFD getPfd(int index) {

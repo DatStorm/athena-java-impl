@@ -27,13 +27,18 @@ public class TestUTIL {
 
 
     @Test
-    void TestUTIL_log() {
+    void TestArrayList() {
+        int ell = 10;
 
-        BigInteger _256 = BigInteger.valueOf(256);
-        BigInteger _2 = BigInteger.valueOf(2);
 
-//        double res = cs.au.cs.au.athena.athena.UTIL.BigLog(_2, _256);
-//        assertEquals("value res= " + res, 8.0, res, 0.00001);
+        List<Integer>list = new ArrayList<>();
+
+        for (int i = 0; i <ell; i++) {
+            list.add(i+2, i);
+        }
+
+        System.out.println("LIST: " + list);
+
     }
 
     @Test

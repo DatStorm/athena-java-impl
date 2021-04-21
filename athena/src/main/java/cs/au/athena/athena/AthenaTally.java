@@ -38,6 +38,7 @@ public class AthenaTally {
     private Elgamal elgamal;
     private BulletinBoard bb;
     private AthenaDistributed distributed;
+    private int tallierIndex;
     private int kappa;
 
     // Construct using builder
@@ -200,27 +201,7 @@ public class AthenaTally {
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
 
         // Here we should pick a nonceShare, post combinedCiphertextShare to BB, retrieve others, combine to agreed upon combinedCiphertext
-        List<Ciphertext> combinedCiphertexts = AthenaDistributed.combineCiphertext(ciphertexts, nonce_n, group);
-
-/*
-        We choose T1 T3 T4 for homoCombine
-        for each ballot c = c1 * c3 * c4
-
-        // For each ballot.
-        Ciphertext ci_prime_previous = null;
-        for (int i = 0; i < ell; i++) {
-            Ballot ballot = ballots.get(i);
-
-            // Homomorpically reencrypt(by raising to power n) ballot and decrypt
-            // TODO: Here first
-
-            //Ciphertext ci_prime = this.distributed.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group);
-            Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce_n, sk.pk.group);
-        }
-
-*/
-
-
+        List<Ciphertext> combinedCiphertexts = AthenaDistributed.homoCombinationCiphertext(tallierIndex, ballots, nonce_n, sk, kappa);
 
 
 
@@ -229,8 +210,6 @@ public class AthenaTally {
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
             BigInteger noncedNegatedPrivateCredentialElement = this.distributed.decrypt(tallierIndex, i, ci_prime, sk, kappa);
 
-            // OLD: ProveDec
-
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);
             MapAValue existingValue = A.get(key);
@@ -238,21 +217,21 @@ public class AthenaTally {
             A.put(key, updatedValue);
 
 
-            // Prove that the same nonce was used for all ballots.
-            if (pfr.size() > 0) {
-                //Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
-                List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
-                List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
-                Sigma4Proof omega = this.distributed.proveCombination(listCombined, listCiphertexts, nonce_n, sk, kappa);  // Moved to distributed
-
-                //pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, omega));
-            } else {
-                // The else case does not create the ProveComb since this else case is only used in the first iteration
-                // of the loop true case is used the remaining time.
-                //pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, null));
-            }
-
-            ci_prime_previous = ci_prime;
+//            // Prove that the same nonce was used for all ballots.
+//            if (pfr.size() > 0) {
+//                //Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
+//                List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
+//                List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
+//                Sigma4Proof omega = this.distributed.proveCombination(listCombined, listCiphertexts, nonce_n, sk, kappa);  // Moved to distributed
+//
+//                //pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, omega));
+//            } else {
+//                // The else case does not create the ProveComb since this else case is only used in the first iteration
+//                // of the loop true case is used the remaining time.
+//                //pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, null));
+//            }
+//
+//            ci_prime_previous = ci_prime;
         }
 
         return Pair.of(A, pfr);

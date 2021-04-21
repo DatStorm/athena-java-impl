@@ -4,9 +4,11 @@ import cs.au.athena.Polynomial;
 import cs.au.athena.athena.AthenaCommon;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
+import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.bulletinboard.CommitmentAndProof;
 import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
+import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.mixnet.MixStatement;
@@ -17,7 +19,7 @@ import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.sigma.Sigma1;
-import cs.au.athena.sigma.Sigma3;
+import cs.au.athena.sigma.Sigma4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -26,6 +28,7 @@ import org.slf4j.MarkerFactory;
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -223,7 +226,8 @@ public class AthenaDistributed {
 
 
     public Sigma4Proof proveCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, BigInteger nonce_n, ElGamalSK sk, int kappa) {
-        throw new UnsupportedOperationException();
+        Sigma4 sigma4 = athenaFactory.getSigma4();
+        return sigma4.proveCombination(sk,listOfCombinedCiphertexts, listCiphertexts, nonce_n, kappa);
     }
 
     public boolean verifyCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, Sigma4Proof omega, ElGamalPK pk, int kappa) {
@@ -239,23 +243,57 @@ public class AthenaDistributed {
         throw new UnsupportedOperationException();
     }
 
+
+    public List<Ciphertext> homoCombinationCiphertext(int tallierIndex, List<Ballot> ballots, BigInteger nonce, ElGamalSK sk, int kappa) {
+        int ell = ballots.size();
+        List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
+
+        // For each ballot.
+        Ciphertext ci_prime_previous = null;
+        for (int i = 0; i < ell; i++) {
+            Ballot ballot = ballots.get(i);
+
+            // Homomorpically re-encrypt(by raising to power n) ballot and decrypt
+            Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce, sk.pk.group);
+
+            // Prove that the same nonce was used for all ballots.
+            if (listOfCombinedCiphertextAndProof.size() > 0) {
+                //Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
+                List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
+                List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
+                Sigma4Proof omega = this.proveCombination(listCombined, listCiphertexts, nonce, sk, kappa);
+
+                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(tallierIndex, ci_prime, omega));
+            } else {
+                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(tallierIndex, ci_prime, null));
+            }
+
+         ci_prime_previous = ci_prime;
+        }
+
+        // Publish
+        bb.publishCombinedCiphertextAndProofToPFR_PFD(tallierIndex, listOfCombinedCiphertextAndProof);
+
+        // Retrieve k+1 shares
+        int k = bb.retrieveK();
+        List<List<CombinedCiphertextAndProof>> lists = bb.retrieveCombinedCiphertextAndProofFromPFR_PFR(k);
+
+
+        // Compute combinedCiphertext
+        List<Ciphertext> listOfCiphertexts = new ArrayList<>();
+
+        return listOfCiphertexts;
+    }
+
+
     public Ciphertext homoCombination(List<Ciphertext> listOfCiphers, BigInteger nonce_j, Group group) {
 
         for (int i = 0; i < listOfCiphers.size(); i++) {
             Ciphertext c = listOfCiphers.get(i);
-            Ciphertext combinedCiphertextShare = AthenaCommon.homoCombination(c, nonce_j, group.p);
-
-
+            Ciphertext combinedCiphertextShare = AthenaCommon.homoCombination(c, nonce_j, group);
         }
 
-        // ProveComb
-//        HomoCombinationAndProof combinedCiphertextShare and sigma4Proof;
 
-        // Publish
-
-        // Retrieve k+1 shares
-
-        // Compute combinedCiphertext
 
         Sigma4Proof omega = this.distributed.proveCombination(listCombined, listCiphertexts, nonce_n, sk, kappa);
 
@@ -263,18 +301,18 @@ public class AthenaDistributed {
     }
 
     public boolean verifyDecryption(Ciphertext c, BigInteger M, ElGamalPK pk, Sigma3Proof phi, int kappa) {
-        Sigma3 sigma3 = athenaFactory.getSigma3();
-
-        /**
-         * TODO: STOR OG FED !!!! AKA FIX IT
-         * Needs to handle all cases of all proofs.
-         */
+//        Sigma3 sigma3 = athenaFactory.getSigma3();
+//
+//        /**
+//         * TODO: STOR OG FED !!!! AKA FIX IT
+//         * Needs to handle all cases of all proofs.
+//         */
 
         boolean isAllValid = true;
-
-        isAllValid = sigma3.verifyDecryption(c,M,pk,phi,kappa);
-
-       return isAllValid;
+//
+//        isAllValid = sigma3.verifyDecryption(c,M,pk,phi,kappa);
+//
+//       return isAllValid;
     }
 
     public Sigma3Proof proveDecryption(Ciphertext c, BigInteger M, ElGamalSK sk, int kappa) {
