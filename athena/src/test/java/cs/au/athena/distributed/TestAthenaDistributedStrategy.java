@@ -45,7 +45,6 @@ public class TestAthenaDistributedStrategy {
     @Test
     void TestSetup() {
         Strategy strategy = factory.getStrategy();
-        Random random = factory.getRandom();
         BulletinBoardV2_0 bb = factory.getBulletinBoard();
 
 

@@ -210,6 +210,7 @@ public class DistributedStrategy implements Strategy {
         Random random = athenaFactory.getRandom();
         Group group = this.getGroup();
 
+
         assert group.g.modPow(sk, group.p).equals(pk);
 
 //        System.out.println("PK: " + pk);
