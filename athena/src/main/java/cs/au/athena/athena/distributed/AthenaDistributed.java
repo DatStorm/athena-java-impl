@@ -244,11 +244,12 @@ public class AthenaDistributed {
     }
 
 
-    public List<Ciphertext> homoCombinationCiphertext(int tallierIndex, List<Ballot> ballots, BigInteger nonce, ElGamalSK sk, int kappa) {
+    // Returns a list of nonced ciphertexts
+    public List<Ciphertext> homomorphicallyCombineCiphertexts(int tallierIndex, List<Ballot> ballots, BigInteger nonce, ElGamalSK sk, int kappa) {
         int ell = ballots.size();
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
 
-        // For each ballot.
+        // Nonce each ciphertext, and compute proof
         Ciphertext ci_prime_previous = null;
         for (int i = 0; i < ell; i++) {
             Ballot ballot = ballots.get(i);
@@ -263,20 +264,21 @@ public class AthenaDistributed {
                 List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
                 Sigma4Proof omega = this.proveCombination(listCombined, listCiphertexts, nonce, sk, kappa);
 
-                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(tallierIndex, ci_prime, omega));
+                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(ci_prime, omega));
             } else {
-                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(tallierIndex, ci_prime, null));
+                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(ci_prime, null));
             }
 
-         ci_prime_previous = ci_prime;
+
+            ci_prime_previous = ci_prime;
         }
 
         // Publish
-        bb.publishCombinedCiphertextAndProofToPFR_PFD(tallierIndex, listOfCombinedCiphertextAndProof);
+        bb.publishCombinedCiphertextAndProofToPFR_PFD(tallierIndex, listOfCombinedCiphertextAndProof); //TODO: PFR phase one
 
         // Retrieve k+1 shares
         int k = bb.retrieveK();
-        List<List<CombinedCiphertextAndProof>> lists = bb.retrieveCombinedCiphertextAndProofFromPFR_PFR(k);
+        List<List<CombinedCiphertextAndProof>> lists = bb.retrieveThresholdCombinedCiphertextAndProofFromPFR_PFR(k).join();
 
 
         // Compute combinedCiphertext

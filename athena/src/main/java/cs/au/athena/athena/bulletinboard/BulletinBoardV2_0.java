@@ -4,7 +4,6 @@ import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.bulletinboard.*;
-import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Group;
@@ -15,9 +14,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
+// Responsible for the posting of votes with a registered credential, and other positings. Is async.
 public class BulletinBoardV2_0 {
 
     private static BulletinBoardV2_0 single_instance = null;
@@ -35,6 +36,8 @@ public class BulletinBoardV2_0 {
 
 
     // Activated when a tallier posts homocomb or decryption shares
+    public PfrPhaseOne pfrPhaseOne;
+    private PfrPhaseTwo pfrPhaseTwo;
 
     private List<PFR> synchronizedPFR;
     private List<PFD> synchronizedPFD;
@@ -50,7 +53,6 @@ public class BulletinBoardV2_0 {
 
         return single_instance;
     }
-
 
     private BulletinBoardV2_0(int tallierCount, int kappa) {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
@@ -74,6 +76,10 @@ public class BulletinBoardV2_0 {
     private void init(int tallierCount) {
         this.tallierCount = tallierCount;
         this.threshold_k = tallierCount / 2; //TODO: is this correct? It must satisfy k < n/2
+
+        this.pfrPhaseOne = new PfrPhaseOne(tallierCount);
+        //this.pfrPhaseOne = null;
+
 
         // Fill with CompletableFutures
         for(int i = 1; i <= tallierCount; i++) {
@@ -192,70 +198,55 @@ public class BulletinBoardV2_0 {
         }
     }
 
-    public void publishCombinedCiphertextAndProofToPFR_PFD(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
+    public synchronized void publishCombinedCiphertextAndProofToPFR_PFD(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
         int ell = ballots.size();
 
         if(listOfCombinedCiphertextAndProof.size() == ell) {
             throw new IllegalArgumentException("list must be the same length as ballots");
         }
 
-        initPFR();
-
         // Set values in pfr
         for (int i = 0; i < ell; i++) {
-            PFR pfr = synchronizedPFR.get(i);
-            CombinedCiphertextAndProof combinedCiphertextAndProof = listOfCombinedCiphertextAndProof.get(i);
-
-            pfr.setCiphertextCombinationAndProof(tallierIndex, combinedCiphertextAndProof);
+            pfrPhaseOne.add(Pair.of(tallierIndex, listOfCombinedCiphertextAndProof));
         }
 
-        notifyOnPublish(listOfCombinedCiphertextAndProof); // TODO: How to eventlistener
+        //notifyPfrPhaseOne(listOfCombinedCiphertextAndProof); // TODO: How to eventlistener
+        // onPublish will finish before continuing?
     }
 
-    public List<List<CombinedCiphertextAndProof>> retrieveCombinedCiphertextAndProofFromPFR_PFR(int thresholdK) {
+    public CompletableFuture<PfrPhaseOne> retrieveThresholdCombinedCiphertextAndProofFromPFR_PFR(int threshold) {
         int ell = ballots.size();
         ElGamalPK pk = this.retrievePK();
 
-        if (synchronizedPFR == null) {
+        if (pfrPhaseOne == null) {
             throw new RuntimeException("publishCombinedCiphertextAndProof must be called first");
         }
 
         // A list(for each ballot) containing a list of valid CombinedCiphertextAndProof(one from each honest tallier)
-        List<List<CombinedCiphertextAndProof>> result = new ArrayList<>(ell);
-        for (int i = 0; i <= thresholdK; i++) {
-            result.add(new ArrayList<>(thresholdK+1));
-        }
+        PfrPhaseOne result = new PfrPhaseOne(threshold+1);
+        CompletableFuture<PfrPhaseOne> f = CompletableFuture.completedFuture(new PfrPhaseOne(tallierCount));
 
-        // When a taller posts, check if honest. EventListener.
+
+        List<CompletableFuture<Pair<Integer, List<CombinedCiphertextAndProof>>>> publications = new ArrayList<>(tallierCount);
+
+
+
+
+        // publish1: f1.complete(val1). return
+        // publish2: f2.complete(val2)
+        // Publications : [f1Completed, f2Completed, f3, f4, f5, ...]
+        // resultFuture: f1Completed -> [val1] -> f2Completed -> [val1, val2] -> ... -> [].size = k+1
+
+
+        // OnPublish
+
+
+        // When a taller posts, check if honest. Observer.
         // When T1 publishes -> call onPublish(...)
-        // TODO: How to eventlistener
 
         // MISSION: make a list of valid homoComb's.
+
         Consumer<List<CombinedCiphertextAndProof>> onPublish = (List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) -> {
-            /*
-            // Beware! Here be dragons
-
-            //Get the list from a tallierIndex
-            List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = synchronizedPFR.stream()
-                    .map(PFR::getCombinedCiphertext)
-                    .filter(list -> list.stream().filter(obj -> obj.tallierIndex == tallierIndex))
-                    .collect(Collectors.toList());
-             */
-
-            //TODO: THIS IS HOW WE WILL MAINTAIN THE PFR!!!!!
-            //PFC list of talliers
-            /* Homo combinations
-            T3 publishes all shares first
-            PfrPhaseOne[0] list from Tallier T_3. If invalid T_3=null
-            PRC[1] list from Tallier T_2. If invalid T_2=null
-            */
-
-            /* decryptions
-            T4 publishes all decryption shares first
-            PfrPhaseTwo[0] list from Tallier T_4. If invalid T_4=null
-            PfrPhaseTwo[1] list from Tallier T_2. If invalid T_2=null
-             */
-
             // Check proof of each
             Sigma4 sigma4 = new Sigma4();
 
@@ -281,7 +272,7 @@ public class BulletinBoardV2_0 {
             // If we made it to here, all proofs are valid
 
             // if all honest, add to result list
-            result.
+            return result;
         };
 
 
@@ -298,7 +289,7 @@ public class BulletinBoardV2_0 {
 
 
 
-
+        return f;
     }
 
 
@@ -414,6 +405,14 @@ public class BulletinBoardV2_0 {
         } else {
             throw new IllegalArgumentException("getPfr() !!");
         }
+    }
+
+    public void addPfrPhaseOneListener(Consumer<Integer> callback) {
+
+        // TODO: Listen for updates to pfrPhaseOne
+        // add callback to list
+        // notify should call all callbacks
+
     }
 //
 //    // Returns the PFD index, and grows PFR list if needed

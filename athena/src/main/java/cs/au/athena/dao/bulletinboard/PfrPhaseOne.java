@@ -1,10 +1,14 @@
 package cs.au.athena.dao.bulletinboard;
 
-public class PfrPhaseOne {
-    /* Homo combinations
-    T3 publishes all shares first
-    PfrPhaseOne[0] list from Tallier T_3. If invalid T_3=null
-    PRC[1] list from Tallier T_2. If invalid T_2=null
-    */
+
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class PfrPhaseOne extends ArrayList<Pair<Integer, List<CombinedCiphertextAndProof>>> {
+    public PfrPhaseOne(int size) {
+        super(size);
+    }
 
 }

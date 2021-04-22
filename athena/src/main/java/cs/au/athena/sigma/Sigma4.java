@@ -1,5 +1,6 @@
 package cs.au.athena.sigma;
 
+import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma3.Sigma3Statement;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
@@ -7,6 +8,7 @@ import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.elgamal.Group;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -18,6 +20,11 @@ public class Sigma4 {
 
     public Sigma4() {
         this.sigma3 = new Sigma3();
+    }
+
+    public static boolean VerifyAll(Pair<Integer, List<CombinedCiphertextAndProof>> pair) {
+        throw new UnsupportedOperationException("FIXME ".repeat(40));
+//        return false;
     }
 
     public Sigma4Proof proveCombination(ElGamalSK sk, Ciphertext combinedCiphertext, Ciphertext ciphertext, BigInteger nonce_n, int kappa) {

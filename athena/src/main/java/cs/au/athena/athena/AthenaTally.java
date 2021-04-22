@@ -200,8 +200,7 @@ public class AthenaTally {
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
 
         // Here we should pick a nonceShare, post combinedCiphertextShare to BB, retrieve others, combine to agreed upon combinedCiphertext
-        List<Ciphertext> combinedCiphertexts = AthenaDistributed.homoCombinationCiphertext(tallierIndex, ballots, nonce_n, sk, kappa);
-
+        List<Ciphertext> combinedCiphertexts = AthenaDistributed.homomorphicallyCombineCiphertexts(tallierIndex, ballots, nonce_n, sk, kappa);
 
         // Moved out of for loop, do all decryptions in one go -Mark
         List<BigInteger> noncedNegatedPrivateCredentialElements = this.distributed.decrypt(tallierIndex, combinedCiphertexts, sk, kappa);
