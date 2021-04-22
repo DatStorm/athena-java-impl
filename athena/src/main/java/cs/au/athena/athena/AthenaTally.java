@@ -194,7 +194,6 @@ public class AthenaTally {
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
     private Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterReVotesAndProveSameNonce(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
         int ell = ballots.size();
-
         Map<MapAKey, MapAValue> A = new HashMap<>();
 
         // Pick a nonce to mask public credentials.
@@ -204,11 +203,12 @@ public class AthenaTally {
         List<Ciphertext> combinedCiphertexts = AthenaDistributed.homoCombinationCiphertext(tallierIndex, ballots, nonce_n, sk, kappa);
 
 
+        // Moved out of for loop, do all decryptions in one go -Mark
+        List<BigInteger> noncedNegatedPrivateCredentialElements = this.distributed.decrypt(tallierIndex, combinedCiphertexts, sk, kappa);
 
         List<PFRStruct> pfr = new ArrayList<>();
         for (int i = 0; i < ell; i++) {
             // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
-            BigInteger noncedNegatedPrivateCredentialElement = this.distributed.decrypt(tallierIndex, i, ci_prime, sk, kappa);
 
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);

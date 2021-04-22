@@ -242,6 +242,7 @@ public class BulletinBoardV2_0 {
                     .collect(Collectors.toList());
              */
 
+            //TODO: THIS IS HOW WE WILL MAINTAIN THE PFR!!!!!
             //PFC list of talliers
             /* Homo combinations
             T3 publishes all shares first
