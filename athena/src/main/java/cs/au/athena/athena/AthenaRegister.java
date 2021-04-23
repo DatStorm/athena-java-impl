@@ -2,7 +2,10 @@ package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
+import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.factory.AthenaFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +23,10 @@ import java.util.Random;
 
 public class AthenaRegister {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-    private static final Marker ATHENA_REGISTER_MARKER = MarkerFactory.getMarker("ATHENA-REGISTER");
+    private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-REGISTER");
 
-    private BulletinBoard bb;
+    private BulletinBoardV2_0 bb;
+    private VerifyingBulletinBoardV2_0 vbb;
     private Random random;
     private Elgamal elGamal;
     private int kappa;
@@ -32,24 +36,15 @@ public class AthenaRegister {
     private AthenaRegister() {
     }
 
-    public RegisterStruct Register(PK_Vector pkv) {
-        if (!AthenaCommon.parsePKV(pkv)) {
-            System.err.println("AthenaRegister.Register => ERROR: pkv null");
-            return null;
-        }
-
-        if (!this.distributed.verifyKey(pkv.pk, pkv.rho, this.kappa)) {
-            System.err.println("AthenaRegister.Register => ERROR: VerifyKey(...) => false");
-            return null;
-        }
-
-        BigInteger q = pkv.pk.group.q;
+    public RegisterStruct Register() {
+        ElGamalPK pk = vbb.retrieveAndVerifyPK();
+        BigInteger q = pk.group.q;
 
         //Generate nonce. aka private credential
         BigInteger privateCredential = GENERATOR.generateUniqueNonce(BigInteger.ZERO, q, this.random); // a nonce in [0,q]
 
-        // Enc^{exp}_pk(d)  
-        Ciphertext publicCredential = this.elGamal.exponentialEncrypt(privateCredential, pkv.pk);
+        // Enc^{exp}_pk(d)
+        Ciphertext publicCredential = this.elGamal.exponentialEncrypt(privateCredential, pk);
 
         // bold{d} = (pd, d) = (Enc_pk(g^d), d)
         CredentialTuple credentialTuple = new CredentialTuple(publicCredential, privateCredential);
@@ -94,8 +89,7 @@ public class AthenaRegister {
 
             //Construct Object
             AthenaRegister athenaRegister = new AthenaRegister();
-//            athenaRegister.bb = this.factory.getBulletinBoard();
-            athenaRegister.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+            athenaRegister.bb = this.factory.getBulletinBoard();
             athenaRegister.distributed = this.factory.getDistributedAthena();
             athenaRegister.random = this.factory.getRandom();
             athenaRegister.elGamal = this.elgamal;

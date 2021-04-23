@@ -2,6 +2,7 @@ package cs.au.athena.athena.entities;
 
 import cs.au.athena.athena.Athena;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.dao.athena.CredentialTuple;
 import cs.au.athena.dao.athena.PK_Vector;
 
@@ -15,34 +16,34 @@ import java.util.stream.IntStream;
  * - Invoke Register() to contruct credentials and add the public credential to Electoral Roll on BulletinBoard.
  * -  Issue credentials privately to each voter.
  **/
-public class Registrar implements Entity {
+public class Registrar {
     private List<CredentialTuple> credentialList;
-    private Athena athena;
-    private BulletinBoard bulletinBoard;
+    private final Athena athena;
+    private BulletinBoardV2_0 bb;
     private PK_Vector pkVector;
     private int kappa;
 
-    public Registrar(Athena athena, BulletinBoard bulletinBoard, int kappa) {
+    public Registrar(Athena athena, BulletinBoardV2_0 bulletinBoard, int kappa) {
         this.athena = athena;
-        this.bulletinBoard = bulletinBoard;
+        this.bb = bulletinBoard;
         this.kappa = kappa;
     }
 
     // Fetch the pk and proof ProveKey
     public void init() {
-        pkVector = bulletinBoard.retrievePK_vector();
+//        pkVector = bb.retrievePK_vector();
     }
 
     // Generate list of (public credential, private credential) for certain number of voters.
     public boolean generateCredentials(int numVoters) {
-        if (pkVector == null) {
-            System.err.println("Registrar.generateCredentials => pkVector is null! Please run Registrar.init()");
-            return false;
-        }
+//        if (pkVector == null) {
+//            System.err.println("Registrar.generateCredentials => pkVector is null! Please run Registrar.init()");
+//            return false;
+//        }
         credentialList = new ArrayList<>();
 
         // Run Register(numVoters)
-        credentialList = IntStream.range(0, numVoters).mapToObj(i -> athena.Register(pkVector,kappa).d).collect(Collectors.toList());
+        credentialList = IntStream.range(0, numVoters).mapToObj(i -> athena.Register(kappa).d).collect(Collectors.toList());
         boolean success = credentialList.size() == numVoters;
         assert success : "credentialList.size() != numVoters";
         return success;

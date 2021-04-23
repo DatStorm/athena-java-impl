@@ -204,7 +204,7 @@ public class Elgamal {
         BigInteger g = this.group.getG();
         BigInteger p = this.group.getP();
         BigInteger h = g.modPow(sk.toBigInteger(), p);
-        return new ElGamalPK(this.group, h); // return pk=(g,h)
+        return new ElGamalPK(h, this.group); // return pk=(g,h)
     }
 
     public BigInteger getP() {

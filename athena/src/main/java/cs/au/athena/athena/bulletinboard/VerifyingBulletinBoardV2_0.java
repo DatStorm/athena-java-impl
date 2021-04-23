@@ -1,13 +1,12 @@
 package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.athena.distributed.SigmaCommonDistributed;
-import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
-import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
-import cs.au.athena.dao.bulletinboard.PfrPhaseOne;
-import cs.au.athena.dao.bulletinboard.PfrPhaseTwo;
+import cs.au.athena.dao.bulletinboard.*;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
+import cs.au.athena.elgamal.Group;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -35,6 +34,45 @@ public class VerifyingBulletinBoardV2_0 {
         return bb.retrieveK() + 1;
     }
 
+
+    public ElGamalPK retrieveAndVerifyPK() {
+        Group group = bb.retrieveGroup();
+        int kappa = bb.retrieveKappa();
+
+        BigInteger h = BigInteger.ONE;
+
+        // For every tallier
+        for (int tallierIndex = 0; tallierIndex < bb.retrieveTallierCount(); tallierIndex++) {
+
+            // Get pk share and proof
+            List<CommitmentAndProof> commitmentAndProofs =  bb.retrieveCommitmentsAndProofs(tallierIndex).join();
+
+            // Verify degree of polynomial
+            if(commitmentAndProofs.size() != bb.retrieveK()+1) {
+                throw new RuntimeException(String.format("Malicious tallier detected. Tallier %d published a polynomial of wrong degree", tallierIndex));
+
+            }
+
+            boolean isValid = SigmaCommonDistributed.verifyPK(commitmentAndProofs, group, kappa);
+
+            if (!isValid) {
+                throw new RuntimeException(String.format("Malicious tallier detected. Proof of Tallier %d was invalid", tallierIndex));
+            }
+            BigInteger commitment = getSecret(commitmentAndProofs);
+            h = h.multiply(commitment).mod(group.p);
+        }
+
+        return new ElGamalPK(h, group);
+
+
+    }
+
+    private BigInteger getSecret(List<CommitmentAndProof> commitmentAndProofs){
+        return commitmentAndProofs.get(0).commitment;
+    }
+
+
+
     public synchronized int publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
         int index = bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
         PfrPhaseOne.Entry entry = new PfrPhaseOne.Entry(tallierIndex, listOfCombinedCiphertextAndProof);
@@ -43,7 +81,6 @@ public class VerifyingBulletinBoardV2_0 {
         return index;
     }
 
-    // Return a Pfr with k+1 valid elements
     public CompletableFuture<PfrPhaseOne> retrieveValidThresholdPfrPhaseOne() {
         int tallierCount = bb.retrieveTallierCount();
 

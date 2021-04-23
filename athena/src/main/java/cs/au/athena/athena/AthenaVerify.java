@@ -2,6 +2,8 @@ package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.dao.mixnet.MixBallot;
@@ -21,24 +23,19 @@ import java.util.stream.IntStream;
 
 public class AthenaVerify {
     private AthenaDistributed distributed;
-    private BulletinBoard bb;
+    private BulletinBoardV2_0 bb;
+    private VerifyingBulletinBoardV2_0 vbb;
     private Integer kappa;
 
     private AthenaVerify() {
     }
 
 
-    public boolean Verify(PK_Vector pkv) {
-        if (!AthenaCommon.parsePKV(pkv)) {
-            System.err.println("AthenaVerify:=> ERROR: pkv null");
-            return false;
-        }
-        ElGamalPK pk = pkv.pk;
-
+    public boolean Verify() {
         //Fetch from bulletin board
         int nc = this.bb.retrieveNumberOfCandidates();
         Map<Integer, Integer> tallyOfVotes = this.bb.retrieveTallyOfVotes();
-        PFStruct pf = this.bb.retrievePF();
+        PFStruct pf = this.bb.retrievePF(); // TODO: retrieve this another way! Should be done through the verifying bulleting board
 
         // tallyVotes length should contain at most nc elements
         if (tallyOfVotes.keySet().size() > nc) {
@@ -46,11 +43,8 @@ public class AthenaVerify {
             return false;
         }
 
-        // Verify that the ElGamal keys are constructed correctly
-        if (!this.distributed.verifyKey(pkv.pk, pkv.rho, this.kappa)) {
-            System.err.println("AthenaVerify:=> ERROR: VerifyKey(...) => false");
-            return false;
-        }
+        // Retrieve and verify ElGamal PK produced form the polynomial of the talliers
+        ElGamalPK pk = vbb.retrieveAndVerifyPK();
 
         // Check that the number of candidates nc in the given election does not exceed the maximum number mc.
         int mc = bb.retrieveMaxCandidates();
@@ -112,7 +106,7 @@ public class AthenaVerify {
     }
 
     // Verify that g,h vectors are choosen from a "random" seed.
-    private boolean verifyRangeProofGenerators(ElGamalPK pk, BulletinBoard bb){
+    private boolean verifyRangeProofGenerators(ElGamalPK pk, BulletinBoardV2_0 bb){
         List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, bb.retrieveNumberOfCandidates());
         List<BigInteger> g_vector_vote = generators.get(0);
         List<BigInteger> h_vector_vote = generators.get(1);
@@ -345,8 +339,7 @@ public class AthenaVerify {
 
             AthenaVerify athenaVerify = new AthenaVerify();
             athenaVerify.distributed = this.factory.getDistributedAthena();
-//            athenaVerify.bb = this.factory.getBulletinBoard();
-            athenaVerify.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+            athenaVerify.bb = this.factory.getBulletinBoard();
             athenaVerify.kappa = this.kappa;
 
             //Construct Object

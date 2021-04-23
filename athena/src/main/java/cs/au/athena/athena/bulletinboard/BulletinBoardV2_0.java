@@ -2,27 +2,28 @@ package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.Ballot;
+import cs.au.athena.dao.athena.ElectoralRoll;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.bulletinboard.*;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Group;
-import cs.au.athena.sigma.Sigma3;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 // Responsible for the posting of votes with a registered credential, and other positings. Is async.
 public class BulletinBoardV2_0 {
 
     private static BulletinBoardV2_0 single_instance = null;
-    private final Sigma3 sigma3;
     private final int tallierCount;
     private final int k;
     private final Group group;
+    private final ElectoralRoll electoralRoll;
+    private final int mb;
+    private final int mc;
 
     List<Ballot> ballots;
 
@@ -38,6 +39,10 @@ public class BulletinBoardV2_0 {
 
 //    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
     private final int kappa;
+    private Map<Integer, Integer> tally;
+    private int nc;
+    private List<BigInteger> g_vector_vote;
+    private List<BigInteger> h_vector_vote;
 
     // static method to create instance of Singleton class
     public static BulletinBoardV2_0 getInstance(int tallierCount, int kappa) {
@@ -52,15 +57,14 @@ public class BulletinBoardV2_0 {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
         this.tallierCommitmentsAndProofs = new HashMap<>();
         this.mapOfIndividualPK_vector = new HashMap<>();
-
         this.encryptedSubShares = new HashMap<>();
-//        this.decryptionShareMap = new HashMap<>();
-
-        this.sigma3 = new Sigma3();
-
         this.kappa = kappa;
         this.tallierCount = tallierCount;
         this.k = (tallierCount-1)/2; // It must satisfy k < n/2, e.g. 0 < 2/2, 1 < 3/2,  1 < 4/2,  2 < 5/2,  2 < 6/2
+        this.electoralRoll = new ElectoralRoll();
+
+        this.mc = CONSTANTS.MC;
+        this.mb = CONSTANTS.MB;
 
         this.init(tallierCount);
     }
@@ -88,7 +92,7 @@ public class BulletinBoardV2_0 {
     }
 
 
-    public Group getGroup() {
+    public Group retrieveGroup() {
         return group;
     }
 
@@ -103,9 +107,20 @@ public class BulletinBoardV2_0 {
         return kappa;
     }
 
-
+    public void addPublicCredentialToL(Ciphertext publicCredential_pd) {this.electoralRoll.add(publicCredential_pd); }
+    public int retrieveNumberOfCandidates() { return this.nc; }
+    public int retrieveMaxCandidates() {
+        return this.mc;
+    }
+    public List<Ballot> retrievePublicBallots() { return this.ballots; }
+    public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
+    public List<BigInteger> retrieve_G_VectorVote() { return this.g_vector_vote; }
+    public List<BigInteger> retrieve_H_VectorVote() { return this.h_vector_vote; }
+    public Map<Integer, Integer> retrieveTallyOfVotes() { return this.tally; }
+    public PK_Vector retrievePK_vector() { return null; } // TODO: info needed to verify the proofs ProveKey
 
     // Compute and return the entire public key from the committed polynomials
+    @Deprecated // Use VerifyingBulletingBoard
     public ElGamalPK retrievePK() {
         // Have all commitments been published?
         if (tallierCommitmentsAndProofs.keySet().size() != tallierCount) {
@@ -123,7 +138,7 @@ public class BulletinBoardV2_0 {
         }
 
         // group, h
-        return new ElGamalPK(group, publicKey);
+        return new ElGamalPK(publicKey, group);
     }
 
     // Compute and return the public key share h_j=g^P(j) from the committed polynomials
@@ -143,7 +158,7 @@ public class BulletinBoardV2_0 {
         }
 
         // group, h_j
-        return new ElGamalPK(group, publicKeyShare);
+        return new ElGamalPK(publicKeyShare, group);
     }
 
     // Post commitment to P(X)
@@ -164,6 +179,8 @@ public class BulletinBoardV2_0 {
     public CompletableFuture<PK_Vector> retrieveIndividualPKvector(int tallierIndex) {
         return mapOfIndividualPK_vector.get(tallierIndex);
     }
+
+    public void publishBallot(Ballot ballot) { this.ballots.add(ballot); }
 
     public void publishEncSubShare(int i, int j, Ciphertext subShareToTallier_j) {
         Pair<Integer, Integer> key = Pair.of(i, j);
@@ -200,28 +217,28 @@ public class BulletinBoardV2_0 {
     }
 
 
+    public synchronized int publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> listOfDecryptionShareAndProof) {
+        int ell = ballots.size();
 
+        if(listOfDecryptionShareAndProof.size() == ell) {
+            throw new IllegalArgumentException("list must be the same length as ballots");
+        }
 
-    public synchronized int publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> decryptionShareAndProof) {
-        throw new UnsupportedOperationException();
+        // Set values in pfr
+        int index = pfrPhaseTwo.size();
+        pfrPhaseTwo.add(index, new PfrPhaseTwo.Entry(tallierIndex, listOfDecryptionShareAndProof));
+
+        return index;
     }
-
-
 
     public PfrPhaseTwo retrievePfrPhaseTwo() {
         return this.pfrPhaseTwo;
-
     }
 
 
-
-
-
-
-
-
-
-
+    public void publishTallyOfVotes(Map<Integer, Integer> tally) {
+        this.tally = tally;
+    }
 
 
 

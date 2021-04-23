@@ -6,7 +6,7 @@ public class ElGamalPK {
     public final Group group;
     public final BigInteger h; //g^sk
 
-    public ElGamalPK(Group group, BigInteger h) {
+    public ElGamalPK(BigInteger h, Group group) {
         this.group = group;
         this.h = h;
     }

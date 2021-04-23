@@ -1,8 +1,9 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
+import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
@@ -33,7 +34,8 @@ public class AthenaTally {
 
     private Random random;
     private Elgamal elgamal;
-    private BulletinBoard bb;
+    private BulletinBoardV2_0 bb;
+    private VerifyingBulletinBoardV2_0 vbb;
     private AthenaDistributed distributed;
     private int tallierIndex;
     private int kappa;
@@ -41,41 +43,43 @@ public class AthenaTally {
     // Construct using builder
     private AthenaTally() {}
 
-    public Map<Integer, Integer> Tally(int tallierIndex, SK_Vector skv, int nc) {
-        ElGamalSK sk = skv.sk;
-        ElGamalPK pk = sk.pk;
+    public Map<Integer, Integer> Tally(int tallierIndex, ElGamalSK skShare, int nc) {
+        ElGamalPK pk = vbb.retrieveAndVerifyPK();
 
         /* ********
          * Step 1: Remove invalid ballots
          *********/
 
+        logger.info(MARKER, "Step 1. Remove invalid ballots");
         List<Ballot> validBallots = removeInvalidBallots(pk, this.bb);
-        logger.info(MARKER, "Removed invalid ballots");
         if (validBallots.isEmpty()) {
             logger.error("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             throw new RuntimeException("Step 1 yielded no valid ballots on bulletin-board.");
         }
 
+
         /* ********
          * Step 2: Mix final votes
          *********/
-        logger.info(MARKER, "Tally(...) => step2");
 
         //Filter ReVotes and pfr proof of same nonce
-        Map<MapAKey, MapAValue> A = filterReVotesAndProveSameNonce(tallierIndex, validBallots, sk);
+        logger.info(MARKER, "Step 2a. Filter ReVotes");
+        Map<MapAKey, MapAValue> A = filterReVotes(tallierIndex, validBallots, skShare);
 
         // Perform random mix
+        logger.info(MARKER, "Step 2b.Mixnet");
         MixedBallotsAndProof mixPair = mixnet(A, pk);
         List<MixBallot> mixedBallots = mixPair.mixedBallots;
         MixProof mixProof = mixPair.mixProof;
 
+
         /* ********
          * Step 3: Reveal eligible votes
          *********/
-        logger.info(MARKER, "Tally(...) => step3");
 
+        logger.info(MARKER, "step 3. Reveal authorised votes");
         // Tally eligible votes and prove computations
-        Pair<Map<Integer, Integer>, List<PFDStruct>> revealPair = revealEligibleVotes(sk, mixedBallots, nc, kappa);
+        Pair<Map<Integer, Integer>, List<PFDStruct>> revealPair = revealAuthorisedVotes(skShare, mixedBallots, nc, kappa);
         Map<Integer, Integer> officialTally = revealPair.getLeft();
 
         if (officialTally == null) {
@@ -91,7 +95,7 @@ public class AthenaTally {
 
 
     // Step 1 of Tally
-    public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoard bb) {
+    public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoardV2_0 bb) {
         List<Ballot> finalBallots = new ArrayList<>(bb.retrievePublicBallots());
 
         for (Ballot ballot : bb.retrievePublicBallots()) {
@@ -168,7 +172,7 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
-    private Map<MapAKey, MapAValue> filterReVotesAndProveSameNonce(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
+    private Map<MapAKey, MapAValue> filterReVotes(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
         int ell = ballots.size();
         Map<MapAKey, MapAValue> A = new HashMap<>();
 
@@ -224,7 +228,7 @@ public class AthenaTally {
     }
 
     // Step 3 of tally. Nonce and decrypt ballots, and keep a tally of the eligible votes.
-    private Pair<Map<Integer, Integer>, List<PFDStruct>> revealEligibleVotes(ElGamalSK sk, List<MixBallot> mixedBallots, int nc, int kappa) {
+    private Pair<Map<Integer, Integer>, List<PFDStruct>> revealAuthorisedVotes(ElGamalSK sk, List<MixBallot> mixedBallots, int nc, int kappa) {
         Map<Integer, Integer> officialTally = new HashMap<>();
         for (int candidates = 0; candidates < nc; candidates++) {
             officialTally.put(candidates, 0);
@@ -330,8 +334,7 @@ public class AthenaTally {
             athenaTally.elgamal = elgamal;
             athenaTally.distributed = this.athenaFactory.getDistributedAthena();
             athenaTally.random = this.athenaFactory.getRandom();
-//            athenaTally.bb = this.athenaFactory.getBulletinBoard();
-            athenaTally.bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+            athenaTally.bb = this.athenaFactory.getBulletinBoard();
             athenaTally.kappa = kappa;
             athenaTally.tallierIndex = tallierIndex;
 

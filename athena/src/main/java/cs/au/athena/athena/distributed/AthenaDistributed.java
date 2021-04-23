@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 
 public class AthenaDistributed {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-    private static final Marker MARKER = MarkerFactory.getMarker("STRATEGY-DISTRIBUTED: ");
+    private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-DISTRIBUTED: ");
 
 
     AthenaFactory athenaFactory;
@@ -47,7 +47,7 @@ public class AthenaDistributed {
 
 
     public Group getGroup() {
-        return bb.getGroup();
+        return bb.retrieveGroup();
     }
 
     public ElGamalSK setup(int tallierIndex, int nc, int kappa) {
@@ -76,9 +76,7 @@ public class AthenaDistributed {
         List<CommitmentAndProof> commitmentAndProofs = new ArrayList<>();
         for(int ell = 0; ell <= k; ell++) {
             BigInteger commitment = commitments.get(ell);
-
             Sigma1Proof proof = this.proveKey(commitment, coefficients.get(ell), kappa);
-
             commitmentAndProofs.add(new CommitmentAndProof(commitment, proof));
         }
 
@@ -119,7 +117,7 @@ public class AthenaDistributed {
             // Tallier T_i retrieves pk_j so he can send T_j their subshare
             PK_Vector pk_j_vector = bb.retrieveIndividualPKvector(j).join();
             ElGamalPK pk_j = pk_j_vector.pk;
-            boolean isPK_jValid = this.verifyKey(pk_j, pk_j_vector.rho, kappa);
+            boolean isPK_jValid = this.verifyKey(pk_j.h, pk_j_vector.rho, kappa);
 
             if (!isPK_jValid) {
                 throw new RuntimeException("Tallier T_i retrieved an invalid public key pk_j from tallier T_j.");
@@ -136,6 +134,13 @@ public class AthenaDistributed {
             logger.info(MARKER, String.format("tallier %d publishing P_%d(%d)", tallierIndex, tallierIndex ,j));
             bb.publishEncSubShare(tallierIndex, j, encSubShare); // key = (i,j)
         }
+    }
+
+    public boolean verifyKey(BigInteger h, Sigma1Proof rho, int kappa) {
+        Sigma1 sigma1 = new Sigma1();
+        Group group = this.getGroup();
+
+        return sigma1.VerifyKey(h, rho, group, kappa);
     }
 
     // Receive, decrypt and verify the encrypted subshares
@@ -214,16 +219,34 @@ public class AthenaDistributed {
         return sigma1.ProveKey(pk, sk, group, random, kappa);
     }
 
-    public boolean verifyKey(ElGamalPK pk, Sigma1Proof rho, int kappa) {
-        return verifyKey(pk.h, rho, kappa);
-    }
+    // TODO: this needs verify the proofs generated using ProveKey. This needs to be done for all the talliers I THINK!
+    // Verify the pk share of each tallier
+    @Deprecated // Use VerifyingBB
+    public boolean verifyKey(int kappa) {
+        for (int tallierIndex = 0; tallierIndex < bb.retrieveTallierCount(); tallierIndex++) {
 
-    public boolean verifyKey(BigInteger h, Sigma1Proof rho, int kappa) {
-        Sigma1 sigma1 = athenaFactory.getSigma1();
-        Group group = this.getGroup();
-        return sigma1.VerifyKey(h, rho, group, kappa);
-    }
+            // Get pk share and proof
+            List<CommitmentAndProof> commitmentAndProofs =  bb.retrieveCommitmentsAndProofs(tallierIndex).join();
 
+            // Verify degree of polynomial
+            if(commitmentAndProofs.size() != bb.retrieveK()+1) {
+                return false;
+            }
+
+            // Verify for every coefficient
+            for (CommitmentAndProof comProof : commitmentAndProofs) {
+                BigInteger commitment = comProof.commitment;
+                Sigma1Proof rho = comProof.proof;
+                boolean isValid = this.verifyKey(commitment, rho, kappa);
+
+                if (!isValid){
+                    logger.info(MARKER, "Talliers " + tallierIndex + " did not produce valid ProveKey, so he must be removed from the set of talliers!");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     public Sigma4Proof proveCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, BigInteger nonce_n, ElGamalSK sk, int kappa) {
         Sigma4 sigma4 = athenaFactory.getSigma4();
@@ -240,7 +263,7 @@ public class AthenaDistributed {
 
     public boolean verifyMix(MixStatement statement, MixProof proof, ElGamalPK pk, int kappa) {
         // TODO: For each proof
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("TODO! ".repeat(30));
     }
 
 
@@ -308,7 +331,7 @@ public class AthenaDistributed {
 
     // TODO: This might need revision before letting the "Verifiers" use it!
     public boolean verifyDecryption(Ciphertext c, BigInteger M, ElGamalPK pk, Sigma3Proof phi, int kappa) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("FIX IT--".repeat(30));
         //Sigma3 sigma3 = athenaFactory.getSigma3();
         //return sigma3.verifyDecryption(c,M,pk,phi,kappa);
     }

@@ -10,7 +10,7 @@ public class ElGamalSK {
         this.sk = sk;
         
         BigInteger h = group.g.modPow(sk, group.p); // h=g^sk
-        this.pk = new ElGamalPK(group, h);
+        this.pk = new ElGamalPK(h, group);
     }
     
     public BigInteger toBigInteger() {

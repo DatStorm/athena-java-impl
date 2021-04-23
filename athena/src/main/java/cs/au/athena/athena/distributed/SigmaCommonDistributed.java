@@ -2,13 +2,17 @@ package cs.au.athena.athena.distributed;
 
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
+import cs.au.athena.dao.bulletinboard.CommitmentAndProof;
 import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
+import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
+import cs.au.athena.elgamal.Group;
+import cs.au.athena.sigma.Sigma1;
 import cs.au.athena.sigma.Sigma3;
 import cs.au.athena.sigma.Sigma4;
-import org.apache.commons.lang3.tuple.Pair;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,4 +67,23 @@ public class SigmaCommonDistributed {
 
         return true;
     }
+
+    public static boolean verifyPK(List<CommitmentAndProof> commitmentAndProofs, Group group, int kappa) {
+        Sigma1 sigma1 = new Sigma1();
+
+
+        // Verify for every coefficient
+        for (CommitmentAndProof comProof : commitmentAndProofs) {
+            BigInteger commitment = comProof.commitment;
+            Sigma1Proof rho = comProof.proof;
+            boolean isValid = sigma1.VerifyKey(commitment, rho, group, kappa);
+
+            if (!isValid){
+                throw new RuntimeException(String.format("Malicious tallier detected. Tallier failed to prove their key"));
+            }
+        }
+        return false;
+    }
+
+
 }

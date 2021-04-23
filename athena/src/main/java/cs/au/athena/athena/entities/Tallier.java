@@ -4,6 +4,7 @@ package cs.au.athena.athena.entities;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.Athena;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.dao.athena.SK_Vector;
 import cs.au.athena.dao.athena.TallyStruct;
 import cs.au.athena.elgamal.ElGamalPK;
@@ -18,28 +19,26 @@ import cs.au.athena.elgamal.ElGamalSK;
  * - Invoke Tally():
  * - Tally the valid ballots on the BulletinBoard + contruct proofs to prove correct tallying.
  **/
-public class Tallier implements Entity {
+public class Tallier{
     private final int kappa;
     private final Athena athena;
     private final int nc;
-    private BulletinBoard bulletinBoard;
-
+    private BulletinBoardV2_0 bb;
     private ElGamalSK sk;
-
     private ElGamalPK pk;
 
-    public Tallier(Athena athena, BulletinBoard bulletinBoard, int kappa,  int nc) {
+    public Tallier(Athena athena, BulletinBoardV2_0 bulletinBoard, int kappa,  int nc) {
         this.kappa = kappa;
         this.athena = athena;
-        this.bulletinBoard = bulletinBoard;
+        this.bb = bulletinBoard;
         this.nc = nc;
     }
 
 
-    public void init() {
+    public void init(int tallierIndex) {
         // Run Setup()
-        sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX, this.nc,this.kappa);
-        pk = this.bulletinBoard.retrievePK_vector().pk;
+        sk = athena.Setup(tallierIndex, this.nc, this.kappa);
+        pk = this.bb.retrievePK_vector().pk;
     }
 
     public void tallyVotes(int tallierIndex) {
@@ -48,7 +47,7 @@ public class Tallier implements Entity {
             System.err.println("Tallier.tallyVotes => sk is null! Please run Tallier.init()");
         }
         
-        athena.Tally(tallierIndex, new SK_Vector(sk), nc, this.kappa);
+        athena.Tally(tallierIndex, sk, nc, this.kappa);
     }
 
 }

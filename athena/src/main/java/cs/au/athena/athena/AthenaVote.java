@@ -2,6 +2,8 @@ package cs.au.athena.athena;
 
 import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenProof;
 import cs.au.athena.factory.AthenaFactory;
@@ -38,39 +40,30 @@ public class AthenaVote {
     private Elgamal elgamal;
     private int kappa;
     private AthenaDistributed distributed;
-    private BulletinBoard bb;
+    private BulletinBoardV2_0 bb;
     private Sigma2Pedersen sigma2Pedersen;
+    private VerifyingBulletinBoardV2_0 vbb;
 
     private AthenaVote() {
     }
 
     public Ballot Vote(
             CredentialTuple credentialTuple,
-            PK_Vector pkv,
             int vote,
             int cnt,
             int nc) {
+        logger.info(MARKER, "Vote[Started]");
 
-        if (!AthenaCommon.parsePKV(pkv)) {
-            System.err.println("AthenaImpl.Vote => ERROR: pkv null");
-            return null;
-        }
-
-        if (!this.distributed.verifyKey(pkv.pk, pkv.rho, kappa)) {
-            System.err.println("AthenaImpl.Vote => ERROR: VerifyKey(...) => false");
-            return null;
-        }
-
+        ElGamalPK pk = vbb.retrieveAndVerifyPK();
 
         boolean vote_in_range = vote >= 0 && vote < nc;
-        boolean not_in_message_space = BigInteger.valueOf(nc).compareTo(pkv.pk.group.q) >= 0; // Should be in Z_q
+        boolean not_in_message_space = BigInteger.valueOf(nc).compareTo(pk.group.q) >= 0; // Should be in Z_q
         if (!vote_in_range || not_in_message_space) {
             System.err.println("AthenaImpl.Vote => ERROR: v not in {1...nc}");
             return null;
         }
 
         Ciphertext publicCredential = credentialTuple.publicCredential;
-        ElGamalPK pk = pkv.pk;
         BigInteger q = pk.group.q;
 
         // Make negated private credential
@@ -120,6 +113,7 @@ public class AthenaVote {
         BulletproofSecret secret_2 = new BulletproofSecret(voteAsBigInteger, randomness_t);
         Pair<BulletproofProof, BulletproofProof> proofRangeOfVotePair = bulletProof.proveStatementArbitraryRange(stmnt_2, secret_2);
 
+        logger.info(MARKER, "Vote[Ended]");
         // returns the vote.
         return new Ballot.Builder()
                 .setPublicCredential(publicCredential)
@@ -169,8 +163,7 @@ public class AthenaVote {
             athenaVote.bulletProof = this.athenaFactory.getBulletProof();
             athenaVote.random = this.athenaFactory.getRandom();
             athenaVote.elgamal = this.elgamal;
-//            athenaVote.bb = this.athenaFactory.getBulletinBoard();
-            athenaVote.bb =BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+            athenaVote.bb = this.athenaFactory.getBulletinBoard();
             athenaVote.kappa = this.kappa;
 
             return athenaVote;

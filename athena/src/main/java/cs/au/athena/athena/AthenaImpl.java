@@ -52,7 +52,7 @@ public class AthenaImpl implements Athena {
 
 
     @Override
-    public RegisterStruct Register(PK_Vector pkv, int kappa) {
+    public RegisterStruct Register(int kappa) {
         logger.info(MARKER, "Register(...) => start");
 
         if (!initialised) {
@@ -64,12 +64,12 @@ public class AthenaImpl implements Athena {
                 .setElGamal(this.elgamalWithLookUpTable)
                 .setKappa(kappa)
                 .build()
-                .Register(pkv);
+                .Register();
     }
 
 
     @Override
-    public Ballot Vote(CredentialTuple credentialTuple, PK_Vector pkv, int vote, int cnt, int nc, int kappa) {
+    public Ballot Vote(CredentialTuple credentialTuple, int vote, int cnt, int nc, int kappa) {
         logger.info(MARKER, "Vote(...) => start");
         if (!this.initialised) {
             System.err.println("AthenaImpl.Vote => ERROR: System not initialised call .Setup before hand");
@@ -80,32 +80,29 @@ public class AthenaImpl implements Athena {
                 .setElGamal(this.elgamalWithLookUpTable)
                 .setKappa(kappa)
                 .build()
-                .Vote(credentialTuple, pkv, vote, cnt, nc);
+                .Vote(credentialTuple, vote, cnt, nc);
     }
 
 
     @Override
-    public Map<Integer, Integer> Tally(int tallierIndex, SK_Vector skv, int nc, int kappa) {
+    public Map<Integer, Integer> Tally(int tallierIndex, ElGamalSK skShare, int nc, int kappa) {
         logger.info(MARKER, "Tally(...) => start");
 
         if (!this.initialised) {
             System.err.println("AthenaImpl.Tally => ERROR: System not initialised call .Setup before hand");
             return null;
         }
-
-
-
         return new AthenaTally.Builder()
                 .setFactory(this.athenaFactory)
                 .setElgamal(this.elgamalWithLookUpTable)
                 .setTallierIndex(tallierIndex)
                 .setKappa(kappa)
                 .build()
-                .Tally(tallierIndex, skv, nc);
+                .Tally(tallierIndex, skShare, nc);
     }
 
     @Override
-    public boolean Verify(PK_Vector pkv, int kappa) {
+    public boolean Verify( int kappa) {
         logger.info(MARKER, "Verify(...) => start");
 
         if (!this.initialised) {
@@ -117,7 +114,7 @@ public class AthenaImpl implements Athena {
                 //.setMc(this.mc)
                 .setKappa(kappa)
                 .build()
-                .Verify(pkv);
+                .Verify();
     }
 }
 
