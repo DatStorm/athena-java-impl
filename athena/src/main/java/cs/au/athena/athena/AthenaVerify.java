@@ -140,7 +140,7 @@ public class AthenaVerify {
             // Update the map entry if the old counter is less. Nullify if equal
             MapAKey key = new MapAKey(ballot.getPublicCredential(), N);
             MapAValue existingValue = A.get(key);
-            MapAValue updatedValue = AthenaTally.getHighestCounterEntry(existingValue, ballot, pk.group.p);
+            MapAValue updatedValue = AthenaTally.getHighestCounterEntry(existingValue, ballot, pk.group);
             A.put(key, updatedValue);
         }
 

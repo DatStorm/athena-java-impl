@@ -11,4 +11,12 @@ public class PfrPhaseOne extends ArrayList<Pair<Integer, List<CombinedCiphertext
         super(size);
     }
 
+    /*
+    [
+        [4: [(c1, omega) (c2, omega) (c3, omega), ...],
+        [2: [...],
+        [1: [...]
+    ]
+     */
+
 }

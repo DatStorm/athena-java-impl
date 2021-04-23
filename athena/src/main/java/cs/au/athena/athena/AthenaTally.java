@@ -4,6 +4,7 @@ import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.athena.distributed.AthenaDistributed;
+import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import org.apache.commons.lang3.tuple.Pair;
@@ -18,10 +19,6 @@ import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.dao.mixnet.MixProof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
-import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.Elgamal;
-import cs.au.athena.elgamal.ElGamalPK;
-import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.sigma.bulletproof.Bulletproof;
 
 import java.lang.invoke.MethodHandles;
@@ -51,14 +48,13 @@ public class AthenaTally {
         /* ********
          * Step 1: Remove invalid ballots
          *********/
-        logger.info(MARKER, "Tally(...) => step1");
 
         List<Ballot> validBallots = removeInvalidBallots(pk, this.bb);
+        logger.info(MARKER, "Removed invalid ballots");
         if (validBallots.isEmpty()) {
             logger.error("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             return null;
         }
-
 
         /* ********
          * Step 2: Mix final votes
@@ -66,28 +62,12 @@ public class AthenaTally {
         logger.info(MARKER, "Tally(...) => step2");
 
         //Filter ReVotes and pfr proof of same nonce
-        Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterResult = filterReVotesAndProveSameNonce(tallierIndex, validBallots, sk);
-        Map<MapAKey, MapAValue> A = filterResult.getLeft();
-        List<PFRStruct> pfr = filterResult.getRight();
-
-
-//        assert A.values().stream()
-//                .map(MapAValue::getCombinedCredential)
-//                .map(combinedCredential -> cs.au.cs.au.athena.athena.elgamal.decrypt(combinedCredential, sk))
-//                .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1 before mixing";
-
+        Map<MapAKey, MapAValue> A = filterReVotesAndProveSameNonce(tallierIndex, validBallots, sk);
 
         // Perform random mix
         MixedBallotsAndProof mixPair = mixnet(A, pk);
         List<MixBallot> mixedBallots = mixPair.mixedBallots;
         MixProof mixProof = mixPair.mixProof;
-
-
-//        assert mixedBallots.stream()
-//                .map(MixBallot::getCombinedCredential)
-//                .map(combCred -> cs.au.cs.au.athena.athena.elgamal.decrypt(combCred, sk))
-//                .allMatch(decryptedCombinedCredential -> decryptedCombinedCredential.equals(BigInteger.ONE)) : "Not equal 1 after mixing";
-
 
         /* ********
          * Step 3: Reveal eligible votes
@@ -192,66 +172,46 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
-    private Pair<Map<MapAKey, MapAValue>, List<PFRStruct>> filterReVotesAndProveSameNonce(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
+    private Map<MapAKey, MapAValue> filterReVotesAndProveSameNonce(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
         int ell = ballots.size();
         Map<MapAKey, MapAValue> A = new HashMap<>();
 
         // Pick a nonce to mask public credentials.
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
 
-        // Here we should pick a nonceShare, post combinedCiphertextShare to BB, retrieve others, combine to agreed upon combinedCiphertext
-        List<Ciphertext> combinedCiphertexts = AthenaDistributed.homomorphicallyCombineCiphertexts(tallierIndex, ballots, nonce_n, sk, kappa);
+        // Collaborate with other talliers, to apply a nonce to all ciphertexts
+        List<Ciphertext> combinedCiphertexts = this.distributed.performPfrPhaseOneHomoComb(tallierIndex, ballots, nonce_n, sk, kappa);
 
-        // Moved out of for loop, do all decryptions in one go -Mark
-        List<BigInteger> noncedNegatedPrivateCredentialElements = this.distributed.decrypt(tallierIndex, combinedCiphertexts, sk, kappa);
+        // Collaborate with other talliers, to decrypt combined ciphertexts
+        List<BigInteger> listOfNoncedNegatedPrivateCredentialElement = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, combinedCiphertexts, sk, kappa); //TODO: this does not work. If we want this then we should make a function decryptMultiple which call the existing decrypt in a for loop.
 
-        List<PFRStruct> pfr = new ArrayList<>();
+        // MapA
         for (int i = 0; i < ell; i++) {
-            // Dec(Enc(g^x)) = Dec((c1,c2)) = Dec((g^r,g^x * h^r)) = g^x
+            Ballot ballot = ballots.get(i);
+            BigInteger N = listOfNoncedNegatedPrivateCredentialElement.get(i);
 
             // Update map with highest counter entry.
-            MapAKey key = new MapAKey(ballot.getPublicCredential(), noncedNegatedPrivateCredentialElement);
+            MapAKey key = new MapAKey(ballot.getPublicCredential(), N);
             MapAValue existingValue = A.get(key);
-            MapAValue updatedValue = getHighestCounterEntry(existingValue, ballot, sk.pk.group.p);
+            MapAValue updatedValue = getHighestCounterEntry(existingValue, ballot, sk.pk.group);
             A.put(key, updatedValue);
-
-
-//            // Prove that the same nonce was used for all ballots.
-//            if (pfr.size() > 0) {
-//                //Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
-//                List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
-//                List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
-//                Sigma4Proof omega = this.distributed.proveCombination(listCombined, listCiphertexts, nonce_n, sk, kappa);  // Moved to distributed
-//
-//                //pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, omega));
-//            } else {
-//                // The else case does not create the ProveComb since this else case is only used in the first iteration
-//                // of the loop true case is used the remaining time.
-//                //pfr.add(new PFRStruct(ci_prime, noncedNegatedPrivateCredentialElement, decryptionProof, null));
-//            }
-//
-//            ci_prime_previous = ci_prime;
         }
 
-        return Pair.of(A, pfr);
+        return A;
     }
 
     // Step 2 of Tally. Returns a MapAValue, representing the ballot with the highest counter.
-    public static MapAValue getHighestCounterEntry(MapAValue existingValue, Ballot ballot, BigInteger p) {
+    public static MapAValue getHighestCounterEntry(MapAValue existingValue, Ballot ballot, Group group) {
         // Update the map entry if the old counter is less. Nullify if equal
         int counter = ballot.getCounter();
         if (existingValue == null || existingValue.getCounter() < counter) {
             // Update the map if A[(bi[1]; N)] is empty, or contains a lower counter
-            Ciphertext combinedCredential = ballot.getPublicCredential().multiply(ballot.getEncryptedNegatedPrivateCredential(), p);
-            MapAValue updatedValue = new MapAValue(counter, combinedCredential, ballot.getEncryptedVote());
-            return updatedValue;
+            Ciphertext combinedCredential = ballot.getPublicCredential().multiply(ballot.getEncryptedNegatedPrivateCredential(), group.p);
+            return new MapAValue(counter, combinedCredential, ballot.getEncryptedVote());
         } else if (existingValue.getCounter() == counter) {
             // Duplicate counters are illegal. Set null entry.
-            MapAValue nullValue = new MapAValue(counter, null, null);
-            return nullValue;
-
+            return new MapAValue(counter, null, null);
         } else {
-
             return existingValue;
         }
     }
@@ -282,7 +242,7 @@ public class AthenaTally {
 
             // Apply a nonce to the combinedCredential
             BigInteger nonce = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
-            Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, p);
+            Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, sk.pk.group);
 
             // Prove that c' is a homomorphic combination of combinedCredential
             Sigma4Proof combinationProof = this.distributed.proveCombination(List.of(c_prime),
