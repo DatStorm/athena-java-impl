@@ -7,19 +7,17 @@ import cs.au.athena.dao.bulletinboard.PfrPhaseOne;
 import cs.au.athena.dao.bulletinboard.PfrPhaseTwo;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 
 public class VerifyingBulletinBoardV2_0 {
     BulletinBoardV2_0 bb;
 
-    List<CompletableFuture<Void>> pfrPhaseOneOnCompletedFutures;
-    List<CompletableFuture<Void>> pfrPhaseTwoOnCompletedFutures;
+    List<CompletableFuture<PfrPhaseOne.Entry>> pfrPhaseOneOnCompletedFutures;
+    List<CompletableFuture<PfrPhaseTwo.Entry>> pfrPhaseTwoOnCompletedFutures;
 
     public VerifyingBulletinBoardV2_0(BulletinBoardV2_0 bb) {
         this.bb = bb;
@@ -39,8 +37,9 @@ public class VerifyingBulletinBoardV2_0 {
 
     public synchronized int publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
         int index = bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
-        pfrPhaseOneOnCompletedFutures.get(index).complete(null);
+        PfrPhaseOne.Entry entry = new PfrPhaseOne.Entry(tallierIndex, listOfCombinedCiphertextAndProof);
 
+        pfrPhaseOneOnCompletedFutures.get(index).complete(entry);
         return index;
     }
 
@@ -57,20 +56,16 @@ public class VerifyingBulletinBoardV2_0 {
         CompletableFuture<PfrPhaseOne> futureChain = CompletableFuture.completedFuture(new PfrPhaseOne(tallierCount));
         for (int i = 0; i < tallierCount; i++) {
 
-            int finalI = i;
             // When the i'th message is published
-            CompletableFuture<Void> onMessage = pfrPhaseOneOnCompletedFutures.get(i);
-            futureChain = futureChain.thenCombine(onMessage, (PfrPhaseOne pfrPhaseOne, Void onMessage_i) -> {
-
-                // Retrieve the message
-                Pair<Integer, List<CombinedCiphertextAndProof>> pair = bb.pfrPhaseOne.get(finalI);
+            CompletableFuture<PfrPhaseOne.Entry> pfrPhaseOneEntryFuture = pfrPhaseOneOnCompletedFutures.get(i);
+            futureChain = futureChain.thenCombine(pfrPhaseOneEntryFuture, (PfrPhaseOne pfrPhaseOne, PfrPhaseOne.Entry entry) -> {
 
                 // Verify
-                boolean isValid = SigmaCommonDistributed.verifyHomoComb(bb.ballots, pair.getRight(), bb.retrievePK(), bb.retrieveKappa());
+                boolean isValid = SigmaCommonDistributed.verifyHomoComb(bb.ballots, entry.getCombinedCiphertextAndProof(), bb.retrievePK(), bb.retrieveKappa());
 
                 // Grow list if valid
                 if(isValid) {
-                    pfrPhaseOne.add(pair);
+                    pfrPhaseOne.add(entry);
                 }
 
                 // When done, complete and stop the chain of futures
@@ -86,8 +81,12 @@ public class VerifyingBulletinBoardV2_0 {
         return resultFuture;
     }
 
-    public void publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> decryptionShareAndProof) {
-        bb.publishPfrPhaseTwoEntry(tallierIndex, decryptionShareAndProof);
+    public int publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> decryptionShareAndProof) {
+        int index = bb.publishPfrPhaseTwoEntry(tallierIndex, decryptionShareAndProof);
+        PfrPhaseTwo.Entry entry = new PfrPhaseTwo.Entry(tallierIndex, decryptionShareAndProof);
+
+        pfrPhaseTwoOnCompletedFutures.get(index).complete(entry);
+        return index;
     }
 
     public CompletableFuture<PfrPhaseTwo> retrieveValidThresholdPfrPhaseTwo(List<Ciphertext> ciphertexts) {
@@ -101,23 +100,18 @@ public class VerifyingBulletinBoardV2_0 {
         // When the list is k+1, It completes validPfrPhaseTwoFuture
         CompletableFuture<PfrPhaseTwo> futureChain = CompletableFuture.completedFuture(new PfrPhaseTwo(tallierCount));
         for (int i = 0; i < tallierCount; i++) {
-            int finalI = i;
 
             // When the i'th message is published
-            CompletableFuture<Void> onMessage = pfrPhaseTwoOnCompletedFutures.get(i);
-            futureChain = futureChain.thenCombine(onMessage, (PfrPhaseTwo pfrPhaseTwo, Void onMessage_i) -> {
-
-                // Retrieve the message
-                Pair<Integer, List<DecryptionShareAndProof>> pair = bb.pfrPhaseTwo.get(finalI);
+            CompletableFuture<PfrPhaseTwo.Entry> pfrPhaseTwoEntryFuture = pfrPhaseTwoOnCompletedFutures.get(i);
+            futureChain = futureChain.thenCombine(pfrPhaseTwoEntryFuture,  (PfrPhaseTwo pfrPhaseTwo, PfrPhaseTwo.Entry entry) -> {
 
                 // Verify
-                Integer tallierIndex = pair.getLeft();
-                ElGamalPK pk_j = bb.retrievePKShare(tallierIndex);
-                boolean isValid = SigmaCommonDistributed.verifyDecryption(ciphertexts, pair.getRight(), pk_j, bb.retrieveKappa());
+                ElGamalPK pk_j = bb.retrievePKShare(entry.getIndex());
+                boolean isValid = SigmaCommonDistributed.verifyDecryption(ciphertexts, entry.getDecryptionShareAndProofs(), pk_j, bb.retrieveKappa());
 
                 // Grow list if valid
                 if(isValid) {
-                    pfrPhaseTwo.add(pair);
+                    pfrPhaseTwo.add(entry);
                 }
 
                 // When done, complete and stop the chain of futures

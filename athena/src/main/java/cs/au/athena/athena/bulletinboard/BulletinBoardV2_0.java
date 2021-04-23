@@ -33,8 +33,8 @@ public class BulletinBoardV2_0 {
 
 
     // Activated when a tallier posts homocomb or decryption shares
-    protected PfrPhaseOne pfrPhaseOne;
-    protected PfrPhaseTwo pfrPhaseTwo;
+    private PfrPhaseOne pfrPhaseOne;
+    private PfrPhaseTwo pfrPhaseTwo;
 
 //    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
     private final int kappa;
@@ -190,31 +190,39 @@ public class BulletinBoardV2_0 {
 
         // Set values in pfr
         int index = pfrPhaseOne.size();
-        pfrPhaseOne.add(index, Pair.of(tallierIndex, listOfCombinedCiphertextAndProof));
+        pfrPhaseOne.add(index, new PfrPhaseOne.Entry(tallierIndex, listOfCombinedCiphertextAndProof));
 
         return index;
     }
 
     public PfrPhaseOne retrievePfrPhaseOne() {
-        if (pfrPhaseOne == null) {
-            throw new RuntimeException("publishCombinedCiphertextAndProof must be called first");
-        }
-
         return this.pfrPhaseOne;
     }
 
 
 
 
-    public synchronized void publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> decryptionShareAndProof) {
+    public synchronized int publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> decryptionShareAndProof) {
         throw new UnsupportedOperationException();
     }
 
 
 
-    public CompletableFuture<PfrPhaseTwo> retrievePfrPhaseTwo(Ciphertext ciphertext, int k) {
-        throw new UnsupportedOperationException();
+    public PfrPhaseTwo retrievePfrPhaseTwo() {
+        return this.pfrPhaseTwo;
+
     }
+
+
+
+
+
+
+
+
+
+
+
 
 
     /***************************************************
@@ -228,15 +236,6 @@ public class BulletinBoardV2_0 {
 //    private List<PFD> pfd = new ArrayList<>();
 //
 //
-
-
-    public void addPfrPhaseOneListener(Consumer<Integer> callback) {
-
-        // TODO: Listen for updates to pfrPhaseOne
-        // add callback to list
-        // notify should call all callbacks
-
-    }
 //
 //    // Returns the PFD index, and grows PFR list if needed
 //    public PFD getPfd(int index) {

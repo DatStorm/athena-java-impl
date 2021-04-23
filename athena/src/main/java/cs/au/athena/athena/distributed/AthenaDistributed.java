@@ -288,8 +288,8 @@ public class AthenaDistributed {
                 .collect(Collectors.toList());
 
         // For each tallier in the set
-        for (Pair<Integer, List<CombinedCiphertextAndProof>> pair : pfrPhaseOne) {
-            List<CombinedCiphertextAndProof> ciphertextAndProofs = pair.getRight();
+        for (PfrPhaseOne.Entry entry : pfrPhaseOne) {
+            List<CombinedCiphertextAndProof> ciphertextAndProofs = entry.getCombinedCiphertextAndProof();
 
             // For each ciphertext
             for (int i = 0; i < ell; i++) {
@@ -350,7 +350,7 @@ public class AthenaDistributed {
         }
 
         // Publish
-        bb.publishPfrPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
+        vbb.publishPfrPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
         PfrPhaseTwo pfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(ciphertexts).join();
@@ -359,15 +359,15 @@ public class AthenaDistributed {
 
         // Decrypt by combining decryption shares
         List<BigInteger> decryptedCiphertexts = new ArrayList<>(ciphertexts.size());
-        List<Integer> S = pfrPhaseTwo.stream().map(Pair::getLeft).collect(Collectors.toList());
+        List<Integer> S = pfrPhaseTwo.stream().map(PfrPhaseTwo.Entry::getIndex).collect(Collectors.toList());
 
         // We need to get k+1 decryption shares for each ballot.
         // Therefore we need to traverse the k+1 lists in pfr simultaneously
         // This is done by making an iterator for each tallier, and using calling each one time per ballot
         List<Pair<Integer, Iterator<DecryptionShareAndProof>>> iteratorPairs = new ArrayList<>();
-        for (Pair<Integer, List<DecryptionShareAndProof>> pair : pfrPhaseTwo) {
-            Integer s = pair.getLeft();
-            List<DecryptionShareAndProof> listOfDecryptionSharesAndProof = pair.getRight();
+        for (PfrPhaseTwo.Entry entry : pfrPhaseTwo) {
+            Integer s = entry.getIndex();
+            List<DecryptionShareAndProof> listOfDecryptionSharesAndProof = entry.getDecryptionShareAndProofs();
             iteratorPairs.add(Pair.of(s, listOfDecryptionSharesAndProof.iterator()));
         }
 
