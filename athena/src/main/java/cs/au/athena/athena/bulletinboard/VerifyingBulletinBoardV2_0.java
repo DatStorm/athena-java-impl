@@ -9,6 +9,7 @@ import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -23,12 +24,12 @@ public class VerifyingBulletinBoardV2_0 {
     public VerifyingBulletinBoardV2_0(BulletinBoardV2_0 bb) {
         this.bb = bb;
 
-        init();
-    }
+        pfrPhaseOneOnCompletedFutures = new ArrayList<>();
+        pfrPhaseTwoOnCompletedFutures = new ArrayList<>();
 
-    private void init() {
         for(int i = 0; i < bb.retrieveTallierCount(); i++) {
             pfrPhaseOneOnCompletedFutures.add(new CompletableFuture<>());
+            pfrPhaseTwoOnCompletedFutures.add(new CompletableFuture<>());
         }
     }
 

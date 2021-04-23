@@ -156,7 +156,7 @@ public class TestElgamal {
 
         // Nonce
         BigInteger n = UTIL.getRandomElement(q, random);
-        Ciphertext noncedCombinedCredential = AthenaCommon.homoCombination(combinedCredential, n, p);
+        Ciphertext noncedCombinedCredential = AthenaCommon.homoCombination(combinedCredential, n, pk.getGroup());
 
         // Decrypt
         BigInteger expected = BigInteger.ONE;

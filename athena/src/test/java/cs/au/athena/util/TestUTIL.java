@@ -27,21 +27,6 @@ public class TestUTIL {
 
 
     @Test
-    void TestArrayList() {
-        int ell = 10;
-
-
-        List<Integer>list = new ArrayList<>();
-
-        for (int i = 0; i <ell; i++) {
-            list.add(i+2, i);
-        }
-
-        System.out.println("LIST: " + list);
-
-    }
-
-    @Test
     void TestInversePermutation() {
         List<Integer> objects = UTIL.newPermutation(10, new Random(0));
         List<Integer> permutation = UTIL.newPermutation(10, new Random(1));

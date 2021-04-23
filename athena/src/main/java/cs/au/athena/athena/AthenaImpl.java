@@ -85,7 +85,7 @@ public class AthenaImpl implements Athena {
 
 
     @Override
-    public TallyStruct Tally(int tallierIndex, SK_Vector skv, int nc, int kappa) {
+    public Map<Integer, Integer> Tally(int tallierIndex, SK_Vector skv, int nc, int kappa) {
         logger.info(MARKER, "Tally(...) => start");
 
         if (!this.initialised) {

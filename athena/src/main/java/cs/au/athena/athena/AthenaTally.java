@@ -41,7 +41,7 @@ public class AthenaTally {
     // Construct using builder
     private AthenaTally() {}
 
-    public TallyStruct Tally(int tallierIndex, SK_Vector skv, int nc) {
+    public Map<Integer, Integer> Tally(int tallierIndex, SK_Vector skv, int nc) {
         ElGamalSK sk = skv.sk;
         ElGamalPK pk = sk.pk;
 
@@ -53,7 +53,7 @@ public class AthenaTally {
         logger.info(MARKER, "Removed invalid ballots");
         if (validBallots.isEmpty()) {
             logger.error("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
-            return null;
+            throw new RuntimeException("Step 1 yielded no valid ballots on bulletin-board.");
         }
 
         /* ********
@@ -82,14 +82,10 @@ public class AthenaTally {
             System.out.println("AthenaTally.Tally -----------------> officialTally");
         }
 
-        List<PFDStruct> pfd = revealPair.getRight();
-
-        // Post (b, (pfr, B, pfd) ) to bulletin board
+        // Post tallyboard
         bb.publishTallyOfVotes(officialTally);
-        PFStruct pf = new PFStruct(pfr, mixedBallots, pfd, mixProof);
-        bb.publishPF(pf);
 
-        return new TallyStruct(officialTally, pf);
+        return officialTally;
     }
 
 

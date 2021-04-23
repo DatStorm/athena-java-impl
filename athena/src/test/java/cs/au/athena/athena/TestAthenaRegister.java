@@ -30,7 +30,7 @@ public class TestAthenaRegister {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
+        msFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
     }
 
     @Test

@@ -30,7 +30,7 @@ public class TestAthenaVerify {
 
     @BeforeEach
     void setUp() {
-        msFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
+        msFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         athena = new AthenaImpl(msFactory);
         sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, kappa);
 
@@ -77,11 +77,8 @@ public class TestAthenaVerify {
 
 
         System.out.println("--> Tally: ");
-        TallyStruct tallyStruct = athena.Tally(1, new SK_Vector(sk), nc, kappa);
+        Map<Integer, Integer> tally = athena.Tally(1, new SK_Vector(sk), nc, kappa);
         System.out.println("--> Tally done ");
-
-        Map<Integer, Integer> b = tallyStruct.tallyOfVotes;
-        PFStruct pf = tallyStruct.pf;
 
         System.out.println("--> Verify: ");
         boolean verify = athena.Verify(pkv, kappa);

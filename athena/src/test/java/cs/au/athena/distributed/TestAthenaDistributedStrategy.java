@@ -3,6 +3,7 @@ package cs.au.athena.distributed;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.AthenaImpl;
+import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.AthenaFactory;
 import cs.au.athena.factory.MainAthenaFactory;
@@ -21,13 +22,13 @@ public class TestAthenaDistributedStrategy {
     private final int kappa = CONSTANTS.KAPPA;
     private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
     MainAthenaFactory factory;
-    private          int tallierCount;
+    private int tallierCount;
 
 
     @BeforeEach
     void setUp() {
         tallierCount = 3;
-        factory = new MainAthenaFactory(AthenaFactory.STRATEGY.DISTRIBUTED, tallierCount,kappa);
+        factory = new MainAthenaFactory(tallierCount,kappa);
     }
 
 
@@ -42,16 +43,15 @@ public class TestAthenaDistributedStrategy {
 
     @Test
     void TestSetup() {
-        Strategy strategy = factory.getStrategy();
+        AthenaDistributed athenaDistributed  = new AthenaDistributed(factory);
         BulletinBoardV2_0 bb = factory.getBulletinBoard();
-
 
         CompletableFuture<ElGamalSK> f1 = new CompletableFuture<>();
         CompletableFuture<ElGamalSK> f2 = new CompletableFuture<>();
         CompletableFuture<ElGamalSK> f3 = new CompletableFuture<>();
-        Thread t1 = new Thread(() -> f1.complete(strategy.setup(1, nc, kappa)));
-        Thread t2 = new Thread(() -> f2.complete(strategy.setup(2, nc, kappa)));
-        Thread t3 = new Thread(() -> f3.complete(strategy.setup(3, nc, kappa)));
+        Thread t1 = new Thread(() -> f1.complete(athenaDistributed.setup(1, nc, kappa)));
+        Thread t2 = new Thread(() -> f2.complete(athenaDistributed.setup(2, nc, kappa)));
+        Thread t3 = new Thread(() -> f3.complete(athenaDistributed.setup(3, nc, kappa)));
 
 
         // Start and wait for finish

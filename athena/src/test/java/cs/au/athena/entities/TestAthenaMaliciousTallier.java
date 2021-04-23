@@ -40,7 +40,7 @@ public class TestAthenaMaliciousTallier {
     @Test
     public void TestMaliciousTallier() {
         int nc = 10;
-        AthenaFactory athenaFactory = new MainAthenaFactory(AthenaFactory.STRATEGY.SINGLE, CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
+        AthenaFactory athenaFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         Athena athena = new AthenaImpl(athenaFactory);
 //        BulletinBoard bb = athenaFactory.getBulletinBoard();
         BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
