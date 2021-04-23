@@ -7,6 +7,10 @@ public class Ciphertext {
     public BigInteger c1;
     public BigInteger c2;
 
+    public static Ciphertext ONE() {
+        return new Ciphertext(BigInteger.ONE, BigInteger.ONE);
+    }
+
     public Ciphertext(BigInteger c1, BigInteger c2) {
         this.c1 = c1;
         this.c2 = c2;

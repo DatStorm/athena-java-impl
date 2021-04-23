@@ -12,4 +12,7 @@ public class CombinedCiphertextAndProof {
         this.proof = proof;
     }
 
+    public Ciphertext getCombinedCiphertext() {
+        return combinedCiphertext;
+    }
 }

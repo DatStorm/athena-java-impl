@@ -183,7 +183,7 @@ public class AthenaTally {
         List<Ciphertext> combinedCiphertexts = this.distributed.performPfrPhaseOneHomoComb(tallierIndex, ballots, nonce_n, sk, kappa);
 
         // Collaborate with other talliers, to decrypt combined ciphertexts
-        List<BigInteger> listOfNoncedNegatedPrivateCredentialElement = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, combinedCiphertexts, sk, kappa); //TODO: this does not work. If we want this then we should make a function decryptMultiple which call the existing decrypt in a for loop.
+        List<BigInteger> listOfNoncedNegatedPrivateCredentialElement = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, combinedCiphertexts, sk, kappa);
 
         // MapA
         for (int i = 0; i < ell; i++) {

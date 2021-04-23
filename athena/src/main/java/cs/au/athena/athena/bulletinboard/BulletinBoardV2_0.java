@@ -33,8 +33,8 @@ public class BulletinBoardV2_0 {
 
 
     // Activated when a tallier posts homocomb or decryption shares
-    public PfrPhaseOne pfrPhaseOne;
-    private PfrPhaseTwo pfrPhaseTwo;
+    protected PfrPhaseOne pfrPhaseOne;
+    protected PfrPhaseTwo pfrPhaseTwo;
 
 //    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
     private final int kappa;
@@ -69,6 +69,7 @@ public class BulletinBoardV2_0 {
     private void init(int tallierCount) {
 
         this.pfrPhaseOne = new PfrPhaseOne(tallierCount);
+        this.pfrPhaseTwo = new PfrPhaseTwo(tallierCount);
         //this.pfrPhaseOne = null;
 
 
@@ -179,7 +180,8 @@ public class BulletinBoardV2_0 {
     }
 
 
-    public synchronized void publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
+    // Returns the index in the pfrPhaseOne
+    public synchronized int publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
         int ell = ballots.size();
 
         if(listOfCombinedCiphertextAndProof.size() == ell) {
@@ -187,9 +189,10 @@ public class BulletinBoardV2_0 {
         }
 
         // Set values in pfr
-        for (int i = 0; i < ell; i++) {
-            pfrPhaseOne.add(Pair.of(tallierIndex, listOfCombinedCiphertextAndProof));
-        }
+        int index = pfrPhaseOne.size();
+        pfrPhaseOne.add(index, Pair.of(tallierIndex, listOfCombinedCiphertextAndProof));
+
+        return index;
     }
 
     public PfrPhaseOne retrievePfrPhaseOne() {

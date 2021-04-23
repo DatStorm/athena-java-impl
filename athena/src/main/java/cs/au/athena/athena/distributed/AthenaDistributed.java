@@ -28,8 +28,8 @@ import org.slf4j.MarkerFactory;
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AthenaDistributed {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -273,17 +273,36 @@ public class AthenaDistributed {
         }
 
         // Publish
-        vbb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof); //TODO: PFR phase one
+        vbb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve k+1 shares
         int k = bb.retrieveK();
-        PfrPhaseOne pfrPhaseOne = bb.retrievePfrPhaseOne(); //TODO: verifyingBB retrieveThresholdPfrPhaseOne
+        PfrPhaseOne pfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne().join();
 
+        // We want to create a list of cipertexts, where element i is the product of the k+1 ciphertexts
+        // This is done by making a list of ciphertexts, and multiplying a talliers ciphertexts onto the corresponding entry
 
-        // Compute combinedCiphertext
-        List<Ciphertext> listOfCiphertexts = new ArrayList<>();
+        // Make list of neutral ciphertexts
+        List<Ciphertext> result = Stream.generate(Ciphertext::ONE)
+                .limit(ell)
+                .collect(Collectors.toList());
 
-        return listOfCiphertexts;
+        // For each tallier in the set
+        for (Pair<Integer, List<CombinedCiphertextAndProof>> pair : pfrPhaseOne) {
+            List<CombinedCiphertextAndProof> ciphertextAndProofs = pair.getRight();
+
+            // For each ciphertext
+            for (int i = 0; i < ell; i++) {
+                CombinedCiphertextAndProof combinedCiphertextAndProof = ciphertextAndProofs.get(i);
+
+                // Multiply onto the result list
+                Ciphertext oldValue = result.get(i);
+                Ciphertext newValue = oldValue.multiply(combinedCiphertextAndProof.combinedCiphertext, sk.pk.group.p);
+                result.set(i, newValue);
+            }
+        }
+
+        return result;
     }
 
 
@@ -298,7 +317,7 @@ public class AthenaDistributed {
         Group group = this.getGroup();
         BigInteger alpha = M;
         BigInteger alpha_base = group.g;
-        BigInteger beta = c.c1.modPow(sk.toBigInteger().negate(),group.p).modInverse(group.p);
+        BigInteger beta = c.c1.modPow(sk.toBigInteger().negate(),group.p).modInverse(group.p); // TODO: double check this please!
         BigInteger beta_base = c.c1;
         Sigma3Statement stmnt = new Sigma3Statement(group,alpha,beta,alpha_base,beta_base);
 
@@ -334,7 +353,7 @@ public class AthenaDistributed {
         bb.publishPfrPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
-        PfrPhaseTwo pfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo().join();
+        PfrPhaseTwo pfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(ciphertexts).join();
         assert pfrPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", pfrPhaseTwo.size());
 
 
@@ -351,6 +370,7 @@ public class AthenaDistributed {
             List<DecryptionShareAndProof> listOfDecryptionSharesAndProof = pair.getRight();
             iteratorPairs.add(Pair.of(s, listOfDecryptionSharesAndProof.iterator()));
         }
+
 
         for (Ciphertext ciphertext : ciphertexts) {
             // Verify that the decryption shares are valid, and decrypt
