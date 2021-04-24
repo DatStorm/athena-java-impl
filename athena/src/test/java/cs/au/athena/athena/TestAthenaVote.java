@@ -3,7 +3,6 @@ package cs.au.athena.athena;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
-import cs.au.athena.factory.AthenaFactory;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,7 +52,7 @@ public class TestAthenaVote {
 
         pkv = pk_vector;
 
-        RegisterStruct register = athena.Register(pkv, this.kappa);
+        RegisterStruct register = athena.Register(this.kappa);
         dv = register.d;
 
     }
@@ -62,7 +61,7 @@ public class TestAthenaVote {
     void TestAthenaVote() {
         int vote = 4;
         int cnt = 0;
-        Ballot ballot = athena.Vote(dv, pkv, vote, cnt, nc, this.kappa);
+        Ballot ballot = athena.Vote(dv, vote, cnt, nc, this.kappa);
         MatcherAssert.assertThat("Should not be null", ballot.getPublicCredential(), notNullValue());
         MatcherAssert.assertThat("Should not be null", ballot.getEncryptedNegatedPrivateCredential(), notNullValue());
         MatcherAssert.assertThat("Should not be null", ballot.getEncryptedVote(), notNullValue());
@@ -75,7 +74,7 @@ public class TestAthenaVote {
     void TestBallotConstruction() {
         int vote = 7;
         int cnt = 0;
-        Ballot ballot = athena.Vote(this.dv, this.pkv, vote, cnt, this.nc, this.kappa);
+        Ballot ballot = athena.Vote(this.dv, vote, cnt, this.nc, this.kappa);
 
         // Enc_pk(d) * Enc_pk(-d) = g^0
         Ciphertext combinedCredential = ballot.publicCredential.multiply(ballot.encryptedNegatedPrivateCredential, sk.pk.group.p);

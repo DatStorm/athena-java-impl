@@ -3,7 +3,6 @@ package cs.au.athena.athena;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
-import cs.au.athena.factory.AthenaFactory;
 import org.junit.jupiter.api.*;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.ElGamalSK;
@@ -52,12 +51,12 @@ public class TestAthenaVerify {
 
         PK_Vector pkv = bb.retrievePK_vector();
 
-        RegisterStruct register1 = athena.Register(pkv,kappa);
+        RegisterStruct register1 = athena.Register(kappa);
         CredentialTuple dv1  = register1.d;
         int vote1_1 = 4;
         int cnt1_1 = 0;
         System.out.println("--> Voter 1: ");
-        Ballot ballot_1 = athena.Vote(dv1, pkv, vote1_1, cnt1_1, nc,kappa);
+        Ballot ballot_1 = athena.Vote(dv1, vote1_1, cnt1_1, nc,kappa);
 
         // Voter is now responsible for publishing.
         bb.publishBallot(ballot_1);
@@ -65,23 +64,23 @@ public class TestAthenaVerify {
 
         int vote2_1 = 2;
         int cnt2_1 = 0;
-        RegisterStruct register2 = athena.Register(pkv,kappa);
+        RegisterStruct register2 = athena.Register(kappa);
         CredentialTuple dv2  = register2.d;
         System.out.println("--> Voter 2: ");
 
 
-        Ballot ballot_2 = athena.Vote(dv2, pkv, vote2_1, cnt2_1, nc,kappa);
+        Ballot ballot_2 = athena.Vote(dv2, vote2_1, cnt2_1, nc,kappa);
         System.out.println("--> Voter 2 done ");
         // Voter is now responsible for publishing.
         bb.publishBallot(ballot_2);
 
 
         System.out.println("--> Tally: ");
-        Map<Integer, Integer> tally = athena.Tally(1, new SK_Vector(sk), nc, kappa);
+        Map<Integer, Integer> tally = athena.Tally(1, sk, nc, kappa);
         System.out.println("--> Tally done ");
 
         System.out.println("--> Verify: ");
-        boolean verify = athena.Verify(pkv, kappa);
+        boolean verify = athena.Verify(kappa);
         System.out.println("--> Verify done ");
         assertTrue("should return 1", verify);
         

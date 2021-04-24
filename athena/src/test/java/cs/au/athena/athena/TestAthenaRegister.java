@@ -4,7 +4,6 @@ package cs.au.athena.athena;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.elgamal.ElGamalSK;
-import cs.au.athena.factory.AthenaFactory;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.athena.RegisterStruct;
-import cs.au.athena.dao.athena.ElectionSetup;
 import cs.au.athena.factory.MainAthenaFactory;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -41,7 +39,7 @@ public class TestAthenaRegister {
 //        PK_Vector pkv = msFactory.getBulletinBoard().retrievePK_vector();
         PK_Vector pkv = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
 
-        RegisterStruct register = athena.Register(pkv, kappa);
+        RegisterStruct register = athena.Register(kappa);
 
         MatcherAssert.assertThat("Should not be null", register.pd, notNullValue());
         MatcherAssert.assertThat("Should not be null", register.d, notNullValue());

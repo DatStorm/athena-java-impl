@@ -3,6 +3,7 @@ package cs.au.athena.experiments;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.UTIL;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ public class TestExperiment1 {
 
         AthenaFactory athenaFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         athena = new AthenaImpl(athenaFactory);
-//        bb = athenaFactory.getBulletinBoard();
+        //bb = athenaFactory.getBulletinBoard();
         bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         nc = 2 ^ 10; // = 1024
         tallier = new Tallier(athena, bb, kappa, nc);
@@ -63,9 +64,8 @@ public class TestExperiment1 {
         endTime = System.nanoTime();
         UTIL.printEvalMetrics("Athena Tally: ", startTime, endTime);
 
-       PK_Vector pkv = bb.retrievePK_vector();
-       boolean succes = athena.Verify(pkv, kappa);
-       UTIL.printEvalMetrics("Athena Verify: ", endTime, System.nanoTime());
+        boolean succes = athena.Verify(kappa);
+        UTIL.printEvalMetrics("Athena Verify: ", endTime, System.nanoTime());
     }
 
 //    @After
@@ -120,7 +120,7 @@ public class TestExperiment1 {
     }
 
     private void registerVote(int numVoters) {
-        tallier.init();
+        tallier.init(1);
         List<Voter> voters = new ArrayList<>(numVoters);
 
         // Construct and distribute credential to voters

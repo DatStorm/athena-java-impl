@@ -3,7 +3,6 @@ package cs.au.athena.athena;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
-import cs.au.athena.factory.AthenaFactory;
 import org.junit.jupiter.api.*;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.ElGamalSK;
@@ -39,7 +38,7 @@ public class TestAthenaTally {
         bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
 
         pkv = bb.retrievePK_vector();
-        RegisterStruct register = athena.Register(pkv, this.kappa);
+        RegisterStruct register = athena.Register(this.kappa);
         dv = register.d;
 
 
@@ -52,14 +51,14 @@ public class TestAthenaTally {
 
         int vote1_1 = 4;
         int cnt1_1 = 0;
-        Ballot ballot_1 = athena.Vote(dv, pkv, vote1_1, cnt1_1, nc, this.kappa);
+        Ballot ballot_1 = athena.Vote(dv, vote1_1, cnt1_1, nc, this.kappa);
 
 
         int vote2_1 = 2;
         int cnt2_1 = 0;
-        Ballot ballot_2 = athena.Vote(dv, pkv, vote2_1, cnt2_1, nc, kappa);
+        Ballot ballot_2 = athena.Vote(dv, vote2_1, cnt2_1, nc, kappa);
 
-        Map<Integer, Integer> tally = athena.Tally(1, new SK_Vector(sk), nc, this.kappa);
+        Map<Integer, Integer> tally = athena.Tally(1, sk, nc, this.kappa);
         assertNotNull("Should not be null", tally);
 
 

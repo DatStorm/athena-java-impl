@@ -3,6 +3,7 @@ package cs.au.athena.athena.bulletinboard;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.ElectoralRoll;
+import cs.au.athena.dao.athena.PFStruct;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.bulletinboard.*;
 import cs.au.athena.elgamal.Ciphertext;
@@ -198,7 +199,7 @@ public class BulletinBoardV2_0 {
 
 
     // Returns the index in the pfrPhaseOne
-    public synchronized int publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
+    public synchronized void publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
         int ell = ballots.size();
 
         if(listOfCombinedCiphertextAndProof.size() == ell) {
@@ -208,8 +209,6 @@ public class BulletinBoardV2_0 {
         // Set values in pfr
         int index = pfrPhaseOne.size();
         pfrPhaseOne.add(index, new PfrPhaseOne.Entry(tallierIndex, listOfCombinedCiphertextAndProof));
-
-        return index;
     }
 
     public PfrPhaseOne retrievePfrPhaseOne() {
@@ -240,6 +239,10 @@ public class BulletinBoardV2_0 {
         this.tally = tally;
     }
 
+    @Deprecated
+    public PFStruct retrievePF() {
+        throw new UnsupportedOperationException();
+    }
 
 
     /***************************************************

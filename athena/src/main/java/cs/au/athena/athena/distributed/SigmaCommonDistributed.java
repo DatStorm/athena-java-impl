@@ -85,5 +85,11 @@ public class SigmaCommonDistributed {
         return false;
     }
 
+    public boolean verifyPK(BigInteger h, Sigma1Proof rho, Group group, int kappa) {
+        Sigma1 sigma1 = new Sigma1();
+
+        return sigma1.VerifyKey(h, rho, group, kappa);
+    }
+
 
 }
