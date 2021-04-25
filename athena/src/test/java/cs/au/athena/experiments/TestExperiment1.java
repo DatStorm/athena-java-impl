@@ -27,7 +27,7 @@ public class TestExperiment1 {
     Athena athena;
     Registrar registrar;
     Tallier tallier;
-    BulletinBoard bb;
+    BulletinBoardV2_0 bb;
     int nc;
     Random random = new Random(CONSTANTS.RANDOM_SEED);
     int kappa = 256;
@@ -47,8 +47,7 @@ public class TestExperiment1 {
 
         AthenaFactory athenaFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         athena = new AthenaImpl(athenaFactory);
-        //bb = athenaFactory.getBulletinBoard();
-        bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+        bb = athenaFactory.getBulletinBoard();
         nc = 2 ^ 10; // = 1024
         tallier = new Tallier(athena, bb, kappa, nc);
         registrar = new Registrar(athena, bb, kappa);

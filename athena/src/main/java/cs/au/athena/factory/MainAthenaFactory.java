@@ -27,8 +27,11 @@ public class MainAthenaFactory implements AthenaFactory {
         this.tallierCount = tallierCount;
         this.kappa = kappa;
         this.random = new Random(CONSTANTS.RANDOM_SEED);
-        this.distributed = new AthenaDistributed(this);
         this.bb = BulletinBoardV2_0.getInstance(this.tallierCount, this.kappa);
+        /*********************************************
+         * THIS HAS TO BE THE LAST THING INSTANTIATED!
+         */
+        this.distributed = new AthenaDistributed(this);
     }
 
     @Override

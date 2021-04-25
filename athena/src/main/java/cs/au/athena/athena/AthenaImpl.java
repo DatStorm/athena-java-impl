@@ -40,10 +40,9 @@ public class AthenaImpl implements Athena {
         }
 
         Random random = athenaFactory.getRandom();
-        Group group = distributed.getGroup();
+        Group group = athenaFactory.getBulletinBoard().retrieveGroup();
 
         this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
-        //this.mc = this.athenaFactory.getBulletinBoard(???).retrieveMaxCanditates();
         this.initialised = true;
         return distributed.setup(tallierIndex, nc, kappa);
     }

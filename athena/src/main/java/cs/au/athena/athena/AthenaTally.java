@@ -224,14 +224,14 @@ public class AthenaTally {
 
         List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
 
-        List<Integer> votes = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
+        List<BigInteger> votesAsGroupElement = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
+
+        // Lookup to go from g^v to v
+        List<Integer> votes = votesAsGroupElement.stream().map(cipherGroup -> elgamal.lookup(cipherGroup)).collect(Collectors.toList());
 
         // Tally votes
         for(Integer vote : votes) {
-            if (vote == null) continue;
-
             assert officialTally.containsKey(vote); // All votes have performed rangeproof for their vote. We don't need to check
-
             Integer totalVotes = officialTally.get(vote);
             officialTally.put(vote, totalVotes + 1);
         }

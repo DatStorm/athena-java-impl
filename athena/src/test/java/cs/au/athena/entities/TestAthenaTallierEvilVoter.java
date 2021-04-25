@@ -3,6 +3,7 @@ package cs.au.athena.entities;
 
 import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -38,15 +39,13 @@ public class TestAthenaTallierEvilVoter {
     public void TestMaliciousTallier() {
         int nc = 10;
 
-
-        // Vote
+        // Votes cast
         int vote1 = 4;
         int vote2 = 2;
         int voteEvil = 2;
 
         // Create voters
         int numVoters = 2; // we only have 2 real voter
-
 
         AthenaFactory athenaFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         Athena athena = new AthenaImpl(athenaFactory);
@@ -55,7 +54,8 @@ public class TestAthenaTallierEvilVoter {
 
         // Setup the election
         Tallier tallier = new Tallier(athena, bb, kappa, nc);
-        tallier.init();
+        int tallierIndex = 1;
+        tallier.init(tallierIndex);
         System.out.println("--> Setup done");
 
 
@@ -75,7 +75,7 @@ public class TestAthenaTallierEvilVoter {
         voter2.retrieveCredentials(registrar.sendCredentials(1));
 
         //Malious voter steals public credential of voter2
-        BigInteger q = bb.retrievePK_vector().pk.getGroup().getQ();
+        BigInteger q = bb.retrieveGroup().getQ();
         int n = q.bitLength() - 1;
         BigInteger endRange = BigInteger.TWO.modPow(BigInteger.valueOf(n), q).subtract(BigInteger.ONE); // [0; 2^n-1]
         BigInteger fakedPrivCred = UTIL.getRandomElement(BigInteger.ZERO, endRange, athenaFactory.getRandom()); // a nonce in [0,2^{\lfloor \log_2 q \rfloor} -1]
@@ -99,7 +99,7 @@ public class TestAthenaTallierEvilVoter {
 
         boolean succeeds = verifier.verifyElection();
 //        System.out.println("Did we successfully avoid counting the Evil Vote?: " + (succeeds ?  "Yes" : "No"));
-        assertThat("We successfully avoid counting the Evil Vote.", succeeds, is(true));
+        MatcherAssert.assertThat("We successfully avoid counting the Evil Vote.", succeeds, is(true));
 
     }
 

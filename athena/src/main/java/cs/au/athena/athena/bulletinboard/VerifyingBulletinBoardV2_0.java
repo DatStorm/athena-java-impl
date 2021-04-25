@@ -64,8 +64,6 @@ public class VerifyingBulletinBoardV2_0 {
 
         // For every tallier
         for (int tallierIndex = 1; tallierIndex <= bb.retrieveTallierCount(); tallierIndex++) {
-
-
             // Get pk share and proof
             List<CommitmentAndProof> commitmentAndProofs =  bb.retrieveCommitmentsAndProofs(tallierIndex).join();
 
