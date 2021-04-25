@@ -61,7 +61,7 @@ public class VerifyingBulletinBoardV2_0 {
         return commitmentAndProofs.get(0).commitment;
     }
 
-     public <T> CompletableFuture<PfrPhase<T>> retrieveValidThreshold(PfrPhase<T> pfrPhase, Function<Entry<T>, Boolean> verify) {
+     public <T> CompletableFuture<PfrPhase<T>> retrieveValidThreshold(PfrPhase<T> pfrPhase, BiFunction<Entry<T>, ElGamalPK, Boolean> verify, Function<Entry<T>, ElGamalPK> getPK) {
         int tallierCount = bb.retrieveTallierCount();
 
         CompletableFuture<PfrPhase<T>> resultFuture = new CompletableFuture<>();
@@ -80,7 +80,8 @@ public class VerifyingBulletinBoardV2_0 {
             futureChain = futureChain.thenCombine(future, (PfrPhase<T> chainPfrPhase, Entry<T> entry) -> {
 
                 // Verify
-                boolean isValid = verify.apply(entry);
+                ElGamalPK pk = getPK.apply(entry);
+                boolean isValid = verify.apply(entry, pk);
 
                 // Grow list if valid
                 if(isValid) {
@@ -101,84 +102,27 @@ public class VerifyingBulletinBoardV2_0 {
     }
 
     public CompletableFuture<PfrPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfrPhaseOne() {
-        PfrPhase<CombinedCiphertextAndProof> pfrPhaseOne = bb.retrievePfrPhaseOne();
-        int tallierCount = bb.retrieveTallierCount();
+        // How should entries in the pfr be verified?
+        BiFunction<Entry<CombinedCiphertextAndProof>, ElGamalPK, Boolean> verify =
+                (entry, pk) -> SigmaCommonDistributed.verifyHomoComb(bb.ballots, entry.getValues(), pk, bb.retrieveKappa());
 
-        CompletableFuture<PfrPhase<CombinedCiphertextAndProof>> resultFuture = new CompletableFuture<>();
-        // Build a chain of completable futures, that verify the messages as they are posted.
-        // It sends the growing list down the cain
-        // When the list is k+1, It completes validPfrPhaseOneFuture
+        ElGamalPK pk = bb.retrievePK();
+        Function<Entry<CombinedCiphertextAndProof>, ElGamalPK> getPK = entry -> pk;
 
-        // Start chain with empty input
-        CompletableFuture<PfrPhase<CombinedCiphertextAndProof>> futureChain = CompletableFuture.completedFuture(new PfrPhase<>(this.getThreshold()));
-
-        for (int i = 0; i < tallierCount; i++) {
-            // When then ext entry is available
-            CompletableFuture<Entry<CombinedCiphertextAndProof>> future = pfrPhaseOne.getFuture(i);
-
-            // Continue chain, by verifying the entry and adding to Pfr
-            futureChain = futureChain.thenCombine(future, (PfrPhase<CombinedCiphertextAndProof> chainPfrPhase, Entry<CombinedCiphertextAndProof> entry) -> {
-
-                // Verify
-                boolean isValid = SigmaCommonDistributed.verifyHomoComb(bb.ballots, entry.getValues(), bb.retrievePK(), bb.retrieveKappa());
-
-                // Grow list if valid
-                if(isValid) {
-                    chainPfrPhase.add(entry);
-                }
-
-                // When done, complete and stop the chain of futures
-                if(chainPfrPhase.size() == getThreshold()){
-                    resultFuture.complete(chainPfrPhase);
-                    throw new CancellationException("pfr has reached threshold size");
-                }
-
-                return chainPfrPhase;
-            });
-        }
-
-        return resultFuture;
+        // Delegate
+        return retrieveValidThreshold(bb.retrievePfrPhaseOne(), verify, getPK);
     }
 
     public CompletableFuture<PfrPhase<DecryptionShareAndProof>> retrieveValidThresholdPfrPhaseTwo(List<Ciphertext> ciphertexts) {
-        PfrPhase<DecryptionShareAndProof> pfrPhaseTwo = bb.retrievePfrPhaseTwo();
-        int tallierCount = bb.retrieveTallierCount();
+        // How should entries in the pfr be verified?
+        BiFunction<Entry<DecryptionShareAndProof>, ElGamalPK, Boolean> verify =
+                (entry, pk) -> SigmaCommonDistributed.verifyDecryption(ciphertexts, entry.getValues(), pk, bb.retrieveKappa());
 
-        PfrPhase<DecryptionShareAndProof> newPfrPhaseTwo = new PfrPhase<>(this.getThreshold());
-        CompletableFuture<PfrPhase<DecryptionShareAndProof>> resultFuture = CompletableFuture.completedFuture(newPfrPhaseTwo);
+        Function<Entry<DecryptionShareAndProof>, ElGamalPK> getPK = entry -> bb.retrievePKShare(entry.getIndex());
 
-        // Build a chain of completable futures, that verify the messages as they are posted.
-        // It sends the growing list down the cain
-        // When the list is k+1, It completes validPfrPhaseTwoFuture
-        CompletableFuture<PfrPhase<DecryptionShareAndProof>> futureChain = CompletableFuture.completedFuture(new PfrPhase<>(tallierCount));
-        for (int i = 0; i < tallierCount; i++) {
+        // Delegate
+        return retrieveValidThreshold(bb.retrievePfrPhaseTwo(), verify, getPK);
 
-            // When then ext entry is available
-            CompletableFuture<Entry<DecryptionShareAndProof>> future = pfrPhaseTwo.getFuture(i);
-
-            // Continue chain, by verifying the entry and adding to Pfr
-            futureChain = futureChain.thenCombine(future,  (PfrPhase<DecryptionShareAndProof> chainPfr, Entry<DecryptionShareAndProof> entry) -> {
-
-                // Verify
-                ElGamalPK pk_j = bb.retrievePKShare(entry.getIndex());
-                boolean isValid = SigmaCommonDistributed.verifyDecryption(ciphertexts, entry.getValues(), pk_j, bb.retrieveKappa());
-
-                // Grow list if valid
-                if(isValid) {
-                    chainPfr.add(entry);
-                }
-
-                // When done, complete and stop the chain of futures
-                if(chainPfr.size() == getThreshold()){
-                    resultFuture.complete(chainPfr);
-                    throw new CancellationException("pfr has reached threshold size");
-                }
-
-                return chainPfr;
-            });
-        }
-
-        return resultFuture;
     }
 
 }
