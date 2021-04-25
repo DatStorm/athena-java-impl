@@ -56,7 +56,15 @@ public class VerifyingBulletinBoardV2_0 {
         return commitmentAndProofs.get(0).commitment;
     }
 
-     public static <T> CompletableFuture<PfrPhase<T>> retrieveValidThreshold(BulletinBoardV2_0 bb, PfrPhase<T> pfrPhase, BiFunction<Entry<T>, ElGamalPK, Boolean> verify, Function<Entry<T>, ElGamalPK> getPK) {
+    // Generic function containing the common code in the retrieveValidThreshold... functions/**
+
+    /**
+     * @param pfrPhase the bulletin board pfr to retrieve from
+     * @param verifyEntry a method that verifies the entries in the pfr
+     * @param getPK a method that returns the pk to be used in the verification above
+     * @return A fytyre that is completed with threshold valid entries, when these are available on the BB
+     */
+    private static <T> CompletableFuture<PfrPhase<T>> retrieveValidThreshold(BulletinBoardV2_0 bb, PfrPhase<T> pfrPhase, BiFunction<Entry<T>, ElGamalPK, Boolean> verifyEntry, Function<Entry<T>, ElGamalPK> getPK) {
         int tallierCount = bb.retrieveTallierCount();
 
         CompletableFuture<PfrPhase<T>> resultFuture = new CompletableFuture<>();
@@ -76,7 +84,7 @@ public class VerifyingBulletinBoardV2_0 {
 
                 // Verify
                 ElGamalPK pk = getPK.apply(entry);
-                boolean isValid = verify.apply(entry, pk);
+                boolean isValid = verifyEntry.apply(entry, pk);
 
                 // Grow list if valid
                 if(isValid) {
@@ -98,26 +106,27 @@ public class VerifyingBulletinBoardV2_0 {
 
     public static CompletableFuture<PfrPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfrPhaseOne(BulletinBoardV2_0 bb) {
         // How should entries in the pfr be verified?
-        BiFunction<Entry<CombinedCiphertextAndProof>, ElGamalPK, Boolean> verify =
+        BiFunction<Entry<CombinedCiphertextAndProof>, ElGamalPK, Boolean> verifyEntry =
                 (entry, pk) -> SigmaCommonDistributed.verifyHomoComb(bb.ballots, entry.getValues(), pk, bb.retrieveKappa());
 
+        // Use the global pk for all entries
         ElGamalPK pk = bb.retrievePK();
-        Function<Entry<CombinedCiphertextAndProof>, ElGamalPK> getPK = entry -> pk;
 
         // Delegate
         PfrPhase<CombinedCiphertextAndProof> pfrPhaseOne = bb.retrievePfrPhaseOne();
-        return retrieveValidThreshold(bb, pfrPhaseOne, verify, getPK);
+        return retrieveValidThreshold(bb, pfrPhaseOne, verifyEntry, entry -> pk);
     }
 
     public static CompletableFuture<PfrPhase<DecryptionShareAndProof>> retrieveValidThresholdPfrPhaseTwo(BulletinBoardV2_0 bb, List<Ciphertext> ciphertexts) {
         // How should entries in the pfr be verified?
-        BiFunction<Entry<DecryptionShareAndProof>, ElGamalPK, Boolean> verify =
+        BiFunction<Entry<DecryptionShareAndProof>, ElGamalPK, Boolean> verifyEntry =
                 (entry, pk) -> SigmaCommonDistributed.verifyDecryption(ciphertexts, entry.getValues(), pk, bb.retrieveKappa());
 
+        // Use the entries corresponding pk share
         Function<Entry<DecryptionShareAndProof>, ElGamalPK> getPK = entry -> bb.retrievePKShare(entry.getIndex());
 
         // Delegate
-        return retrieveValidThreshold(bb, bb.retrievePfrPhaseTwo(), verify, getPK);
+        return retrieveValidThreshold(bb, bb.retrievePfrPhaseTwo(), verifyEntry, getPK);
 
     }
 
