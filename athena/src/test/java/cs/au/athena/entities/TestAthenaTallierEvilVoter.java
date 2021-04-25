@@ -36,7 +36,7 @@ public class TestAthenaTallierEvilVoter {
     }
 
     @Test
-    public void TestMaliciousTallier() {
+    public void TestEvilVoter() {
         int nc = 10;
 
         // Votes cast

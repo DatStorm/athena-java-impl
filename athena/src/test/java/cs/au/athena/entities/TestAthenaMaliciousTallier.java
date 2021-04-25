@@ -44,7 +44,6 @@ public class TestAthenaMaliciousTallier {
         AthenaFactory athenaFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         Athena athena = new AthenaImpl(athenaFactory);
         BulletinBoardV2_0 bb = athenaFactory.getBulletinBoard();
-//        BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
 
         // Setup the election
         Tallier tallier = new Tallier(athena, bb, kappa, nc);

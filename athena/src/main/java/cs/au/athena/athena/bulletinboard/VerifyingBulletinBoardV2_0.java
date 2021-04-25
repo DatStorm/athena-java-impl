@@ -7,7 +7,12 @@ import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Group;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +24,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class VerifyingBulletinBoardV2_0 {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+    private static final Marker MARKER = MarkerFactory.getMarker("VBB: ");
+
     private final BulletinBoardV2_0 bb;
     private ElGamalPK pk;
     private Map<Integer, ElGamalPK> pkShares;
@@ -53,7 +61,7 @@ public class VerifyingBulletinBoardV2_0 {
         return this.bb.retrieveK() + 1;
     }
 
-    public ElGamalPK retrieveAndVerifyPK() {
+    public ElGamalPK retrieveAndVerifyPK() { // TODO: FIXME: TODO: FIXME: this causes an error
         if(this.pk != null) {
             return this.pk;
         }
@@ -75,7 +83,9 @@ public class VerifyingBulletinBoardV2_0 {
             boolean isValid = SigmaCommonDistributed.verifyPK(commitmentAndProofs, group, kappa);
 
             if (!isValid) {
-                throw new RuntimeException(String.format("Malicious tallier detected. Proof of Tallier T%d was invalid", tallierIndex));
+                logger.info(MARKER, String.format("T%d: Verifying: %s", tallierIndex, commitmentAndProofs.toString()));
+
+                throw new RuntimeException(String.format("Malicious tallier detected. Proof by Tallier T%d was invalid in the PK generation", tallierIndex));
             }
             BigInteger commitment = getZeroCommitment(commitmentAndProofs);
             h = h.multiply(commitment).mod(group.p);

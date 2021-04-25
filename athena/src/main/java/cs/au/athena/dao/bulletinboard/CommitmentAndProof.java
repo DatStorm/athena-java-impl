@@ -12,4 +12,11 @@ public class CommitmentAndProof {
         this.commitment = commitment;
         this.proof = proof;
     }
+
+    @Override
+    public String toString() {
+        return "Com&Proof{" + "com: " + commitment.toString().substring(0,5) + ", proof: " + proof + "}";
+
+    }
+
 }
