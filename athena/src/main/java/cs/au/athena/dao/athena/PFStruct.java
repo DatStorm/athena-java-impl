@@ -10,8 +10,8 @@ import java.util.List;
 public class PFStruct {
     public final List<PFRStruct> pfr;
     public final List<MixBallot> mixBallotList;
-    public final List<PFDStruct> pfd;
     public final MixProof mixProof;
+    public final List<PFDStruct> pfd;
 
 
     public PFStruct(List<PFRStruct> pfr, List<MixBallot> mixBallotList, List<PFDStruct> pfd, MixProof mixProof) {

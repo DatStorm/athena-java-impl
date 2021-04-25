@@ -31,17 +31,9 @@ public class Verifier {
 
 
     public void init() {
-        // Fetch nc, pk, pf=(pfr, mixBallots, pfd), ballots and mixBallots from bulletin board
-//        pk_vector = bb.retrievePK_vector();
     }
 
     public boolean verifyElection(){
-//        if (pk_vector == null){
-//            System.err.println("Verifier.verifyElection => pk_vector is null! Please run Verifier.init()");
-//            return false;
-//        }
-
-        boolean success = athena.Verify(kappa);
-        return success;
+        return athena.Verify(kappa);
     }
 }

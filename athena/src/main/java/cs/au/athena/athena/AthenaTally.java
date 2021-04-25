@@ -2,7 +2,6 @@ package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
-import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.elgamal.*;
@@ -17,9 +16,6 @@ import cs.au.athena.dao.athena.*;
 import cs.au.athena.dao.bulletproof.BulletproofExtensionStatement;
 import cs.au.athena.dao.bulletproof.BulletproofStatement;
 import cs.au.athena.dao.mixnet.MixBallot;
-import cs.au.athena.dao.mixnet.MixProof;
-import cs.au.athena.dao.sigma3.Sigma3Proof;
-import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.sigma.bulletproof.Bulletproof;
 
 import java.lang.invoke.MethodHandles;
@@ -35,6 +31,7 @@ public class AthenaTally {
     private Random random;
     private Elgamal elgamal;
     private BulletinBoardV2_0 bb;
+    private VerifyingBulletinBoardV2_0 vbb;
     private AthenaDistributed distributed;
     private int tallierIndex;
     private int kappa;
@@ -43,12 +40,11 @@ public class AthenaTally {
     private AthenaTally() {}
 
     public Map<Integer, Integer> Tally(int tallierIndex, ElGamalSK skShare, int nc) {
-        ElGamalPK pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
+        ElGamalPK pk = vbb.retrieveAndVerifyPK();
 
         /* ********
          * Step 1: Remove invalid ballots
          *********/
-
         logger.info(MARKER, "Step 1. Remove invalid ballots");
         List<Ballot> validBallots = removeInvalidBallots(pk, this.bb);
         if (validBallots.isEmpty()) {
@@ -60,30 +56,21 @@ public class AthenaTally {
         /* ********
          * Step 2: Mix final votes
          *********/
-
         //Filter ReVotes and pfr proof of same nonce
         logger.info(MARKER, "Step 2a. Filter ReVotes");
         Map<MapAKey, MapAValue> A = filterReVotes(tallierIndex, validBallots, skShare);
 
         // Perform random mix
         logger.info(MARKER, "Step 2b.Mixnet");
-        MixedBallotsAndProof mixPair = mixnet(A, pk);
-        List<MixBallot> mixedBallots = mixPair.mixedBallots;
-        MixProof mixProof = mixPair.mixProof;
+        List<MixBallot> mixedBallots = mixnet(A, pk);
 
 
         /* ********
          * Step 3: Reveal eligible votes
          *********/
-
         logger.info(MARKER, "step 3. Reveal authorised votes");
         // Tally eligible votes and prove computations
-        Pair<Map<Integer, Integer>, List<PFDStruct>> revealPair = revealAuthorisedVotes(skShare, mixedBallots, nc, kappa);
-        Map<Integer, Integer> officialTally = revealPair.getLeft();
-
-        if (officialTally == null) {
-            System.out.println("AthenaTally.Tally -----------------> officialTally");
-        }
+        Map<Integer, Integer> officialTally = revealAuthorisedVotes(mixedBallots, skShare, kappa);
 
         // Post tallyboard
         bb.publishTallyOfVotes(officialTally);
@@ -115,14 +102,11 @@ public class AthenaTally {
             //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)
             UVector uVector = new UVector(publicCredential, encryptedNegatedPrivateCredential, ballot.getEncryptedVote(), BigInteger.valueOf(ballot.getCounter()));
 
-//            logger.info(ATHENA_TALLY_MARKER, "Verifying Sigma2Pedersen 1");
             boolean verify_encryptedNegatedPrivateCredential = Sigma2Pedersen.verifyCipher(
                     encryptedNegatedPrivateCredential,
                     ballot.proofNegatedPrivateCredential,
                     uVector,
                     pk);
-//            logger.info(ATHENA_TALLY_MARKER, "Finished Sigma2Pedersen 1");
-
 
             // remove invalid ballots.
             if (!verify_encryptedNegatedPrivateCredential) {
@@ -149,15 +133,11 @@ public class AthenaTally {
                             .build()
             );
 
-
-//            logger.info(ATHENA_TALLY_MARKER, "Verifying bulletproof 2");
             boolean verify_encVote = Bulletproof
                     .verifyStatementArbitraryRange(
                             stmnt_2,
                             ballot.getProofVotePair()
                     );
-//            logger.info(ATHENA_TALLY_MARKER, "Finished bulletproof 2");
-
 
             // remove invalid ballots.
             if (!verify_encVote) {
@@ -216,75 +196,47 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Mix ballots
-    private MixedBallotsAndProof mixnet(Map<MapAKey, MapAValue> A, ElGamalPK pk) {
+    private List<MixBallot> mixnet(Map<MapAKey, MapAValue> A, ElGamalPK pk) {
         // Cast to mix ballot list
         List<MixBallot> ballots = A.values().stream()
                 .map(MapAValue::toMixBallot)
                 .collect(Collectors.toList());
 
-        return this.distributed.proveMix(ballots, pk, kappa);
+        return this.distributed.performMixnet(tallierIndex, ballots, pk, kappa);
 
     }
 
     // Step 3 of tally. Nonce and decrypt ballots, and keep a tally of the eligible votes.
-    private Pair<Map<Integer, Integer>, List<PFDStruct>> revealAuthorisedVotes(ElGamalSK sk, List<MixBallot> mixedBallots, int nc, int kappa) {
+    private Map<Integer, Integer> revealAuthorisedVotes(List<MixBallot> mixedBallots, ElGamalSK sk, int kappa) {
+        int nc = bb.retrieveNumberOfCandidates();
+
+        // Init tally map
         Map<Integer, Integer> officialTally = new HashMap<>();
         for (int candidates = 0; candidates < nc; candidates++) {
             officialTally.put(candidates, 0);
         }
-        List<PFDStruct> pfd = new ArrayList<>(mixedBallots.size());
-        BigInteger p = sk.pk.group.p;
 
-        for (MixBallot mixBallot : mixedBallots) {
-            Ciphertext combinedCredential = mixBallot.getCombinedCredential();
-            Ciphertext encryptedVote = mixBallot.getEncryptedVote();
+        List<Ciphertext> combinedCredentials = mixedBallots.stream().map(MixBallot::getCombinedCredential).collect(Collectors.toList());
+        List<Ciphertext> encryptedVotes = mixedBallots.stream().map(MixBallot::getEncryptedVote).collect(Collectors.toList());
 
-            // Apply a nonce to the combinedCredential
-            BigInteger nonce = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
-            Ciphertext c_prime = AthenaCommon.homoCombination(combinedCredential, nonce, sk.pk.group);
+        // Collaborate with other talliers, to apply a nonce to all ciphertexts
+        List<Ciphertext> combinedCredentialsWithNonce = this.distributed.performPfdPhaseOneHomoComb(tallierIndex, combinedCredentials, random, sk, kappa);
 
-            // Prove that c' is a homomorphic combination of combinedCredential
-            Sigma4Proof combinationProof = this.distributed.proveCombination(List.of(c_prime),
-                    List.of(combinedCredential),
-                    nonce,
-                    sk,
-                    kappa);
+        List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
 
-            // Decrypt nonced combinedCredential
-            BigInteger m = Elgamal.decrypt(c_prime, sk);
+        List<Integer> votes = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
 
-            // Prove that msg m is the correct decryption of c'
-            Sigma3Proof combinationDecryptionProof = this.distributed.proveDecryption(c_prime, m, sk, kappa);
+        // Tally votes
+        for(Integer vote : votes) {
+            if (vote == null) continue;
 
-            // Check validity of private credential. (decrypted combinedCredential = 1)
-            if (m.equals(BigInteger.ONE)) {
-                // Decrypt vote
-                BigInteger voteElement = Elgamal.decrypt(encryptedVote, sk);
-                Integer vote = elgamal.lookup(voteElement);
+            assert officialTally.containsKey(vote); // All votes have performed rangeproof for their vote. We don't need to check
 
-                // Tally the vote
-                if (officialTally.containsKey(vote)) { // Check that map already has some votes for that candidate.
-                    Integer totalVotes = officialTally.get(vote);
-                    officialTally.put(vote, totalVotes + 1);
-                } else { // First vote for the given candidate
-                    officialTally.put(vote, 1);
-                }
-
-                // Prove correct decryption of vote
-                Sigma3Proof voteDecryptionProof = this.distributed.proveDecryption(encryptedVote, voteElement, sk, kappa);
-
-                // Store proofs
-                PFDStruct value = PFDStruct.newValid(c_prime, voteElement, combinationProof, combinationDecryptionProof, voteDecryptionProof);
-                pfd.add(value);
-
-            } else { // m != 1
-                System.out.println("AthenaTally.revealEligibleVotes CASE: M != 1  ");
-                PFDStruct value = PFDStruct.newInvalid(c_prime, m, combinationProof, combinationDecryptionProof);
-                pfd.add(value);
-            }
+            Integer totalVotes = officialTally.get(vote);
+            officialTally.put(vote, totalVotes + 1);
         }
 
-        return Pair.of(officialTally, pfd);
+        return officialTally;
     }
 
 
@@ -334,6 +286,7 @@ public class AthenaTally {
             athenaTally.distributed = this.athenaFactory.getDistributedAthena();
             athenaTally.random = this.athenaFactory.getRandom();
             athenaTally.bb = this.athenaFactory.getBulletinBoard();
+            athenaTally.vbb = new VerifyingBulletinBoardV2_0(athenaTally.bb);
             athenaTally.kappa = kappa;
             athenaTally.tallierIndex = tallierIndex;
 

@@ -18,21 +18,21 @@ import java.util.List;
 
 public class SigmaCommonDistributed {
 
-    public static boolean verifyHomoComb(List<Ballot> ballots, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof, ElGamalPK pk, int kappa) {
-        int ell = ballots.size();
+    public static boolean verifyHomoComb(List<Ciphertext> ciphertexts, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof, ElGamalPK pk, int kappa) {
+        int ell = ciphertexts.size();
         Sigma4 sigma4 = new Sigma4();
 
         // First iteration
         CombinedCiphertextAndProof previousObj = listOfCombinedCiphertextAndProof.get(0);
-        Ballot previousBallot = ballots.get(0);
+        Ciphertext previousCiphertext = ciphertexts.get(0);
 
         for (int i = 1; i < ell; i++) {
             CombinedCiphertextAndProof currentObj = listOfCombinedCiphertextAndProof.get(i);
-            Ballot currentBallot = ballots.get(i);
+            Ciphertext currentCiphertext = ciphertexts.get(i);
 
             // Make proof statement
             List<Ciphertext> listCombinedCiphertext = Arrays.asList(previousObj.combinedCiphertext, currentObj.combinedCiphertext);
-            List<Ciphertext> listCiphertexts = Arrays.asList(previousBallot.getEncryptedNegatedPrivateCredential(), currentBallot.getEncryptedNegatedPrivateCredential());
+            List<Ciphertext> listCiphertexts = Arrays.asList(previousCiphertext, currentCiphertext);
 
             // Verify proof
             boolean isValid = sigma4.verifyCombination(pk, listCombinedCiphertext, listCiphertexts, currentObj.proof, kappa);

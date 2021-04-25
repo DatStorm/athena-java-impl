@@ -6,8 +6,8 @@ import cs.au.athena.dao.athena.ElectoralRoll;
 import cs.au.athena.dao.athena.PFStruct;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.bulletinboard.*;
+import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Group;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -26,7 +26,7 @@ public class BulletinBoardV2_0 {
     private final int mb;
     private final int mc;
 
-    List<Ballot> ballots;
+    private final List<Ballot> ballots;
 
     private final Map<Integer, CompletableFuture<List<CommitmentAndProof>>> tallierCommitmentsAndProofs;
     private final Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
@@ -35,10 +35,14 @@ public class BulletinBoardV2_0 {
 
 
     // Activated when a tallier posts homocomb or decryption shares
-    private PfrPhase<CombinedCiphertextAndProof> pfrPhasePhaseOne;
-    private PfrPhase<DecryptionShareAndProof> pfrPhasePhaseTwo;
+    private final PfPhase<CombinedCiphertextAndProof> pfrPhasePhaseOne;
+    private final PfPhase<DecryptionShareAndProof> pfrPhasePhaseTwo;
+    private final PfPhase<CombinedCiphertextAndProof> pfdPhasePhaseOne;
+    private final PfPhase<DecryptionShareAndProof> pfdPhasePhaseTwo;
+    private final PfPhase<DecryptionShareAndProof> pfdPhasePhaseThree;
+    private final Map<Integer, CompletableFuture<MixedBallotsAndProof>> mixedBallotAndProofs;
 
-//    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
+    //    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
     private final int kappa;
     private Map<Integer, Integer> tally;
     private int nc;
@@ -63,9 +67,17 @@ public class BulletinBoardV2_0 {
         this.tallierCount = tallierCount;
         this.k = (tallierCount-1)/2; // It must satisfy k < n/2, e.g. 0 < 2/2, 1 < 3/2,  1 < 4/2,  2 < 5/2,  2 < 6/2
         this.electoralRoll = new ElectoralRoll();
+        this.ballots = new ArrayList<>();
 
         this.mc = CONSTANTS.MC;
         this.mb = CONSTANTS.MB;
+
+        this.pfrPhasePhaseOne = new PfPhase<>(tallierCount);
+        this.pfrPhasePhaseTwo = new PfPhase<>(tallierCount);
+        this.pfdPhasePhaseOne = new PfPhase<>(tallierCount);
+        this.pfdPhasePhaseTwo = new PfPhase<>(tallierCount);
+        this.pfdPhasePhaseThree = new PfPhase<>(tallierCount);
+        this.mixedBallotAndProofs = new HashMap<>(tallierCount);
 
         this.init(tallierCount);
     }
@@ -73,13 +85,12 @@ public class BulletinBoardV2_0 {
     // Set preexisting values, and populate maps with Futures
     private void init(int tallierCount) {
 
-        this.pfrPhasePhaseOne = new PfrPhase<>(tallierCount);
-        this.pfrPhasePhaseTwo = new PfrPhase<>(tallierCount);
 
         // Fill with CompletableFutures
         for(int i = 1; i <= tallierCount; i++) {
             tallierCommitmentsAndProofs.put(i, new CompletableFuture<>());
             mapOfIndividualPK_vector.put(i, new CompletableFuture<>());
+            mixedBallotAndProofs.put(i, new CompletableFuture<>());
 
             for(int j = 1; j <= tallierCount; j++) {
                 if(i == j) continue;
@@ -116,49 +127,8 @@ public class BulletinBoardV2_0 {
     public List<BigInteger> retrieve_G_VectorVote() { return this.g_vector_vote; }
     public List<BigInteger> retrieve_H_VectorVote() { return this.h_vector_vote; }
     public Map<Integer, Integer> retrieveTallyOfVotes() { return this.tally; }
-    public PK_Vector retrievePK_vector() { return null; } // TODO: info needed to verify the proofs ProveKey
 
-    // Compute and return the entire public key from the committed polynomials
-    @Deprecated // Use VerifyingBulletingBoard
-    public ElGamalPK retrievePK() {
-        // Have all commitments been published?
-        if (tallierCommitmentsAndProofs.keySet().size() != tallierCount) {
-            // Not ready
-        }
 
-        BigInteger publicKey = BigInteger.ONE;
-
-        // Iterate all commitments
-        for (int i = 0; i < tallierCommitmentsAndProofs.keySet().size(); i++) {
-            List<CommitmentAndProof> commitmentAndProofs = tallierCommitmentsAndProofs.get(i).join();
-            CommitmentAndProof commitmentAndProof = commitmentAndProofs.get(0);
-
-            publicKey = publicKey.multiply(commitmentAndProof.commitment).mod(group.p);
-        }
-
-        // group, h
-        return new ElGamalPK(publicKey, group);
-    }
-
-    // Compute and return the public key share h_j=g^P(j) from the committed polynomials
-    public ElGamalPK retrievePKShare(int j) {
-        BigInteger publicKeyShare = BigInteger.ONE;
-
-        // Iterate all commitments
-        for (int i = 0; i < tallierCommitmentsAndProofs.keySet().size(); i++) {
-            List<CommitmentAndProof> commitmentAndProofs = tallierCommitmentsAndProofs.get(i).join();
-
-            for (int ell = 0; ell < this.k; ell++) {
-                BigInteger j_pow_ell = BigInteger.valueOf(j).pow(ell);
-                BigInteger commitment = commitmentAndProofs.get(ell).commitment;
-
-                publicKeyShare = publicKeyShare.multiply(commitment.modPow(j_pow_ell, group.p)).mod(group.p);
-            }
-        }
-
-        // group, h_j
-        return new ElGamalPK(publicKeyShare, group);
-    }
 
     // Post commitment to P(X)
     public void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<CommitmentAndProof> commitmentAndProof) {
@@ -181,6 +151,8 @@ public class BulletinBoardV2_0 {
 
     public void publishBallot(Ballot ballot) { this.ballots.add(ballot); }
 
+    public List<Ballot> retrieveBallots() { return this.ballots; }
+
     public void publishEncSubShare(int i, int j, Ciphertext subShareToTallier_j) {
         Pair<Integer, Integer> key = Pair.of(i, j);
         encryptedSubShares.get(key).complete(subShareToTallier_j);
@@ -195,6 +167,20 @@ public class BulletinBoardV2_0 {
         return tallierCommitmentsAndProofs.get(j);
     }
 
+    public Map<Integer, CompletableFuture<List<CommitmentAndProof>>> retrieveCommitmentsAndProofs() {
+        return tallierCommitmentsAndProofs;
+    }
+
+    public void publishTallyOfVotes(Map<Integer, Integer> tally) {
+        this.tally = tally;
+    }
+
+
+
+
+
+
+
 
     // Returns the index in the pfrPhaseOne
     public synchronized void publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> values) {
@@ -205,7 +191,7 @@ public class BulletinBoardV2_0 {
         pfrPhasePhaseOne.add(new Entry<>(tallierIndex, values));
     }
 
-    public PfrPhase<CombinedCiphertextAndProof> retrievePfrPhaseOne() {
+    public PfPhase<CombinedCiphertextAndProof> retrievePfrPhaseOne() {
         return this.pfrPhasePhaseOne;
     }
 
@@ -216,22 +202,76 @@ public class BulletinBoardV2_0 {
         }
 
         // Set values in pfr
-        pfrPhasePhaseTwo.add(new Entry<DecryptionShareAndProof>(tallierIndex, values));
+        pfrPhasePhaseTwo.add(new Entry<>(tallierIndex, values));
     }
 
-    public PfrPhase<DecryptionShareAndProof> retrievePfrPhaseTwo() {
+    public PfPhase<DecryptionShareAndProof> retrievePfrPhaseTwo() {
         return this.pfrPhasePhaseTwo;
     }
 
 
-    public void publishTallyOfVotes(Map<Integer, Integer> tally) {
-        this.tally = tally;
+    public void publishPfdPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> values) {
+        if(values.size() == ballots.size()) {
+            throw new IllegalArgumentException("list must be the same length as ballots");
+        }
+
+        pfdPhasePhaseOne.add(new Entry<>(tallierIndex, values));
     }
+
+    public synchronized void publishPfdPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> values) {
+        if(values.size() == ballots.size()) {
+            throw new IllegalArgumentException("list must be the same length as ballots");
+        }
+
+        pfdPhasePhaseTwo.add(new Entry<>(tallierIndex, values));
+    }
+
+    public synchronized void publishPfdPhaseThreeEntry(int tallierIndex, List<DecryptionShareAndProof> values) {
+        if(values.size() == ballots.size()) {
+            throw new IllegalArgumentException("list must be the same length as ballots");
+        }
+
+        pfdPhasePhaseThree.add(new Entry<>(tallierIndex, values));
+    }
+
+    public void publishMixedBallotsAndProof(int tallierIndex, MixedBallotsAndProof mixedBallotsAndProof) {
+        this.mixedBallotAndProofs.get(tallierIndex).complete(mixedBallotsAndProof);
+    }
+
+
+
+
+
+
+
+    public PfPhase<CombinedCiphertextAndProof> retrievePfdPhaseOne() {
+        throw new UnsupportedOperationException();
+    }
+
+    public PfPhase<DecryptionShareAndProof> retrievePfdPhaseTwo() {
+        throw new UnsupportedOperationException();
+
+    }
+    public PfPhase<DecryptionShareAndProof> retrievePfdPhaseThree() {
+        throw new UnsupportedOperationException();
+
+    }
+
+    public Map<Integer, CompletableFuture<MixedBallotsAndProof>> retrieveMixedBallotAndProofs() {
+        return this.mixedBallotAndProofs;
+    }
+
+    // Returns the result of the final mix
+    public List<MixBallot> retrieveMixedBallots() {
+        return this.mixedBallotAndProofs.get(this.retrieveTallierCount()).join().mixedBallots;
+    }
+
 
     @Deprecated
     public PFStruct retrievePF() {
         throw new UnsupportedOperationException();
     }
+
 
 
     /***************************************************

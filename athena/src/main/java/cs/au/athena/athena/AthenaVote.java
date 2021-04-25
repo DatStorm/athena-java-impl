@@ -1,7 +1,6 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.UTIL;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
@@ -15,7 +14,6 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.CredentialTuple;
-import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.athena.UVector;
 import cs.au.athena.dao.bulletproof.BulletproofExtensionStatement;
 import cs.au.athena.dao.bulletproof.BulletproofProof;
@@ -41,6 +39,7 @@ public class AthenaVote {
     private int kappa;
     private AthenaDistributed distributed;
     private BulletinBoardV2_0 bb;
+    private VerifyingBulletinBoardV2_0 vbb;
     private Sigma2Pedersen sigma2Pedersen;
 
     private AthenaVote() {
@@ -53,7 +52,7 @@ public class AthenaVote {
             int nc) {
         logger.info(MARKER, "Vote[Started]");
 
-        ElGamalPK pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
+        ElGamalPK pk = vbb.retrieveAndVerifyPK();
 
         boolean vote_in_range = vote >= 0 && vote < nc;
         boolean not_in_message_space = BigInteger.valueOf(nc).compareTo(pk.group.q) >= 0; // Should be in Z_q

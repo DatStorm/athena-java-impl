@@ -2,6 +2,7 @@ package cs.au.athena.factory;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
@@ -19,6 +20,7 @@ public class MainAthenaFactory implements AthenaFactory {
     private final AthenaDistributed distributed;
     private final int tallierCount;
     private int kappa;
+    private BulletinBoardV2_0 bb;
 
 
     public MainAthenaFactory(int tallierCount, int kappa) {
@@ -26,10 +28,7 @@ public class MainAthenaFactory implements AthenaFactory {
         this.kappa = kappa;
         this.random = new Random(CONSTANTS.RANDOM_SEED);
         this.distributed = new AthenaDistributed(this);
-
-
-
-
+        this.bb = BulletinBoardV2_0.getInstance(this.tallierCount, this.kappa);
     }
 
     @Override
@@ -66,9 +65,14 @@ public class MainAthenaFactory implements AthenaFactory {
     public Random getRandom() { return this.random; }
 
     @Override
-    public BulletinBoardV2_0 getBulletinBoard() {
-        return BulletinBoardV2_0.getInstance(this.tallierCount, this.kappa);
+    public BulletinBoardV2_0 getBulletinBoard() { return this.bb; }
+
+
+    @Override
+    public VerifyingBulletinBoardV2_0 getVerifyingBulletinBoard() {
+        return new VerifyingBulletinBoardV2_0(this.bb);
     }
+
 
     @Override
     public  AthenaDistributed getDistributedAthena() {

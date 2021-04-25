@@ -31,15 +31,10 @@ public class Registrar {
 
     // Fetch the pk and proof ProveKey
     public void init() {
-//        pkVector = bb.retrievePK_vector();
     }
 
     // Generate list of (public credential, private credential) for certain number of voters.
     public boolean generateCredentials(int numVoters) {
-//        if (pkVector == null) {
-//            System.err.println("Registrar.generateCredentials => pkVector is null! Please run Registrar.init()");
-//            return false;
-//        }
         credentialList = new ArrayList<>();
 
         // Run Register(numVoters)

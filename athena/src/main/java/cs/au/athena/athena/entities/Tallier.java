@@ -38,7 +38,6 @@ public class Tallier{
     public void init(int tallierIndex) {
         // Run Setup()
         sk = athena.Setup(tallierIndex, this.nc, this.kappa);
-        pk = this.bb.retrievePK_vector().pk;
     }
 
     public void tallyVotes(int tallierIndex) {

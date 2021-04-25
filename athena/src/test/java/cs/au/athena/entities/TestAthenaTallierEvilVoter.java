@@ -2,6 +2,7 @@ package cs.au.athena.entities;
 
 
 import cs.au.athena.UTIL;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -49,8 +50,8 @@ public class TestAthenaTallierEvilVoter {
 
         AthenaFactory athenaFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         Athena athena = new AthenaImpl(athenaFactory);
-//        BulletinBoard bb = athenaFactory.getBulletinBoard();
-        BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+        BulletinBoardV2_0 bb = athenaFactory.getBulletinBoard();
+//        BulletinBoard bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
 
         // Setup the election
         Tallier tallier = new Tallier(athena, bb, kappa, nc);

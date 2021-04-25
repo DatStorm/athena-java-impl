@@ -6,11 +6,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 // Keeps a list of CompletableFuture<Entry>
-public class PfrPhase<T> {
+public class PfPhase<T> {
     List<CompletableFuture<Entry<T>>> entries;
     int nextIncompleteEntry = 0;
 
-    public PfrPhase(int size) {
+    public PfPhase(int size) {
         entries =  new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             entries.add(new CompletableFuture<>());

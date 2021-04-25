@@ -1,7 +1,6 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
@@ -24,6 +23,7 @@ import java.util.stream.IntStream;
 public class AthenaVerify {
     private AthenaDistributed distributed;
     private BulletinBoardV2_0 bb;
+    private VerifyingBulletinBoardV2_0 vbb;
     private Integer kappa;
 
     private AthenaVerify() {
@@ -43,7 +43,7 @@ public class AthenaVerify {
         }
 
         // Retrieve and verify ElGamal PK produced form the polynomial of the talliers
-        ElGamalPK pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
+        ElGamalPK pk = vbb.retrieveAndVerifyPK();
 
         // Check that the number of candidates nc in the given election does not exceed the maximum number mc.
         int mc = bb.retrieveMaxCandidates();

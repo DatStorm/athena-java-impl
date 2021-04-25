@@ -1,7 +1,6 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
-import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
@@ -12,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import cs.au.athena.dao.athena.CredentialTuple;
-import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.athena.RegisterStruct;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.Elgamal;
@@ -26,6 +24,7 @@ public class AthenaRegister {
     private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-REGISTER");
 
     private BulletinBoardV2_0 bb;
+    private VerifyingBulletinBoardV2_0 vbb;
     private Random random;
     private Elgamal elGamal;
     private int kappa;
@@ -36,11 +35,11 @@ public class AthenaRegister {
     }
 
     public RegisterStruct Register() {
-        ElGamalPK pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
+        ElGamalPK pk = this.vbb.retrieveAndVerifyPK();
         BigInteger q = pk.group.q;
 
         //Generate nonce. aka private credential
-        BigInteger privateCredential = GENERATOR.generateUniqueNonce(BigInteger.ZERO, q, this.random); // a nonce in [0,q]
+        BigInteger privateCredential = GENERATOR.generateUniqueNonce(BigInteger.ZERO, q, this.random);
 
         // Enc^{exp}_pk(d)
         Ciphertext publicCredential = this.elGamal.exponentialEncrypt(privateCredential, pk);
@@ -89,6 +88,7 @@ public class AthenaRegister {
             //Construct Object
             AthenaRegister athenaRegister = new AthenaRegister();
             athenaRegister.bb = this.factory.getBulletinBoard();
+            athenaRegister.vbb = this.factory.getVerifyingBulletinBoard();
             athenaRegister.distributed = this.factory.getDistributedAthena();
             athenaRegister.random = this.factory.getRandom();
             athenaRegister.elGamal = this.elgamal;
