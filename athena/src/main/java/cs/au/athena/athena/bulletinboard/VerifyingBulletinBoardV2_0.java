@@ -10,6 +10,8 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class VerifyingBulletinBoardV2_0 {
     BulletinBoardV2_0 bb;
@@ -57,6 +59,45 @@ public class VerifyingBulletinBoardV2_0 {
 
     private BigInteger getSecret(List<CommitmentAndProof> commitmentAndProofs){
         return commitmentAndProofs.get(0).commitment;
+    }
+
+     public <T> CompletableFuture<PfrPhase<T>> retrieveValidThreshold(PfrPhase<T> pfrPhase, Function<Entry<T>, Boolean> verify) {
+        int tallierCount = bb.retrieveTallierCount();
+
+        CompletableFuture<PfrPhase<T>> resultFuture = new CompletableFuture<>();
+        // Build a chain of completable futures, that verify the messages as they are posted.
+        // It sends the growing list down the cain
+        // When the list is k+1, It completes validPfrPhaseOneFuture
+
+        // Start chain with empty input
+        CompletableFuture<PfrPhase<T>> futureChain = CompletableFuture.completedFuture(new PfrPhase<>(this.getThreshold()));
+
+        for (int i = 0; i < tallierCount; i++) {
+            // When then ext entry is available
+            CompletableFuture<Entry<T>> future = pfrPhase.getFuture(i);
+
+            // Continue chain, by verifying the entry and adding to Pfr
+            futureChain = futureChain.thenCombine(future, (PfrPhase<T> chainPfrPhase, Entry<T> entry) -> {
+
+                // Verify
+                boolean isValid = verify.apply(entry);
+
+                // Grow list if valid
+                if(isValid) {
+                    chainPfrPhase.add(entry);
+                }
+
+                // When done, complete and stop the chain of futures
+                if(chainPfrPhase.size() == getThreshold()){
+                    resultFuture.complete(chainPfrPhase);
+                    throw new CancellationException("pfr has reached threshold size");
+                }
+
+                return chainPfrPhase;
+            });
+        }
+
+        return resultFuture;
     }
 
     public CompletableFuture<PfrPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfrPhaseOne() {

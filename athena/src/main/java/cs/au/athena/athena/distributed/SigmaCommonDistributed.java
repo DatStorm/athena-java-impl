@@ -18,8 +18,6 @@ import java.util.List;
 
 public class SigmaCommonDistributed {
 
-
-
     public static boolean verifyHomoComb(List<Ballot> ballots, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof, ElGamalPK pk, int kappa) {
         int ell = ballots.size();
         Sigma4 sigma4 = new Sigma4();
