@@ -38,11 +38,9 @@ public class AthenaDistributed {
 
     AthenaFactory athenaFactory;
     BulletinBoardV2_0 bb;
-    VerifyingBulletinBoardV2_0 vbb;
     public AthenaDistributed(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
         this.bb = this.athenaFactory.getBulletinBoard();
-        this.vbb = new VerifyingBulletinBoardV2_0(bb);
     }
 
 
@@ -300,7 +298,7 @@ public class AthenaDistributed {
         bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve threshold shares
-        PfrPhase<CombinedCiphertextAndProof> completedPfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne().join();
+        PfrPhase<CombinedCiphertextAndProof> completedPfrPhaseOne = VerifyingBulletinBoardV2_0.retrieveValidThresholdPfrPhaseOne(bb).join();
 
         // We want to create a list of cipertexts, where element i is the product of the k+1 ciphertexts
         // This is done by making a list of ciphertexts, and multiplying a talliers ciphertexts onto the corresponding entry
@@ -376,7 +374,7 @@ public class AthenaDistributed {
         bb.publishPfrPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
-        PfrPhase<DecryptionShareAndProof> completedPfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(ciphertexts).join();
+        PfrPhase<DecryptionShareAndProof> completedPfrPhaseTwo = VerifyingBulletinBoardV2_0.retrieveValidThresholdPfrPhaseTwo(bb, ciphertexts).join();
         assert completedPfrPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfrPhaseTwo.size());
 
         // Find the set of talliers in the pfr

@@ -24,7 +24,6 @@ import java.util.stream.IntStream;
 public class AthenaVerify {
     private AthenaDistributed distributed;
     private BulletinBoardV2_0 bb;
-    private VerifyingBulletinBoardV2_0 vbb;
     private Integer kappa;
 
     private AthenaVerify() {
@@ -44,7 +43,7 @@ public class AthenaVerify {
         }
 
         // Retrieve and verify ElGamal PK produced form the polynomial of the talliers
-        ElGamalPK pk = vbb.retrieveAndVerifyPK();
+        ElGamalPK pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
 
         // Check that the number of candidates nc in the given election does not exceed the maximum number mc.
         int mc = bb.retrieveMaxCandidates();

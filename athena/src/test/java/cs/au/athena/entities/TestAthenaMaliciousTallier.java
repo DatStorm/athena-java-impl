@@ -53,9 +53,9 @@ public class TestAthenaMaliciousTallier {
 
         // Create voters
         int numVoters = 3;
-        Voter voter1 = new Voter(athena, bb,kappa);
-        Voter voter2 = new Voter(athena, bb,kappa);
-        Voter voter3 = new Voter(athena, bb,kappa);
+        Voter voter1 = new Voter(athena, bb, kappa);
+        Voter voter2 = new Voter(athena, bb, kappa);
+        Voter voter3 = new Voter(athena, bb, kappa);
         voter1.init();
         voter2.init();
         voter3.init();

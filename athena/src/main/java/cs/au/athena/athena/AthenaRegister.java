@@ -26,7 +26,6 @@ public class AthenaRegister {
     private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-REGISTER");
 
     private BulletinBoardV2_0 bb;
-    private VerifyingBulletinBoardV2_0 vbb;
     private Random random;
     private Elgamal elGamal;
     private int kappa;
@@ -37,7 +36,7 @@ public class AthenaRegister {
     }
 
     public RegisterStruct Register() {
-        ElGamalPK pk = vbb.retrieveAndVerifyPK();
+        ElGamalPK pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
         BigInteger q = pk.group.q;
 
         //Generate nonce. aka private credential

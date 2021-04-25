@@ -22,7 +22,6 @@ public class Voter {
     private final Athena athena;
     private final BulletinBoardV2_0 bb;
     private final int kappa;
-    private final VerifyingBulletinBoardV2_0 vbb;
     private CredentialTuple credentialTuple;
     private int nc;
     private int counter;
@@ -31,14 +30,13 @@ public class Voter {
     public Voter(Athena athena, BulletinBoardV2_0 bulletinBoard, int kappa) {
         this.athena = athena;
         this.bb = bulletinBoard;
-        this.vbb = new VerifyingBulletinBoardV2_0(bulletinBoard);
         this.kappa = kappa;
     }
 
 
     public void init() {
         // Fetch pk, nc and g_vector and h_vector from bulletin board
-        pk = vbb.retrieveAndVerifyPK();
+        pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
         nc = bb.retrieveNumberOfCandidates();
         counter = 0; // TODO: use a timestamp perhaps
     }

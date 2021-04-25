@@ -42,7 +42,6 @@ public class AthenaVote {
     private AthenaDistributed distributed;
     private BulletinBoardV2_0 bb;
     private Sigma2Pedersen sigma2Pedersen;
-    private VerifyingBulletinBoardV2_0 vbb;
 
     private AthenaVote() {
     }
@@ -54,7 +53,7 @@ public class AthenaVote {
             int nc) {
         logger.info(MARKER, "Vote[Started]");
 
-        ElGamalPK pk = vbb.retrieveAndVerifyPK();
+        ElGamalPK pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
 
         boolean vote_in_range = vote >= 0 && vote < nc;
         boolean not_in_message_space = BigInteger.valueOf(nc).compareTo(pk.group.q) >= 0; // Should be in Z_q

@@ -14,18 +14,13 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class VerifyingBulletinBoardV2_0 {
-    BulletinBoardV2_0 bb;
 
-    public VerifyingBulletinBoardV2_0(BulletinBoardV2_0 bb) {
-        this.bb = bb;
-    }
-
-    private int getThreshold(){
+    private static int getThreshold(BulletinBoardV2_0 bb){
         return bb.retrieveK() + 1;
     }
 
 
-    public ElGamalPK retrieveAndVerifyPK() {
+    public static ElGamalPK retrieveAndVerifyPK(BulletinBoardV2_0 bb) {
         Group group = bb.retrieveGroup();
         int kappa = bb.retrieveKappa();
 
@@ -57,11 +52,11 @@ public class VerifyingBulletinBoardV2_0 {
 
     }
 
-    private BigInteger getSecret(List<CommitmentAndProof> commitmentAndProofs){
+    private static BigInteger getSecret(List<CommitmentAndProof> commitmentAndProofs){
         return commitmentAndProofs.get(0).commitment;
     }
 
-     public <T> CompletableFuture<PfrPhase<T>> retrieveValidThreshold(PfrPhase<T> pfrPhase, BiFunction<Entry<T>, ElGamalPK, Boolean> verify, Function<Entry<T>, ElGamalPK> getPK) {
+     public static <T> CompletableFuture<PfrPhase<T>> retrieveValidThreshold(BulletinBoardV2_0 bb, PfrPhase<T> pfrPhase, BiFunction<Entry<T>, ElGamalPK, Boolean> verify, Function<Entry<T>, ElGamalPK> getPK) {
         int tallierCount = bb.retrieveTallierCount();
 
         CompletableFuture<PfrPhase<T>> resultFuture = new CompletableFuture<>();
@@ -70,7 +65,7 @@ public class VerifyingBulletinBoardV2_0 {
         // When the list is k+1, It completes validPfrPhaseOneFuture
 
         // Start chain with empty input
-        CompletableFuture<PfrPhase<T>> futureChain = CompletableFuture.completedFuture(new PfrPhase<>(this.getThreshold()));
+        CompletableFuture<PfrPhase<T>> futureChain = CompletableFuture.completedFuture(new PfrPhase<>(getThreshold(bb)));
 
         for (int i = 0; i < tallierCount; i++) {
             // When then ext entry is available
@@ -89,7 +84,7 @@ public class VerifyingBulletinBoardV2_0 {
                 }
 
                 // When done, complete and stop the chain of futures
-                if(chainPfrPhase.size() == getThreshold()){
+                if(chainPfrPhase.size() == getThreshold(bb)){
                     resultFuture.complete(chainPfrPhase);
                     throw new CancellationException("pfr has reached threshold size");
                 }
@@ -101,7 +96,7 @@ public class VerifyingBulletinBoardV2_0 {
         return resultFuture;
     }
 
-    public CompletableFuture<PfrPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfrPhaseOne() {
+    public static CompletableFuture<PfrPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfrPhaseOne(BulletinBoardV2_0 bb) {
         // How should entries in the pfr be verified?
         BiFunction<Entry<CombinedCiphertextAndProof>, ElGamalPK, Boolean> verify =
                 (entry, pk) -> SigmaCommonDistributed.verifyHomoComb(bb.ballots, entry.getValues(), pk, bb.retrieveKappa());
@@ -110,10 +105,11 @@ public class VerifyingBulletinBoardV2_0 {
         Function<Entry<CombinedCiphertextAndProof>, ElGamalPK> getPK = entry -> pk;
 
         // Delegate
-        return retrieveValidThreshold(bb.retrievePfrPhaseOne(), verify, getPK);
+        PfrPhase<CombinedCiphertextAndProof> pfrPhaseOne = bb.retrievePfrPhaseOne();
+        return retrieveValidThreshold(bb, pfrPhaseOne, verify, getPK);
     }
 
-    public CompletableFuture<PfrPhase<DecryptionShareAndProof>> retrieveValidThresholdPfrPhaseTwo(List<Ciphertext> ciphertexts) {
+    public static CompletableFuture<PfrPhase<DecryptionShareAndProof>> retrieveValidThresholdPfrPhaseTwo(BulletinBoardV2_0 bb, List<Ciphertext> ciphertexts) {
         // How should entries in the pfr be verified?
         BiFunction<Entry<DecryptionShareAndProof>, ElGamalPK, Boolean> verify =
                 (entry, pk) -> SigmaCommonDistributed.verifyDecryption(ciphertexts, entry.getValues(), pk, bb.retrieveKappa());
@@ -121,7 +117,7 @@ public class VerifyingBulletinBoardV2_0 {
         Function<Entry<DecryptionShareAndProof>, ElGamalPK> getPK = entry -> bb.retrievePKShare(entry.getIndex());
 
         // Delegate
-        return retrieveValidThreshold(bb.retrievePfrPhaseTwo(), verify, getPK);
+        return retrieveValidThreshold(bb, bb.retrievePfrPhaseTwo(), verify, getPK);
 
     }
 

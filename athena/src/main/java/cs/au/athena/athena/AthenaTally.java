@@ -35,7 +35,6 @@ public class AthenaTally {
     private Random random;
     private Elgamal elgamal;
     private BulletinBoardV2_0 bb;
-    private VerifyingBulletinBoardV2_0 vbb;
     private AthenaDistributed distributed;
     private int tallierIndex;
     private int kappa;
@@ -44,7 +43,7 @@ public class AthenaTally {
     private AthenaTally() {}
 
     public Map<Integer, Integer> Tally(int tallierIndex, ElGamalSK skShare, int nc) {
-        ElGamalPK pk = vbb.retrieveAndVerifyPK();
+        ElGamalPK pk = VerifyingBulletinBoardV2_0.retrieveAndVerifyPK(bb);
 
         /* ********
          * Step 1: Remove invalid ballots
