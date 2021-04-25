@@ -272,6 +272,7 @@ public class AthenaDistributed {
         int ell = ballots.size();
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
 
+        // TODO: move to SigmaCommomDistributed
         // Nonce each ciphertext, and compute proof
         Ciphertext ci_prime_previous = null;
         for (int i = 0; i < ell; i++) {
@@ -296,32 +297,31 @@ public class AthenaDistributed {
         }
 
         // Publish
-        vbb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
+        bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
-        // Retrieve k+1 shares
-        int k = bb.retrieveK();
-        PfrPhaseOne pfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne().join();
+        // Retrieve threshold shares
+        PfrPhase<CombinedCiphertextAndProof> completedPfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne().join();
 
         // We want to create a list of cipertexts, where element i is the product of the k+1 ciphertexts
         // This is done by making a list of ciphertexts, and multiplying a talliers ciphertexts onto the corresponding entry
 
-        // Make list of neutral ciphertexts
+        // Make and intitial list of neutral ciphertexts
         List<Ciphertext> result = Stream.generate(Ciphertext::ONE)
                 .limit(ell)
                 .collect(Collectors.toList());
 
         // For each tallier in the set
-        for (PfrPhaseOne.Entry entry : pfrPhaseOne) {
-            List<CombinedCiphertextAndProof> ciphertextAndProofs = entry.getCombinedCiphertextAndProof();
+        for (int i = 0; i < completedPfrPhaseOne.size(); i++) {
+            List<CombinedCiphertextAndProof> ciphertextAndProofs = completedPfrPhaseOne.get(i).getValues();
 
             // For each ciphertext
-            for (int i = 0; i < ell; i++) {
+            for (int j = 0; j < ell; j++) {
                 CombinedCiphertextAndProof combinedCiphertextAndProof = ciphertextAndProofs.get(i);
 
                 // Multiply onto the result list
-                Ciphertext oldValue = result.get(i);
+                Ciphertext oldValue = result.get(j);
                 Ciphertext newValue = oldValue.multiply(combinedCiphertextAndProof.combinedCiphertext, sk.pk.group.p);
-                result.set(i, newValue);
+                result.set(j, newValue);
             }
         }
 
@@ -373,24 +373,27 @@ public class AthenaDistributed {
         }
 
         // Publish
-        vbb.publishPfrPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
+        bb.publishPfrPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
-        PfrPhaseTwo pfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(ciphertexts).join();
-        assert pfrPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", pfrPhaseTwo.size());
+        PfrPhase<DecryptionShareAndProof> completedPfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(ciphertexts).join();
+        assert completedPfrPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfrPhaseTwo.size());
 
+        // Find the set of talliers in the pfr
+        List<Integer> S = completedPfrPhaseTwo.getAll().stream()
+                .map(Entry::getIndex)
+                .collect(Collectors.toList());
 
         // Decrypt by combining decryption shares
         List<BigInteger> decryptedCiphertexts = new ArrayList<>(ciphertexts.size());
-        List<Integer> S = pfrPhaseTwo.stream().map(PfrPhaseTwo.Entry::getIndex).collect(Collectors.toList());
 
         // We need to get k+1 decryption shares for each ballot.
         // Therefore we need to traverse the k+1 lists in pfr simultaneously
         // This is done by making an iterator for each tallier, and using calling each one time per ballot
         List<Pair<Integer, Iterator<DecryptionShareAndProof>>> iteratorPairs = new ArrayList<>();
-        for (PfrPhaseTwo.Entry entry : pfrPhaseTwo) {
+        for (Entry<DecryptionShareAndProof> entry : completedPfrPhaseTwo.getAll()) {
             Integer s = entry.getIndex();
-            List<DecryptionShareAndProof> listOfDecryptionSharesAndProof = entry.getDecryptionShareAndProofs();
+            List<DecryptionShareAndProof> listOfDecryptionSharesAndProof = entry.getValues();
             iteratorPairs.add(Pair.of(s, listOfDecryptionSharesAndProof.iterator()));
         }
 

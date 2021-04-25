@@ -35,8 +35,8 @@ public class BulletinBoardV2_0 {
 
 
     // Activated when a tallier posts homocomb or decryption shares
-    private PfrPhaseOne pfrPhaseOne;
-    private PfrPhaseTwo pfrPhaseTwo;
+    private PfrPhase<CombinedCiphertextAndProof> pfrPhasePhaseOne;
+    private PfrPhase<DecryptionShareAndProof> pfrPhasePhaseTwo;
 
 //    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
     private final int kappa;
@@ -73,10 +73,8 @@ public class BulletinBoardV2_0 {
     // Set preexisting values, and populate maps with Futures
     private void init(int tallierCount) {
 
-        this.pfrPhaseOne = new PfrPhaseOne(tallierCount);
-        this.pfrPhaseTwo = new PfrPhaseTwo(tallierCount);
-        //this.pfrPhaseOne = null;
-
+        this.pfrPhasePhaseOne = new PfrPhase<>(tallierCount);
+        this.pfrPhasePhaseTwo = new PfrPhase<>(tallierCount);
 
         // Fill with CompletableFutures
         for(int i = 1; i <= tallierCount; i++) {
@@ -199,39 +197,30 @@ public class BulletinBoardV2_0 {
 
 
     // Returns the index in the pfrPhaseOne
-    public synchronized void publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof) {
-        int ell = ballots.size();
+    public synchronized void publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> values) {
+        if(values.size() == ballots.size()) {
+            throw new IllegalArgumentException("list must be the same length as ballots");
+        }
 
-        if(listOfCombinedCiphertextAndProof.size() == ell) {
+        pfrPhasePhaseOne.add(new Entry<>(tallierIndex, values));
+    }
+
+    public PfrPhase<CombinedCiphertextAndProof> retrievePfrPhaseOne() {
+        return this.pfrPhasePhaseOne;
+    }
+
+
+    public synchronized void publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> values) {
+        if(values.size() == ballots.size()) {
             throw new IllegalArgumentException("list must be the same length as ballots");
         }
 
         // Set values in pfr
-        int index = pfrPhaseOne.size();
-        pfrPhaseOne.add(index, new PfrPhaseOne.Entry(tallierIndex, listOfCombinedCiphertextAndProof));
+        pfrPhasePhaseTwo.add(new Entry<DecryptionShareAndProof>(tallierIndex, values));
     }
 
-    public PfrPhaseOne retrievePfrPhaseOne() {
-        return this.pfrPhaseOne;
-    }
-
-
-    public synchronized int publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> listOfDecryptionShareAndProof) {
-        int ell = ballots.size();
-
-        if(listOfDecryptionShareAndProof.size() == ell) {
-            throw new IllegalArgumentException("list must be the same length as ballots");
-        }
-
-        // Set values in pfr
-        int index = pfrPhaseTwo.size();
-        pfrPhaseTwo.add(index, new PfrPhaseTwo.Entry(tallierIndex, listOfDecryptionShareAndProof));
-
-        return index;
-    }
-
-    public PfrPhaseTwo retrievePfrPhaseTwo() {
-        return this.pfrPhaseTwo;
+    public PfrPhase<DecryptionShareAndProof> retrievePfrPhaseTwo() {
+        return this.pfrPhasePhaseTwo;
     }
 
 

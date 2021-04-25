@@ -2,10 +2,29 @@ package cs.au.athena.dao.bulletinboard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-public class PfrPhaseOne extends ArrayList<PfrPhaseOne.Entry> {
+public class PfrPhaseOne {
+    List<CompletableFuture<Entry>> entries;
+    int nextIncompleteEntry = 0;
+
     public PfrPhaseOne(int size) {
-        super(size);
+        entries =  new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            entries.add(new CompletableFuture<>());
+        }
+    }
+
+    public boolean add(Entry entry) {
+        return entries.get(nextIncompleteEntry++).complete(entry);
+    }
+
+    public Entry get(int i) {
+        return entries.get(i).join();
+    }
+
+    public List<CompletableFuture<Entry>> getEntryFutures() {
+        return entries;
     }
 
     public static class Entry {
@@ -25,14 +44,4 @@ public class PfrPhaseOne extends ArrayList<PfrPhaseOne.Entry> {
             return ciphertextAndProof;
         }
     }
-    /*
-
-    public List<Ciphertext> getCiphertexts(int entryIndex) {
-        return this.get(entryIndex).getRight().stream()
-                .map(CombinedCiphertextAndProof::getCombinedCiphertext)
-                .collect(Collectors.toList());
-    }
-     */
-
-
 }

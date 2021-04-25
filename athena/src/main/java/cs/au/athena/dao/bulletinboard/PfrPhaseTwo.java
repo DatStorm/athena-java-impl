@@ -2,10 +2,29 @@ package cs.au.athena.dao.bulletinboard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-public class PfrPhaseTwo extends ArrayList<PfrPhaseTwo.Entry> {
-    public PfrPhaseTwo(int initialCapacity) {
-        super(initialCapacity);
+public class PfrPhaseTwo {
+    List<CompletableFuture<PfrPhaseTwo.Entry>> entries;
+    int nextIncompleteEntry = 0;
+
+    public PfrPhaseTwo(int size) {
+        entries =  new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            entries.add(new CompletableFuture<>());
+        }
+    }
+
+    public boolean add(Entry entry) {
+        return entries.get(nextIncompleteEntry++).complete(entry);
+    }
+
+    public Entry get(int i) {
+        return entries.get(i).join();
+    }
+
+    public List<CompletableFuture<Entry>> getEntryFutures() {
+        return entries;
     }
 
     public static class Entry {
