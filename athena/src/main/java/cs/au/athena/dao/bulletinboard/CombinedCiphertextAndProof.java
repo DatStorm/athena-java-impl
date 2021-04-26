@@ -15,4 +15,13 @@ public class CombinedCiphertextAndProof {
     public Ciphertext getCombinedCiphertext() {
         return combinedCiphertext;
     }
+
+
+    @Override
+    public String toString() {
+        return "CombCiph&Proof{" +
+                "com=" + combinedCiphertext.toOneLineString() +
+//                ", proof=" + proof +
+                '}';
+    }
 }

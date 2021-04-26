@@ -111,7 +111,7 @@ public class Sigma4 {
             boolean isValid = sigma3.verifyLogEquality(statement, proof_i, kappa);
 
             if (!isValid) {
-//                System.out.println("Sigma4.verifyCombination-> log_{alpha_base_i} alpha_{i} != log_{beta_base_i} beta_{i}");
+//                System.err.println("Sigma4.verifyCombination-> log_{alpha_base_i} alpha_{i} != log_{beta_base_i} beta_{i}");
                 return false;
             }
         }
@@ -132,7 +132,7 @@ public class Sigma4 {
             boolean isValid = sigma3.verifyLogEquality(statement, proofi, kappa);
 
             if (!isValid) {
-//                System.out.println("--> Sigma4.verifyCombination-> log_{alpha_base_i-1} alpha_{i-1} != log_{alpha_base_i} alpha_{i}");
+//                System.err.println("--> Sigma4.verifyCombination-> log_{alpha_base_i-1} alpha_{i-1} != log_{alpha_base_i} alpha_{i}");
                 return false;
             }
         }

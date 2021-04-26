@@ -280,33 +280,18 @@ public class AthenaDistributed {
 
     // Returns a list of nonced ciphertexts
     public List<Ciphertext> performPfrPhaseOneHomoComb(int tallierIndex, List<Ballot> ballots, BigInteger nonce, ElGamalSK sk, int kappa) {
-        logger.info(MARKER,String.format("T%d: AthenaDistributed.performPfrPhaseOneHomoComb[started]", tallierIndex));
         int ell = ballots.size();
-        List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
+        logger.info(MARKER,String.format("T%d: AthenaDistributed.performPfrPhaseOneHomoComb[started]", tallierIndex));
 
-        // TODO: move to SigmaCommomDistributed?
-        // Nonce each ciphertext, and compute proof
-        Ciphertext ci_prime_previous = null;
-        for (int i = 0; i < ell; i++) {
-            Ballot ballot = ballots.get(i);
+        List<Ciphertext> encryptedNegatedPrivateCredentials = ballots
+                .stream()
+                .map(Ballot::getEncryptedNegatedPrivateCredential)
+                .collect(Collectors.toList());
 
-            // Homomorpically re-encrypt(by raising to power n) ballot and decrypt
-            Ciphertext ci_prime = AthenaCommon.homoCombination(ballot.getEncryptedNegatedPrivateCredential(), nonce, sk.pk.group);
+        List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfrPhaseOne(encryptedNegatedPrivateCredentials, nonce, sk, kappa);
 
-            // Prove that the same nonce was used for all ballots.
-            if (listOfCombinedCiphertextAndProof.size() > 0) {
-                //Prove c_{i−1} and c_{i} are derived by iterative homomorphic combination wrt nonce n
-                List<Ciphertext> listCombined = Arrays.asList(ci_prime_previous, ci_prime);
-                List<Ciphertext> listCiphertexts = Arrays.asList(ballots.get(i - 1).getEncryptedNegatedPrivateCredential(), ballot.getEncryptedNegatedPrivateCredential());
-                Sigma4Proof omega = this.proveCombination(listCombined, listCiphertexts, nonce, sk, kappa);
-
-                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(ci_prime, omega));
-            } else {
-                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(ci_prime, null));
-            }
-
-            ci_prime_previous = ci_prime;
-        }
+        // Assert test
+        assert SigmaCommonDistributed.verifyHomoComb(encryptedNegatedPrivateCredentials, listOfCombinedCiphertextAndProof, sk.pk, kappa) : "Proof was not valid. Like what....";
 
         // Publish
         logger.info(MARKER, "publishing entry and awaiting threshold entries");
