@@ -290,9 +290,6 @@ public class AthenaDistributed {
 
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfrPhaseOne(encryptedNegatedPrivateCredentials, nonce, sk, kappa);
 
-        // Assert test
-        assert SigmaCommonDistributed.verifyHomoComb(encryptedNegatedPrivateCredentials, listOfCombinedCiphertextAndProof, sk.pk, kappa) : "Proof was not valid. Like what....";
-
         // Publish
         logger.info(MARKER, "publishing entry and awaiting threshold entries");
         bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);

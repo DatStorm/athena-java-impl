@@ -76,6 +76,7 @@ public class SigmaCommonDistributed {
 
     public static List<CombinedCiphertextAndProof> proveHomoCombPfrPhaseOne(List<Ciphertext> ciphertexts, BigInteger nonce, ElGamalSK sk, int kappa) {
         int ell = ciphertexts.size();
+        Sigma4 sigma4 = new Sigma4();
 
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
 
@@ -95,17 +96,13 @@ public class SigmaCommonDistributed {
                 List<Ciphertext> listCiphertexts = Arrays.asList(previousCiphertext, ciphertext);
                 List<Ciphertext> listCombined = Arrays.asList(previousCombinedCiphertext, combinedCiphertext);
 
-                //Sigma4Proof omega = this.proveCombination(listCombined, listCiphertexts, nonce, sk, kappa);
-                Sigma4 sigma4 = new Sigma4();
-                Sigma4Proof omega = sigma4.proveCombination(sk, listCombined, listCiphertexts, nonce, kappa);
+                Sigma4Proof proof = sigma4.proveCombination(sk, listCombined, listCiphertexts, nonce, kappa);
+                assert sigma4.verifyCombination(sk.pk, listCombined, listCiphertexts, proof, kappa);
 
-                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(combinedCiphertext, omega));
+                listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(combinedCiphertext, proof));
             } else {
                 listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(combinedCiphertext, null));
             }
-
-            previousCiphertext = ciphertext;
-            previousCombinedCiphertext = combinedCiphertext;
         }
 
         return listOfCombinedCiphertextAndProof;
@@ -117,25 +114,28 @@ public class SigmaCommonDistributed {
         Sigma4 sigma4 = new Sigma4();
 
         // First iteration
-        CombinedCiphertextAndProof previousObj = listOfCombinedCiphertextAndProof.get(0);
         Ciphertext previousCiphertext = ciphertexts.get(0);
+        CombinedCiphertextAndProof previousObj = listOfCombinedCiphertextAndProof.get(0);
 
         for (int i = 1; i < ell; i++) {
-            CombinedCiphertextAndProof currentObj = listOfCombinedCiphertextAndProof.get(i);
-            Ciphertext currentCiphertext = ciphertexts.get(i);
+            Ciphertext ciphertext = ciphertexts.get(i);
+            CombinedCiphertextAndProof obj = listOfCombinedCiphertextAndProof.get(i);
 
             // Make proof statement
-            List<Ciphertext> listCombinedCiphertext = Arrays.asList(previousObj.combinedCiphertext, currentObj.combinedCiphertext);
-            List<Ciphertext> listCiphertexts = Arrays.asList(previousCiphertext, currentCiphertext);
+            List<Ciphertext> listCiphertexts = Arrays.asList(previousCiphertext, ciphertext);
+            List<Ciphertext> listCombined = Arrays.asList(previousObj.combinedCiphertext, obj.combinedCiphertext);
+            Sigma4Proof proof = obj.proof;
 
             // Verify proof
-            boolean isValid = sigma4.verifyCombination(pk, listCombinedCiphertext, listCiphertexts, currentObj.proof, kappa);
-            logger.info(MARKER, String.format("i=%d = %b: Verifying: %s", i, isValid, currentObj));
+            boolean isValid = sigma4.verifyCombination(pk, listCombined, listCiphertexts, proof, kappa);
+            logger.info(MARKER, String.format("i=%d = %b: Verifying: %s", i, isValid, obj));
 
             if(!isValid) {
-
                 return false;
             }
+
+            previousCiphertext = ciphertext;
+            previousObj = obj;
         }
 
         return true;
