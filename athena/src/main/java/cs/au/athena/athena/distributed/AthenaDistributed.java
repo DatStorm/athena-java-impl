@@ -152,12 +152,10 @@ public class AthenaDistributed {
             }
 
             // Receive subshare
-
-            // Retrieve commitments and proofs from BB
             Ciphertext encSubShare = bb.retrieveEncSubShare(j, tallierIndex).join();
-            List<CommitmentAndProof> commitmentAndProofs = bb.retrievePolynomialCommitmentsAndProofs(j).join();
 
-            logger.info(MARKER, String.format("tallier %d received P_%d(%d)", tallierIndex, j, tallierIndex));
+            // Retrieve commitments
+            List<CommitmentAndProof> commitmentAndProofs = bb.retrievePolynomialCommitmentsAndProofs(j).join();
 
             // Check length of polynomial commitment
             if (commitmentAndProofs.size() != k +1) {
@@ -200,6 +198,9 @@ public class AthenaDistributed {
             // Compute my final share P(i) of secret key sk, as the sum of subshares P_j(i)
             subShares.add(subShareFromTallier_j);
         }
+
+        logger.info(MARKER, "Received subshares");
+
 
         return subShares;
     }
@@ -295,8 +296,8 @@ public class AthenaDistributed {
         bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve threshold shares
-        PfPhase<CombinedCiphertextAndProof> completedPfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne();
-        logger.info(MARKER, "Retrieved threshold entries");
+        PfPhase<CombinedCiphertextAndProof> completedPfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne().join();
+        logger.info(MARKER, "Retrieved threshold entries. Combining");
 
         // Combine shares
 
@@ -308,18 +309,18 @@ public class AthenaDistributed {
                 .limit(ell)
                 .collect(Collectors.toList());
 
-        logger.info(MARKER, String.format("T%d: Calculating: RES: %s", tallierIndex, result.stream().map(Ciphertext::toOneLineString)));
-        logger.info(MARKER, String.format("T%d: completedPfrPhaseOne.size() =%d", tallierIndex,completedPfrPhaseOne.size()));
+        //logger.info(MARKER, String.format("T%d: Calculating: RES: %s", tallierIndex, result.stream().map(Ciphertext::toOneLineString)));
+        //logger.info(MARKER, String.format("T%d: completedPfrPhaseOne.size() =%d", tallierIndex,completedPfrPhaseOne.size()));
 
         // For each tallier in the set
         for (int i = 0; i < completedPfrPhaseOne.size(); i++) {
             List<CombinedCiphertextAndProof> ciphertextAndProofs = completedPfrPhaseOne.get(i).getValues();
-            logger.info(MARKER, String.format("T%d: CAlC_%d ", tallierIndex, i));
+            //logger.info(MARKER, String.format("T%d: CAlC_%d ", tallierIndex, i));
 
             // For each ciphertext
             for (int j = 0; j < ell; j++) {
                 CombinedCiphertextAndProof combinedCiphertextAndProof = ciphertextAndProofs.get(i);
-                logger.info(MARKER, String.format("T%d: CAlC_%d-Proof_%d", tallierIndex, i, j));
+                //logger.info(MARKER, String.format("T%d: CAlC_%d-Proof_%d", tallierIndex, i, j));
 
                 // Multiply onto the result list
                 Ciphertext oldValue = result.get(j);
@@ -328,7 +329,7 @@ public class AthenaDistributed {
             }
         }
 
-        logger.info(MARKER,String.format("T%d: AthenaDistributed.performPfrPhaseOneHomoComb[ended]", tallierIndex));
+        //logger.info(MARKER,String.format("T%d: AthenaDistributed.performPfrPhaseOneHomoComb[ended]", tallierIndex));
 
         return result;
     }
@@ -366,7 +367,7 @@ public class AthenaDistributed {
         bb.publishPfrPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
-        PfPhase<DecryptionShareAndProof> completedPfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(ciphertexts);
+        PfPhase<DecryptionShareAndProof> completedPfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(ciphertexts).join();
         assert completedPfrPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfrPhaseTwo.size());
 
         // All are authorized for decryption
@@ -400,7 +401,7 @@ public class AthenaDistributed {
         bb.publishPfdPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve threshold shares
-        PfPhase<CombinedCiphertextAndProof> completedPfdPhaseOne = vbb.retrieveValidThresholdPfdPhaseOne();
+        PfPhase<CombinedCiphertextAndProof> completedPfdPhaseOne = vbb.retrieveValidThresholdPfdPhaseOne().join();
 
         // We want to create a list of ciphertexts, where element i is the product of the k+1 ciphertexts
         // This is done by making a list of ciphertexts, and multiplying a talliers ciphertexts onto the corresponding entry
@@ -435,7 +436,7 @@ public class AthenaDistributed {
         bb.publishPfdPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
-        PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(combinedCredentialCiphertexts);
+        PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(combinedCredentialCiphertexts).join();
         assert completedPfdPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfdPhaseTwo.size());
 
         // All are authorized for decryption
@@ -454,7 +455,7 @@ public class AthenaDistributed {
         bb.publishPfdPhaseThreeEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
-        PfPhase<DecryptionShareAndProof> completedPfdPhaseThree = vbb.retrieveValidThresholdPfdPhaseThree(encryptedVotes);
+        PfPhase<DecryptionShareAndProof> completedPfdPhaseThree = vbb.retrieveValidThresholdPfdPhaseThree(encryptedVotes).join();
         assert completedPfdPhaseThree.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfdPhaseThree.size());
 
         // A ballot is authorized if m == 1.

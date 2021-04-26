@@ -131,7 +131,7 @@ public class SigmaCommonDistributed {
 
             // Verify proof
             boolean isValid = sigma4.verifyCombination(pk, listCombined, listCiphertexts, proof, kappa);
-            logger.info(MARKER, String.format("i=%d = %b: Verifying: %s", i, isValid, obj));
+            //logger.info(MARKER, String.format("i=%d = %b: Verifying: %s", i, isValid, obj));
 
             if(!isValid) {
                 return false;
