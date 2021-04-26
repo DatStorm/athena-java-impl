@@ -1,8 +1,6 @@
 package cs.au.athena.athena.distributed;
 
-import cs.au.athena.GENERATOR;
 import cs.au.athena.Polynomial;
-import cs.au.athena.athena.AthenaCommon;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
@@ -289,7 +287,7 @@ public class AthenaDistributed {
                 .map(Ballot::getEncryptedNegatedPrivateCredential)
                 .collect(Collectors.toList());
 
-        List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfrPhaseOne(encryptedNegatedPrivateCredentials, nonce, sk, kappa);
+        List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfr(encryptedNegatedPrivateCredentials, nonce, sk, kappa);
 
         // Publish
         logger.info(MARKER, "publishing entry and awaiting threshold entries");
@@ -354,14 +352,15 @@ public class AthenaDistributed {
     }
 
     /**
-     * @param skShare is the shamir secret sharing share: P(i)
+     * @param sk is the shamir secret sharing share: P(i)
      * @param kappa
      * @return decrypted message
      */
-    public List<BigInteger> performPfrPhaseTwoDecryption(int tallierIndex, List<Ciphertext> ciphertexts, ElGamalSK skShare, int kappa) {
+    public List<BigInteger> performPfrPhaseTwoDecryption(int tallierIndex, List<Ciphertext> ciphertexts, ElGamalSK sk, int kappa) {
         int k = bb.retrieveK();
 
-        List<DecryptionShareAndProof> decryptionSharesAndProofs = generateDecryptionShareAndProofs(tallierIndex, ciphertexts, skShare, kappa);
+        logger.info(MARKER, String.format("T%d computing and publishing decryption shares", tallierIndex));
+        List<DecryptionShareAndProof> decryptionSharesAndProofs = generateDecryptionShareAndProofs(tallierIndex, ciphertexts, sk, kappa);
 
         // Publish
         bb.publishPfrPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
@@ -382,20 +381,8 @@ public class AthenaDistributed {
 
     public List<Ciphertext> performPfdPhaseOneHomoComb(int tallierIndex, List<Ciphertext> combinedCredentials, Random random, ElGamalSK sk, int kappa) {
         int ell = combinedCredentials.size();
-        List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
 
-        // TODO: move to SigmaCommomDistributed?
-        // Nonce each ciphertext, and compute proof
-        for (Ciphertext combinedCredential : combinedCredentials) {
-            BigInteger nonce = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, random);
-
-            // Homomorpically re-encrypt(by raising to power n) ballot and decrypt
-            Ciphertext noncedCredential = AthenaCommon.homoCombination(combinedCredential, nonce, sk.pk.group);
-
-            //Prove the combination of a valid combination nonce n
-            Sigma4Proof omega = this.proveCombination(Collections.singletonList(noncedCredential), Collections.singletonList(combinedCredential), nonce, sk, kappa);
-            listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(noncedCredential, omega));
-        }
+        List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfd(combinedCredentials, random, sk, kappa);
 
         // Publish
         bb.publishPfdPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
@@ -466,8 +453,8 @@ public class AthenaDistributed {
         return noncedCombinedCredentials;
     }
 
-    private List<DecryptionShareAndProof> generateDecryptionShareAndProofs(int tallierIndex, List<Ciphertext> combinedCredentialCiphertexts, ElGamalSK skShare, int kappa) {
-        Group group = bb.retrieveGroup();
+    private List<DecryptionShareAndProof> generateDecryptionShareAndProofs(int tallierIndex, List<Ciphertext> combinedCredentialCiphertexts, ElGamalSK sk, int kappa) {
+        Group group = sk.pk.group;
 
         List<DecryptionShareAndProof> decryptionSharesAndProofs = new ArrayList<>(combinedCredentialCiphertexts.size());
 
@@ -475,11 +462,11 @@ public class AthenaDistributed {
         for (Ciphertext ciphertext : combinedCredentialCiphertexts) {
 
             // Compute decryption share and proof
-            BigInteger decryptionShare = ciphertext.c1.modPow(skShare.toBigInteger().negate(), group.p);
+            BigInteger decryptionShare = ciphertext.c1.modPow(sk.toBigInteger().negate(), group.p);
             ElGamalPK pk_j = vbb.retrievePKShare(tallierIndex);
 
             // Prove decryption share
-            Sigma3Proof proof = this.proveDecryption(ciphertext, pk_j.getH(), skShare, kappa);
+            Sigma3Proof proof = this.proveDecryption(ciphertext, pk_j.getH(), sk, kappa);
 
             // Add to list
             decryptionSharesAndProofs.add(new DecryptionShareAndProof(decryptionShare, proof));

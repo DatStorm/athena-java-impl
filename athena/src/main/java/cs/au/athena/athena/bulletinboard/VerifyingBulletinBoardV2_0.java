@@ -64,9 +64,14 @@ public class VerifyingBulletinBoardV2_0 {
     }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
-    private Function<Entry<CombinedCiphertextAndProof>, Boolean> constructHomoVerify(List<Ciphertext> ciphertexts) {
+    private Function<Entry<CombinedCiphertextAndProof>, Boolean> constructVerifyHomoCombPfr(List<Ciphertext> ciphertexts) {
         //            logger.info(MARKER, String.format("--".repeat(20) + "> Shit hit the fan: %b" , verify));
-        return (entry) -> SigmaCommonDistributed.verifyHomoComb(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
+        return (entry) -> SigmaCommonDistributed.verifyHomoCombPfr(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
+    }
+
+    private Function<Entry<CombinedCiphertextAndProof>, Boolean> constructVerifyHomoCombPfd(List<Ciphertext> ciphertexts) {
+        //            logger.info(MARKER, String.format("--".repeat(20) + "> Shit hit the fan: %b" , verify));
+        return (entry) -> SigmaCommonDistributed.verifyHomoCombPfd(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
     }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
@@ -203,7 +208,7 @@ public class VerifyingBulletinBoardV2_0 {
                 .map(Ballot::getEncryptedNegatedPrivateCredential)
                 .collect(Collectors.toList());
 
-        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfrPhaseOne(), constructHomoVerify(encryptedNegatedPrivateCredentials));
+        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfrPhaseOne(), constructVerifyHomoCombPfr(encryptedNegatedPrivateCredentials));
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfrPhaseTwo(List<Ciphertext> ciphertexts) {
@@ -215,7 +220,7 @@ public class VerifyingBulletinBoardV2_0 {
                 .map(MixBallot::getCombinedCredential)
                 .collect(Collectors.toList());
 
-        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfdPhaseOne(), constructHomoVerify(combinedCiphertexts));
+        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCiphertexts));
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseTwo(List<Ciphertext> ciphertexts) {

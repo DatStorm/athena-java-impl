@@ -1,5 +1,6 @@
 package cs.au.athena.athena.distributed;
 
+import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.AthenaCommon;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
@@ -21,9 +22,7 @@ import org.slf4j.MarkerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class SigmaCommonDistributed {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -74,7 +73,7 @@ public class SigmaCommonDistributed {
 
 
 
-    public static List<CombinedCiphertextAndProof> proveHomoCombPfrPhaseOne(List<Ciphertext> ciphertexts, BigInteger nonce, ElGamalSK sk, int kappa) {
+    public static List<CombinedCiphertextAndProof> proveHomoCombPfr(List<Ciphertext> ciphertexts, BigInteger nonce, ElGamalSK sk, int kappa) {
         int ell = ciphertexts.size();
         Sigma4 sigma4 = new Sigma4();
 
@@ -112,7 +111,7 @@ public class SigmaCommonDistributed {
     }
 
     // FIXME: Will not work for pfrPhaseTwo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!. Different nonce each time.
-    public static boolean verifyHomoComb(List<Ciphertext> ciphertexts, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof, ElGamalPK pk, int kappa) {
+    public static boolean verifyHomoCombPfr(List<Ciphertext> ciphertexts, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof, ElGamalPK pk, int kappa) {
         int ell = ciphertexts.size();
         Sigma4 sigma4 = new Sigma4();
 
@@ -139,6 +138,53 @@ public class SigmaCommonDistributed {
 
             previousCiphertext = ciphertext;
             previousObj = obj;
+        }
+
+        return true;
+    }
+
+    public static List<CombinedCiphertextAndProof> proveHomoCombPfd(List<Ciphertext> ciphertexts, Random random, ElGamalSK sk, int kappa) {
+        int ell = ciphertexts.size();
+        Sigma4 sigma4 = new Sigma4();
+
+        // Nonce each ciphertext, and compute proof
+        List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
+        for (Ciphertext combinedCredential : ciphertexts) {
+            BigInteger nonce = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, random);
+
+            // Homomorpically re-encrypt(by raising to power n) ballot and decrypt
+            Ciphertext noncedCredential = AthenaCommon.homoCombination(combinedCredential, nonce, sk.pk.group);
+
+            //Prove the combination of a valid combination nonce n
+            List<Ciphertext> listCiphertexts = Collections.singletonList(noncedCredential);
+            List<Ciphertext> listCombined = Collections.singletonList(combinedCredential);
+
+            Sigma4Proof omega = sigma4.proveCombination(sk, listCiphertexts, listCombined, nonce, kappa);
+            listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(noncedCredential, omega));
+        }
+
+        return listOfCombinedCiphertextAndProof;
+    }
+
+    public static boolean verifyHomoCombPfd(List<Ciphertext> ciphertexts, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof, ElGamalPK pk, int kappa) {
+        int ell = ciphertexts.size();
+        Sigma4 sigma4 = new Sigma4();
+
+        for (int i = 0; i < ell; i++) {
+            Ciphertext ciphertext = ciphertexts.get(i);
+            CombinedCiphertextAndProof obj = listOfCombinedCiphertextAndProof.get(i);
+
+            // Make proof statement
+            List<Ciphertext> listCiphertexts = Collections.singletonList(ciphertext);
+            List<Ciphertext> listCombined = Collections.singletonList(obj.combinedCiphertext);
+            Sigma4Proof proof = obj.proof;
+
+            // Verify proof
+            boolean isValid = sigma4.verifyCombination(pk, listCombined, listCiphertexts, proof, kappa);
+
+            if(!isValid) {
+                return false;
+            }
         }
 
         return true;
