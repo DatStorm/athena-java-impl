@@ -103,6 +103,9 @@ public class SigmaCommonDistributed {
             } else {
                 listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(combinedCiphertext, null));
             }
+
+            previousCiphertext = ciphertext;
+            previousCombinedCiphertext = combinedCiphertext;
         }
 
         return listOfCombinedCiphertextAndProof;

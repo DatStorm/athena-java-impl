@@ -66,7 +66,7 @@ public class VerifyingBulletinBoardV2_0 {
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
     private Function<Entry<CombinedCiphertextAndProof>, Boolean> constructHomoVerify(List<Ciphertext> ciphertexts) {
         //            logger.info(MARKER, String.format("--".repeat(20) + "> Shit hit the fan: %b" , verify));
-        return (entry) -> SigmaCommonDistributed.verifyHomoComb(ciphertexts, entry.getValues(), retrieveAndVerifyPK(), bb.retrieveKappa());
+        return (entry) -> SigmaCommonDistributed.verifyHomoComb(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
     }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
