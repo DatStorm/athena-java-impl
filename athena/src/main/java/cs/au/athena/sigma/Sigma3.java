@@ -33,8 +33,12 @@ public class Sigma3 {
 
     // FIXME: Test this
     public Sigma3Proof proveDecryptionShare(Ciphertext ciphertext, BigInteger decryptionShare, ElGamalSK sk, int kappa) {
-        Sigma3Statement statement = createDecryptionShareStatement(ciphertext, decryptionShare, sk);
-        return proveLogEquality(statement, sk.sk, kappa);
+        Sigma3Statement statement = createDecryptionShareStatement(ciphertext, decryptionShare, sk.pk);
+        Sigma3Proof proof = proveLogEquality(statement, sk.sk, kappa);
+
+        assert verifyDecryptionShare(ciphertext, decryptionShare, proof, sk.pk, kappa);
+
+        return proof;
     }
 
     // FIXME: Test this
@@ -59,29 +63,29 @@ public class Sigma3 {
      * @return
      */
     public static Sigma3Statement createDecryptionStatement(ElGamalPK pk, Ciphertext ciphertext, BigInteger plaintextElement) {
-        BigInteger p = pk.group.p;
+        Group group = pk.group;
 
         // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
-        BigInteger alpha = pk.h;
         BigInteger alpha_base = pk.group.g;
-        
+        BigInteger alpha = pk.h;
+
         // beta = c2 * g^(plain)^{-1} mod p 
         // c2/g^m = h^r g^m * g^-m
-        BigInteger beta = ciphertext.c2.multiply(plaintextElement.modInverse(p)).mod(p);
         BigInteger beta_base = ciphertext.c1;
+        BigInteger beta = ciphertext.c2.multiply(plaintextElement.modInverse(group.p)).mod(group.p);
 
         return new Sigma3Statement(pk.getGroup(), alpha, beta, alpha_base, beta_base);
     }
 
-    public Sigma3Statement createDecryptionShareStatement(Ciphertext ciphertext, BigInteger M, ElGamalSK sk) {
-        Group group = sk.pk.group;
+    public Sigma3Statement createDecryptionShareStatement(Ciphertext ciphertext, BigInteger decryptionShare, ElGamalPK pk) {
+        Group group = pk.group;
 
-        BigInteger alpha = M;
         BigInteger alpha_base = group.g;
-        BigInteger beta = ciphertext.c1.modPow(sk.toBigInteger().negate(),group.p).modInverse(group.p); // TODO: double check this please!
+        BigInteger alpha = pk.h;
         BigInteger beta_base = ciphertext.c1;
+        BigInteger beta = decryptionShare.modInverse(group.p);
 
-        return new Sigma3Statement(group,alpha,beta,alpha_base,beta_base);
+        return new Sigma3Statement(group, alpha, beta, alpha_base, beta_base);
     }
 
 
