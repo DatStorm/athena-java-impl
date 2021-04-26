@@ -54,7 +54,7 @@ public class AthenaVerify {
 
 
         // Verify range proof generators
-        boolean isValid = verifyRangeProofGenerators(pk, this.bb, this.vbb);
+        boolean isValid = verifyRangeProofGenerators(pk);
         if(!isValid) {
             System.out.println("AthenaTally.removeInvalidBallots: error");
         }
@@ -105,14 +105,14 @@ public class AthenaVerify {
     }
 
     // Verify that g,h vectors are choosen from a "random" seed.
-    private boolean verifyRangeProofGenerators(ElGamalPK pk, BulletinBoardV2_0 bb){
-        List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, bb.retrieveNumberOfCandidates());
+    private boolean verifyRangeProofGenerators(ElGamalPK pk){
+        List<List<BigInteger>> generators = GENERATOR.generateRangeProofGenerators(pk, this.bb.retrieveNumberOfCandidates());
         List<BigInteger> g_vector_vote = generators.get(0);
         List<BigInteger> h_vector_vote = generators.get(1);
 
         // Verify all 2 vectors
-        boolean isValid1 = g_vector_vote.equals(vbb.retrieve_G_VectorVote());
-        boolean isValid2 = h_vector_vote.equals(vbb.retrieve_H_VectorVote());
+        boolean isValid1 = g_vector_vote.equals(this.vbb.retrieve_G_VectorVote());
+        boolean isValid2 = h_vector_vote.equals(this.vbb.retrieve_H_VectorVote());
 
         return isValid1 && isValid2;
     }

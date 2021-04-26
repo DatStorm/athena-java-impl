@@ -55,18 +55,18 @@ public class VerifyingBulletinBoardV2_0 {
         this.h_vector_vote = vectors.get(1);
     }
 
-    public List<BigInteger> retrieve_G_VectorVote() {
+    public List<BigInteger> retrieve_G_and_H_VectorVote() {
         if(this.g_vector_vote != null) {
             return this.g_vector_vote;
         } else {
             ElGamalPK pk = retrieveAndVerifyPK();
             //calculate g_vector_vote and h_vector_vote
             List<List<BigInteger>> vectors = GENERATOR.generateRangeProofGenerators(pk, bb.retrieveNumberOfCandidates());
-            this.g_vector_vote = vectors.get(0);
-            this.h_vector_vote = vectors.get(1);
+            g_vector_vote = vectors.get(0);
+            h_vector_vote = vectors.get(1);
         }
 
-        return this.g_vector_vote;
+        return Pair.of(this.g_vector_vote,h_vector_vote);
     }
     public List<BigInteger> retrieve_H_VectorVote() { return this.h_vector_vote; }
 
