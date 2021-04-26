@@ -76,7 +76,7 @@ public class VerifyingBulletinBoardV2_0 {
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
     private Function<Entry<DecryptionShareAndProof>, Boolean> constructDecVerify(List<Ciphertext> ciphertexts) {
-        return (entry) -> SigmaCommonDistributed.verifyDecryption(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
+        return (entry) -> SigmaCommonDistributed.verifyDecryptionShareAndProofs(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
     }
 
     private int getThreshold(){
@@ -193,7 +193,7 @@ public class VerifyingBulletinBoardV2_0 {
                     logger.info(MARKER, "futureChain pf size reached the threshold");
 
                     resultFuture.complete(chainPfrPhase);
-                    throw new CancellationException("pfr has reached threshold size");
+                    throw new CancellationException("pfr has reached threshold size. Do not wait for the remaining talliers");
                 }
 
                 return chainPfrPhase;

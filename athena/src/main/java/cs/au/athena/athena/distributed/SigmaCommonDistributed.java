@@ -2,11 +2,11 @@ package cs.au.athena.athena.distributed;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.AthenaCommon;
-import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
 import cs.au.athena.dao.bulletinboard.CommitmentAndProof;
 import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
 import cs.au.athena.dao.sigma1.Sigma1Proof;
+import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
@@ -28,26 +28,7 @@ public class SigmaCommonDistributed {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private static final Marker MARKER = MarkerFactory.getMarker("SigmaCommonDistributed: ");
 
-    public static boolean verifyDecryption(List<Ciphertext> ciphertexts, List<DecryptionShareAndProof> decryptionShareAndProofs, ElGamalPK pkShare, int kappa) {
-        int ell = ciphertexts.size();
-        Sigma3 sigma3 = new Sigma3();
 
-        // Verify each entry
-        for (int i = 0; i < ell; i++) {
-            // Make proof statement
-            Ciphertext ciphertext = ciphertexts.get(i);
-            DecryptionShareAndProof decryptionShareAndProof = decryptionShareAndProofs.get(i);
-
-            //Verify proof
-            boolean isValid = sigma3.verifyDecryption(ciphertext, decryptionShareAndProof.share, pkShare, decryptionShareAndProof.proof, kappa);
-
-            if (!isValid){
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     public static boolean verifyPK(List<CommitmentAndProof> commitmentAndProofs, Group group, int kappa) {
         Sigma1 sigma1 = new Sigma1();
@@ -73,7 +54,7 @@ public class SigmaCommonDistributed {
 
 
 
-    public static List<CombinedCiphertextAndProof> proveHomoCombPfr(List<Ciphertext> ciphertexts, BigInteger nonce, ElGamalSK sk, int kappa) {
+    public static List<CombinedCiphertextAndProof> computeHomoCombinationAndProofs(List<Ciphertext> ciphertexts, BigInteger nonce, ElGamalSK sk, int kappa) {
         int ell = ciphertexts.size();
         Sigma4 sigma4 = new Sigma4();
 
@@ -110,7 +91,7 @@ public class SigmaCommonDistributed {
         return listOfCombinedCiphertextAndProof;
     }
 
-    // FIXME: Will not work for pfrPhaseTwo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!. Different nonce each time.
+
     public static boolean verifyHomoCombPfr(List<Ciphertext> ciphertexts, List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof, ElGamalPK pk, int kappa) {
         int ell = ciphertexts.size();
         Sigma4 sigma4 = new Sigma4();
@@ -190,11 +171,51 @@ public class SigmaCommonDistributed {
         return true;
     }
 
-    public boolean verifyPK(BigInteger h, Sigma1Proof rho, Group group, int kappa) {
-        Sigma1 sigma1 = new Sigma1();
 
-        return sigma1.VerifyKey(h, rho, group, kappa);
+
+
+    public static List<DecryptionShareAndProof> computeDecryptionShareAndProofs(List<Ciphertext> ciphertexts, ElGamalSK sk, int kappa) {
+        Group group = sk.pk.group;
+        Sigma3 sigma3 = new Sigma3();
+
+        List<DecryptionShareAndProof> decryptionSharesAndProofs = new ArrayList<>(ciphertexts.size());
+
+        // generate decryption shares and proofs for all ballots
+        for (Ciphertext ciphertext : ciphertexts) {
+
+            // Compute decryption share and proof
+            BigInteger decryptionShare = ciphertext.c1.modPow(sk.toBigInteger().negate(), group.p);
+
+            // Prove decryption share
+            Sigma3Proof proof = sigma3.proveDecryptionShare(ciphertext, sk.pk.h, sk, kappa);
+
+            // Add to list
+            decryptionSharesAndProofs.add(new DecryptionShareAndProof(decryptionShare, proof));
+        }
+
+        assert verifyDecryptionShareAndProofs(ciphertexts, decryptionSharesAndProofs, sk.pk, kappa): "computeDecryptionShareAndProofs result is invalid";
+
+        return decryptionSharesAndProofs;
     }
 
+    public static boolean verifyDecryptionShareAndProofs(List<Ciphertext> ciphertexts, List<DecryptionShareAndProof> decryptionShareAndProofs, ElGamalPK pk, int kappa) {
+        int ell = ciphertexts.size();
+        Sigma3 sigma3 = new Sigma3();
 
+        // Verify each entry
+        for (int i = 0; i < ell; i++) {
+            // Make proof statement
+            Ciphertext ciphertext = ciphertexts.get(i);
+            DecryptionShareAndProof decryptionShareAndProof = decryptionShareAndProofs.get(i);
+
+            //Verify proof
+            boolean isValid = sigma3.verifyDecryptionShare(ciphertext, decryptionShareAndProof.share, decryptionShareAndProof.proof, pk, kappa);
+
+            if (!isValid){
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
