@@ -119,7 +119,8 @@ public class TestExperiment1 {
     }
 
     private void registerVote(int numVoters) {
-        tallier.init(1);
+
+        ElGamalSK sk = tallier.init(1);
         List<Voter> voters = new ArrayList<>(numVoters);
 
         // Construct and distribute credential to voters

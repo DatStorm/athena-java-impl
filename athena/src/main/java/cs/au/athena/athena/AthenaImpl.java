@@ -34,6 +34,7 @@ public class AthenaImpl implements Athena {
     @Override
     public ElGamalSK Setup(int tallierIndex, int nc, int kappa) {
         logger.info(MARKER, "Setup(...) => start");
+
         if (this.initialised) {
             System.err.println("AthenaImpl.Setup => ERROR: System not initialised call .Setup before hand");
             return null;
@@ -55,7 +56,7 @@ public class AthenaImpl implements Athena {
         logger.info(MARKER, "Register(...) => start");
 
         if (!initialised) {
-            System.err.println("AthenaImpl.Register => ERROR: System not initialised call .Setup before hand");
+            logger.error("AthenaImpl.Register => ERROR: System not initialised call .Setup before hand");
             return null;
         }
         return new AthenaRegister.Builder()
@@ -71,7 +72,7 @@ public class AthenaImpl implements Athena {
     public Ballot Vote(CredentialTuple credentialTuple, int vote, int cnt, int nc, int kappa) {
         logger.info(MARKER, "Vote(...) => start");
         if (!this.initialised) {
-            System.err.println("AthenaImpl.Vote => ERROR: System not initialised call .Setup before hand");
+            logger.error("AthenaImpl.Vote => ERROR: System not initialised call .Setup before hand");
             return null;
         }
         return new AthenaVote.Builder()
@@ -88,7 +89,7 @@ public class AthenaImpl implements Athena {
         logger.info(MARKER, "Tally(...) => start");
 
         if (!this.initialised) {
-            System.err.println("AthenaImpl.Tally => ERROR: System not initialised call .Setup before hand");
+            logger.error("AthenaImpl.Tally => ERROR: System not initialised call .Setup before hand");
             return null;
         }
         return new AthenaTally.Builder()
@@ -105,7 +106,7 @@ public class AthenaImpl implements Athena {
         logger.info(MARKER, "Verify(...) => start");
 
         if (!this.initialised) {
-            System.err.println("AthenaImpl.Verify => ERROR: System not initialised call .Setup before hand");
+            logger.error("AthenaImpl.Verify => ERROR: System not initialised call .Setup before hand");
             return false;
         }
         return new AthenaVerify.Builder()

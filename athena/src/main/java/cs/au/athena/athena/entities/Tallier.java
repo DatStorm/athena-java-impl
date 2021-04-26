@@ -35,18 +35,20 @@ public class Tallier{
     }
 
 
-    public void init(int tallierIndex) {
+    public ElGamalSK init(int tallierIndex) {
         // Run Setup()
-        sk = athena.Setup(tallierIndex, this.nc, this.kappa);
+        this.sk = athena.Setup(tallierIndex, this.nc, this.kappa);
+        System.err.println("SK: HAS BEEN SET: " + sk.toString());
+        return sk;
     }
 
     public void tallyVotes(int tallierIndex) {
         // Run Tally()
-        if (sk == null){
+        if (this.sk == null){
             System.err.println("Tallier.tallyVotes => sk is null! Please run Tallier.init()");
         }
         
-        athena.Tally(tallierIndex, sk, nc, this.kappa);
+        athena.Tally(tallierIndex, this.sk, nc, this.kappa);
     }
 
 }

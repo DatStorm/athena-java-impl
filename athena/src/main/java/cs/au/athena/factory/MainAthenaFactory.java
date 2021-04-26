@@ -21,6 +21,7 @@ public class MainAthenaFactory implements AthenaFactory {
     private final int tallierCount;
     private int kappa;
     private BulletinBoardV2_0 bb;
+    private VerifyingBulletinBoardV2_0 vbb;
 
 
     public MainAthenaFactory(int tallierCount, int kappa) {
@@ -28,6 +29,7 @@ public class MainAthenaFactory implements AthenaFactory {
         this.kappa = kappa;
         this.random = new Random(CONSTANTS.RANDOM_SEED);
         this.bb = BulletinBoardV2_0.getInstance(this.tallierCount, this.kappa);
+        this.vbb = new VerifyingBulletinBoardV2_0(this.bb);
         /*********************************************
          * THIS HAS TO BE THE LAST THING INSTANTIATED!
          */
@@ -73,7 +75,7 @@ public class MainAthenaFactory implements AthenaFactory {
 
     @Override
     public VerifyingBulletinBoardV2_0 getVerifyingBulletinBoard() {
-        return new VerifyingBulletinBoardV2_0(this.bb);
+        return this.vbb;
     }
 
 

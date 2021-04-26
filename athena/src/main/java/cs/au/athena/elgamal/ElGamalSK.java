@@ -21,4 +21,10 @@ public class ElGamalSK {
         return this.pk;
     }
 
+
+    @Override
+    public String toString() {
+        return "ElGamalSK={sk: " + this.sk + "}";
+    }
+
 }

@@ -81,9 +81,7 @@ public class Sigma1 {
         // zeta = \alpha(sk) - e[j] mod (p-1)
         BigInteger zeta = alpha.subtract(ej).mod(q);
 
-        Sigma1Proof proof = new Sigma1Proof(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
-
-        return proof;
+        return new Sigma1Proof(y1_yk, coinFlipInfo_pairs, s1_sk, zeta);
     }
 
 
@@ -164,7 +162,6 @@ public class Sigma1 {
 
         // step 4 check
         boolean checkStep4 = checkStep4(g, h, p, yj, zeta);
-
 
         return checkStep2 && checkStep3 && checkStep4;
     }

@@ -46,7 +46,7 @@ public class AthenaTally {
          * Step 1: Remove invalid ballots
          *********/
         logger.info(MARKER, "Step 1. Remove invalid ballots");
-        List<Ballot> validBallots = removeInvalidBallots(pk, this.bb);
+        List<Ballot> validBallots = removeInvalidBallots(pk, this.bb, this.vbb);
         if (validBallots.isEmpty()) {
             logger.error("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             throw new RuntimeException("Step 1 yielded no valid ballots on bulletin-board.");
@@ -81,7 +81,7 @@ public class AthenaTally {
 
 
     // Step 1 of Tally
-    public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoardV2_0 bb) {
+    public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoardV2_0 bb, VerifyingBulletinBoardV2_0 vbb) {
         List<Ballot> finalBallots = new ArrayList<>(bb.retrievePublicBallots());
 
         for (Ballot ballot : bb.retrievePublicBallots()) {
@@ -127,8 +127,8 @@ public class AthenaTally {
                             .setN(Bulletproof.getN(H))
                             .setV(encryptedVote.c2) // g^v h^t
                             .setPK(pk)
-                            .set_G_Vector(bb.retrieve_G_VectorVote())
-                            .set_H_Vector(bb.retrieve_H_VectorVote())
+                            .set_G_Vector(vbb.retrieve_G_VectorVote())
+                            .set_H_Vector(vbb.retrieve_H_VectorVote())
                             .setUVector(uVector)
                             .build()
             );

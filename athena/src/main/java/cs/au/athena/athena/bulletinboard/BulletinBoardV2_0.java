@@ -1,6 +1,8 @@
 package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.GENERATOR;
+import cs.au.athena.athena.distributed.SigmaCommonDistributed;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.ElectoralRoll;
 import cs.au.athena.dao.athena.PFStruct;
@@ -32,9 +34,7 @@ public class BulletinBoardV2_0 {
     private final Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
     private final Map<Integer, CompletableFuture<PK_Vector>> mapOfIndividualPK_vector;
 
-
-
-    // Activated when a tallier posts homocomb or decryption shares
+    // Completed when a tallier posts homocomb or decryption shares
     private final PfPhase<CombinedCiphertextAndProof> pfrPhasePhaseOne;
     private final PfPhase<DecryptionShareAndProof> pfrPhasePhaseTwo;
     private final PfPhase<CombinedCiphertextAndProof> pfdPhasePhaseOne;
@@ -46,8 +46,8 @@ public class BulletinBoardV2_0 {
     private final int kappa;
     private Map<Integer, Integer> tally;
     private int nc;
-    private List<BigInteger> g_vector_vote;
-    private List<BigInteger> h_vector_vote;
+//    private List<BigInteger> g_vector_vote;
+//    private List<BigInteger> h_vector_vote;
 
     // static method to create instance of Singleton class
     public static BulletinBoardV2_0 getInstance(int tallierCount, int kappa) {
@@ -69,8 +69,15 @@ public class BulletinBoardV2_0 {
         this.electoralRoll = new ElectoralRoll();
         this.ballots = new ArrayList<>();
 
+        /**
+         * Preset important values
+         */
+        this.nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
         this.mc = CONSTANTS.MC;
         this.mb = CONSTANTS.MB;
+//        List<List<BigInteger>> vectors = GENERATOR.generateRangeProofGenerators(pk, this.nc);
+//        this.g_vector_vote = vectors.get(0);
+//        this.h_vector_vote = vectors.get(1);
 
         this.pfrPhasePhaseOne = new PfPhase<>(tallierCount);
         this.pfrPhasePhaseTwo = new PfPhase<>(tallierCount);
@@ -124,8 +131,7 @@ public class BulletinBoardV2_0 {
     }
     public List<Ballot> retrievePublicBallots() { return this.ballots; }
     public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
-    public List<BigInteger> retrieve_G_VectorVote() { return this.g_vector_vote; }
-    public List<BigInteger> retrieve_H_VectorVote() { return this.h_vector_vote; }
+
     public Map<Integer, Integer> retrieveTallyOfVotes() { return this.tally; }
 
 
@@ -134,11 +140,15 @@ public class BulletinBoardV2_0 {
     public void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<CommitmentAndProof> commitmentAndProof) {
         assert tallierIndex <= tallierCount;
 
-        if (tallierCommitmentsAndProofs.containsKey(tallierIndex)) {
-            tallierCommitmentsAndProofs.get(tallierIndex).complete(commitmentAndProof);
-        } else {
-            throw new IllegalStateException("TallierIndex does not exists...    tallierIndex: " + tallierIndex + tallierCommitmentsAndProofs.size());
-        }
+        assert tallierCommitmentsAndProofs.containsKey(tallierIndex): String.format("%d not contained in tallierCommitmentsAndProofs", tallierIndex);
+
+        assert SigmaCommonDistributed.verifyPK(commitmentAndProof, group, kappa): String.format("verifyPK() ==> FALSE");
+
+        tallierCommitmentsAndProofs.get(tallierIndex).complete(commitmentAndProof);
+    }
+
+    public Map<Integer, CompletableFuture<List<CommitmentAndProof>>> retrievePolynomialCommitmentsAndProofs() {
+        return tallierCommitmentsAndProofs;
     }
 
     public void publishIndividualPKvector(int tallierIndex, PK_Vector pkv) {
@@ -163,13 +173,11 @@ public class BulletinBoardV2_0 {
         return encryptedSubShares.get(key);
     }
 
-    public CompletableFuture<List<CommitmentAndProof>> retrieveCommitmentsAndProofs(int j) {
+    public CompletableFuture<List<CommitmentAndProof>> retrievePolynomialCommitmentsAndProofs(int j) {
         return tallierCommitmentsAndProofs.get(j);
     }
 
-    public Map<Integer, CompletableFuture<List<CommitmentAndProof>>> retrieveCommitmentsAndProofs() {
-        return tallierCommitmentsAndProofs;
-    }
+
 
     public void publishTallyOfVotes(Map<Integer, Integer> tally) {
         this.tally = tally;

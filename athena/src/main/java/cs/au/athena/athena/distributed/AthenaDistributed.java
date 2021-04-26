@@ -61,24 +61,27 @@ public class AthenaDistributed {
         logger.info(MARKER, "computing polynomial");
         Polynomial polynomial = Polynomial.newRandom(k, group, random);
 
-        // Post commitment to P_i(X)
-        logger.info(MARKER, "publishing polynomial commitment");
-
         // For each commitment, coefficient pair, do proof
         List<BigInteger> coefficients = polynomial.getCoefficients();
         List<BigInteger> commitments = polynomial.getCommitments();
 
         // Generate proofs for the commitments
+        logger.info(MARKER, "proving polynomial");
         List<CommitmentAndProof> commitmentAndProofs = new ArrayList<>();
         for(int ell = 0; ell <= k; ell++) {
             BigInteger commitment = commitments.get(ell);
             Sigma1Proof proof = this.proveKey(commitment, coefficients.get(ell), kappa);
+            assert group.g.modPow(coefficients.get(ell), group.p).equals(commitment) : "Input to ProveKey in setup is incorrect";
+
             commitmentAndProofs.add(new CommitmentAndProof(commitment, proof));
+//            assert g^v = 0;
         }
 
-        // Publish commitments and proofs
-        logger.info(MARKER, "publishing polynomial commitment and proofs");
+        // Publish polynomial commitments and proofs
+        logger.info(MARKER, String.format("T%d publishing polynomial commitment and proofs", tallierIndex));
         bb.publishPolynomialCommitmentsAndProofs(tallierIndex, commitmentAndProofs);
+
+
 
         // Generate talliers own private (sk, pk)
         ElGamalSK sk_i = Elgamal.generateSK(group, random);
@@ -86,7 +89,7 @@ public class AthenaDistributed {
         Sigma1Proof rho_i = this.proveKey(pk_i, sk_i, kappa);
 
         // Publish my individual public key, so others can send me a subShare
-        logger.info(MARKER, "publish pk_i to bb.");
+        logger.info(MARKER, "publish individual pk.");
         bb.publishIndividualPKvector(tallierIndex, new PK_Vector(pk_i, rho_i));
 
         // Send subshares P_i(j) to T_j
@@ -151,7 +154,7 @@ public class AthenaDistributed {
 
             // Retrieve commitments and proofs from BB
             Ciphertext encSubShare = bb.retrieveEncSubShare(j, tallierIndex).join();
-            List<CommitmentAndProof> commitmentAndProofs = bb.retrieveCommitmentsAndProofs(j).join();
+            List<CommitmentAndProof> commitmentAndProofs = bb.retrievePolynomialCommitmentsAndProofs(j).join();
 
             logger.info(MARKER, String.format("tallier %d received P_%d(%d)", tallierIndex, j, tallierIndex));
 
@@ -209,8 +212,13 @@ public class AthenaDistributed {
         Sigma1 sigma1 = athenaFactory.getSigma1();
         Random random = athenaFactory.getRandom();
         Group group = bb.retrieveGroup();
+
         assert group.g.modPow(sk, group.p).equals(pk) : "ProveKey: pk and sk does not match";
-        return sigma1.ProveKey(pk, sk, group, random, kappa);
+
+
+        Sigma1Proof proof = sigma1.ProveKey(pk, sk, group, random, kappa);
+
+        return proof;
     }
 
     public Sigma4Proof proveCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, BigInteger nonce_n, ElGamalSK sk, int kappa) {
@@ -451,7 +459,7 @@ public class AthenaDistributed {
         bb.publishPfdPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
-        PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(encryptedVotes);
+        PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseThree(encryptedVotes);
         assert completedPfdPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfdPhaseTwo.size());
 
         // A ballot is authorized if m == 1.

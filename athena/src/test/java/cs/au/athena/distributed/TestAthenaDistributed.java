@@ -8,7 +8,9 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitPlatform.class)
 @Tag("TestAthenaDistributed")
-@SelectClasses({TestAthenaDistributedStrategy.class,
+@SelectClasses({
+        TestAthenaDistributedStrategy.class,
+        TestAthenaWith3Talliers.class,
 })
 public class TestAthenaDistributed {
 }

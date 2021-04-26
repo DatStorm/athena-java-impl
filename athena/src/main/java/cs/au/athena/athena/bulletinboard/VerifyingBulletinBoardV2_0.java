@@ -1,5 +1,6 @@
 package cs.au.athena.athena.bulletinboard;
 
+import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.distributed.SigmaCommonDistributed;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.bulletinboard.*;
@@ -38,6 +39,9 @@ public class VerifyingBulletinBoardV2_0 {
     Function<Integer, ElGamalPK> getPK;
     Function<Integer, ElGamalPK> getIndividualPK;
 
+    private final List<BigInteger> g_vector_vote;
+    private final List<BigInteger> h_vector_vote;
+
 
     public VerifyingBulletinBoardV2_0(BulletinBoardV2_0 bb) {
         this.bb = bb;
@@ -45,7 +49,26 @@ public class VerifyingBulletinBoardV2_0 {
 
         getPK = (index) -> retrieveAndVerifyPK();
         getIndividualPK = (index) -> retrievePKShare(index);
+
+        List<List<BigInteger>> vectors = GENERATOR.generateRangeProofGenerators(pk, bb.retrieveNumberOfCandidates());
+        this.g_vector_vote = vectors.get(0);
+        this.h_vector_vote = vectors.get(1);
     }
+
+    public List<BigInteger> retrieve_G_VectorVote() {
+        if(this.g_vector_vote != null) {
+            return this.g_vector_vote;
+        } else {
+            ElGamalPK pk = retrieveAndVerifyPK();
+            //calculate g_vector_vote and h_vector_vote
+            List<List<BigInteger>> vectors = GENERATOR.generateRangeProofGenerators(pk, bb.retrieveNumberOfCandidates());
+            this.g_vector_vote = vectors.get(0);
+            this.h_vector_vote = vectors.get(1);
+        }
+
+        return this.g_vector_vote;
+    }
+    public List<BigInteger> retrieve_H_VectorVote() { return this.h_vector_vote; }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
     private BiFunction<Entry<CombinedCiphertextAndProof>, ElGamalPK, Boolean> constructHomoVerify(List<Ciphertext> ciphertexts) {
@@ -61,7 +84,7 @@ public class VerifyingBulletinBoardV2_0 {
         return this.bb.retrieveK() + 1;
     }
 
-    public ElGamalPK retrieveAndVerifyPK() { // TODO: FIXME: TODO: FIXME: this causes an error
+    public ElGamalPK retrieveAndVerifyPK() {
         if(this.pk != null) {
             return this.pk;
         }
@@ -73,7 +96,7 @@ public class VerifyingBulletinBoardV2_0 {
         // For every tallier
         for (int tallierIndex = 1; tallierIndex <= bb.retrieveTallierCount(); tallierIndex++) {
             // Get pk share and proof
-            List<CommitmentAndProof> commitmentAndProofs =  bb.retrieveCommitmentsAndProofs(tallierIndex).join();
+            List<CommitmentAndProof> commitmentAndProofs =  bb.retrievePolynomialCommitmentsAndProofs(tallierIndex).join();
 
             // Verify degree of polynomial
             if(commitmentAndProofs.size() != getThreshold()) {
@@ -84,7 +107,6 @@ public class VerifyingBulletinBoardV2_0 {
 
             if (!isValid) {
                 logger.info(MARKER, String.format("T%d: Verifying: %s", tallierIndex, commitmentAndProofs.toString()));
-
                 throw new RuntimeException(String.format("Malicious tallier detected. Proof by Tallier T%d was invalid in the PK generation", tallierIndex));
             }
             BigInteger commitment = getZeroCommitment(commitmentAndProofs);
@@ -104,7 +126,7 @@ public class VerifyingBulletinBoardV2_0 {
         Group group = bb.retrieveGroup();
 
         BigInteger publicKeyShare = BigInteger.ONE;
-        Map<Integer, CompletableFuture<List<CommitmentAndProof>>> commitmentAndProofsMap = bb.retrieveCommitmentsAndProofs();
+        Map<Integer, CompletableFuture<List<CommitmentAndProof>>> commitmentAndProofsMap = bb.retrievePolynomialCommitmentsAndProofs();
 
         // Iterate all commitments
         for (int index = 1; index <= commitmentAndProofsMap.keySet().size(); index++) {
@@ -177,12 +199,11 @@ public class VerifyingBulletinBoardV2_0 {
     }
 
     public PfPhase<CombinedCiphertextAndProof> retrieveValidThresholdPfrPhaseOne() {
-        PfPhase<CombinedCiphertextAndProof> pfrPhaseOne = bb.retrievePfrPhaseOne();
         List<Ciphertext> encryptedNegatedPrivateCredentials = bb.retrieveBallots().stream()
                 .map(Ballot::getEncryptedNegatedPrivateCredential)
                 .collect(Collectors.toList());
 
-        return retrieveValidThresholdPfrPhase(bb, pfrPhaseOne, constructHomoVerify(encryptedNegatedPrivateCredentials), getPK);
+        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfrPhaseOne(), constructHomoVerify(encryptedNegatedPrivateCredentials), getPK);
     }
 
     public PfPhase<DecryptionShareAndProof> retrieveValidThresholdPfrPhaseTwo(List<Ciphertext> ciphertexts) {

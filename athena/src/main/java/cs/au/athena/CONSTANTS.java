@@ -7,7 +7,7 @@ import java.math.BigInteger;
 public class CONSTANTS {
     public static final long RANDOM_SEED = 1;
     public static final String ALGORITHM_SHA3_256 = "SHA3-256";
-    public static final int NUMBER_OF_CANDIDATES_DEFAULT = 10;
+    public static final int NUMBER_OF_CANDIDATES_DEFAULT = 20;
 
 
     /**
@@ -115,6 +115,11 @@ public class CONSTANTS {
         public static final int TALLIER_COUNT = 10;
         public static final int K = (TALLIER_COUNT/2) - 1 ; // k < n/2
     }
+    private static class DISTRIBUTED {
+        public static final int TALLIER_COUNT = 10;
+        public static final int K = (TALLIER_COUNT/2) - 1 ; // k < n/2
+    }
+
 
 
 

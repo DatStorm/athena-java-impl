@@ -162,6 +162,7 @@ public class AthenaVote {
             athenaVote.random = this.athenaFactory.getRandom();
             athenaVote.elgamal = this.elgamal;
             athenaVote.bb = this.athenaFactory.getBulletinBoard();
+            athenaVote.vbb = this.athenaFactory.getVerifyingBulletinBoard();
             athenaVote.kappa = this.kappa;
 
             return athenaVote;

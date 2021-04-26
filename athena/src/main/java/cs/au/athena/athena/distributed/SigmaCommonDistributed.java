@@ -74,13 +74,15 @@ public class SigmaCommonDistributed {
         for (CommitmentAndProof comProof : commitmentAndProofs) {
             BigInteger commitment = comProof.commitment;
             Sigma1Proof rho = comProof.proof;
+
             boolean isValid = sigma1.VerifyKey(commitment, rho, group, kappa);
 
             if (!isValid){
-                throw new RuntimeException(String.format("Malicious tallier detected. Tallier failed to prove their key"));
+                return false;
             }
         }
-        return false;
+
+        return true;
     }
 
     public boolean verifyPK(BigInteger h, Sigma1Proof rho, Group group, int kappa) {
