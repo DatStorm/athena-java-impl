@@ -14,6 +14,7 @@ import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.factory.AthenaFactory;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -111,8 +112,12 @@ public class AthenaVerify {
         List<BigInteger> h_vector_vote = generators.get(1);
 
         // Verify all 2 vectors
-        boolean isValid1 = g_vector_vote.equals(this.vbb.retrieve_G_VectorVote());
-        boolean isValid2 = h_vector_vote.equals(this.vbb.retrieve_H_VectorVote());
+        Pair<List<BigInteger>, List<BigInteger>> g_and_h_vectors = vbb.retrieve_G_and_H_VectorVote();
+        List<BigInteger> g_vector_vote_from_bb = g_and_h_vectors.getLeft();
+        List<BigInteger> h_vector_vote_from_bb = g_and_h_vectors.getRight();
+
+        boolean isValid1 = g_vector_vote.equals(g_vector_vote_from_bb);
+        boolean isValid2 = h_vector_vote.equals(h_vector_vote_from_bb);
 
         return isValid1 && isValid2;
     }
@@ -137,7 +142,7 @@ public class AthenaVerify {
             A.put(key, updatedValue);
         }
 
-        // Cast A map values to list. The result will be an intermediate list of mixBallot b efore mixing.
+        // Cast A map values to list. The result will be an intermediate list of mixBallot before mixing.
         List<MixBallot> filteredBallots = A.values()
                 .parallelStream()
                 .map(MapAValue::toMixBallot)

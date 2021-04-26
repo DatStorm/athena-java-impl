@@ -90,12 +90,11 @@ public class AthenaVote {
                 uVector,
                 pk);
 
-
-
         // Proof on knowledge of encryptedVote
         // Prove that vote v resides in [0, nc-1] (this is defined using n)
-        List<BigInteger> g_vector_vote = bb.retrieve_G_VectorVote();
-        List<BigInteger> h_vector_vote = bb.retrieve_H_VectorVote();
+        Pair<List<BigInteger>, List<BigInteger>> g_and_h_vectors = vbb.retrieve_G_and_H_VectorVote();
+        List<BigInteger> g_vector_vote = g_and_h_vectors.getLeft();
+        List<BigInteger> h_vector_vote = g_and_h_vectors.getRight();
         BigInteger H = BigInteger.valueOf(nc - 1);
         BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
                 H,

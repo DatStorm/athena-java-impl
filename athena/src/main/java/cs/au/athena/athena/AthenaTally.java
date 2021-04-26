@@ -48,7 +48,7 @@ public class AthenaTally {
         logger.info(MARKER, "Step 1. Remove invalid ballots");
         List<Ballot> validBallots = removeInvalidBallots(pk, this.bb, this.vbb);
         if (validBallots.isEmpty()) {
-            logger.error("AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
+            logger.error(MARKER,"T"+ tallierIndex+ ": AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             throw new RuntimeException("Step 1 yielded no valid ballots on bulletin-board.");
         }
 
@@ -90,7 +90,7 @@ public class AthenaTally {
             // Is the public credential
             boolean isPublicCredentialInL = bb.electoralRollContains(publicCredential);
             if (!isPublicCredentialInL) {
-                System.err.println("AthenaTally.removeInvalidBallot => ballot posted with invalid public credential");
+                logger.info(MARKER, "AthenaTally.removeInvalidBallots => ballot posted with invalid public credential");
                 finalBallots.remove(ballot);
             }
 
@@ -110,8 +110,7 @@ public class AthenaTally {
 
             // remove invalid ballots.
             if (!verify_encryptedNegatedPrivateCredential) {
-                System.err.println("AthenaTally.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
-                logger.error(MARKER, "AthenaTally.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
+                logger.error(MARKER, "AthenaTally.removeInvalidBallots => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
                 finalBallots.remove(ballot);
             }
 
@@ -121,14 +120,18 @@ public class AthenaTally {
 
             int nc = bb.retrieveNumberOfCandidates();
             BigInteger H = BigInteger.valueOf(nc - 1);
+            Pair<List<BigInteger>, List<BigInteger>> g_and_h_vectors = vbb.retrieve_G_and_H_VectorVote();
+            List<BigInteger> g_vector_vote = g_and_h_vectors.getLeft();
+            List<BigInteger> h_vector_vote = g_and_h_vectors.getRight();
+
             BulletproofExtensionStatement stmnt_2 = new BulletproofExtensionStatement(
                     H,
                     new BulletproofStatement.Builder()
                             .setN(Bulletproof.getN(H))
                             .setV(encryptedVote.c2) // g^v h^t
                             .setPK(pk)
-                            .set_G_Vector(vbb.retrieve_G_VectorVote())
-                            .set_H_Vector(vbb.retrieve_H_VectorVote())
+                            .set_G_Vector(g_vector_vote)
+                            .set_H_Vector(h_vector_vote)
                             .setUVector(uVector)
                             .build()
             );
@@ -141,7 +144,7 @@ public class AthenaTally {
 
             // remove invalid ballots.
             if (!verify_encVote) {
-                System.err.println("AthenaImpl.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(v), proof_{v}) = 0");
+                System.err.println("AthenaTally.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(v), proof_{v}) = 0");
                 logger.info(MARKER, "Removing ballot");
                 finalBallots.remove(ballot);
             }
@@ -152,6 +155,7 @@ public class AthenaTally {
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
     private Map<MapAKey, MapAValue> filterReVotes(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
+        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[started]", tallierIndex));
         int ell = ballots.size();
         Map<MapAKey, MapAValue> A = new HashMap<>();
 
@@ -159,10 +163,15 @@ public class AthenaTally {
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
 
         // Collaborate with other talliers, to apply a nonce to all ciphertexts
+        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.1.start]", tallierIndex));
         List<Ciphertext> combinedCiphertexts = this.distributed.performPfrPhaseOneHomoComb(tallierIndex, ballots, nonce_n, sk, kappa);
+        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.1.end]", tallierIndex));
+
 
         // Collaborate with other talliers, to decrypt combined ciphertexts
+        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.2.start]", tallierIndex));
         List<BigInteger> listOfNoncedNegatedPrivateCredentialElement = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, combinedCiphertexts, sk, kappa);
+        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.2.end]", tallierIndex));
 
         // MapA
         for (int i = 0; i < ell; i++) {
@@ -175,7 +184,7 @@ public class AthenaTally {
             MapAValue updatedValue = getHighestCounterEntry(existingValue, ballot, sk.pk.group);
             A.put(key, updatedValue);
         }
-
+        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[ended]", tallierIndex));
         return A;
     }
 
@@ -286,7 +295,7 @@ public class AthenaTally {
             athenaTally.distributed = this.athenaFactory.getDistributedAthena();
             athenaTally.random = this.athenaFactory.getRandom();
             athenaTally.bb = this.athenaFactory.getBulletinBoard();
-            athenaTally.vbb = new VerifyingBulletinBoardV2_0(athenaTally.bb);
+            athenaTally.vbb = this.athenaFactory.getVerifyingBulletinBoard();
             athenaTally.kappa = kappa;
             athenaTally.tallierIndex = tallierIndex;
 

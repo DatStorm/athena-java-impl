@@ -34,7 +34,7 @@ public class PfPhase<T> {
     }
 
     public int size() {
-        return entries.size();
+        return nextIncompleteEntry;
     }
 
 }

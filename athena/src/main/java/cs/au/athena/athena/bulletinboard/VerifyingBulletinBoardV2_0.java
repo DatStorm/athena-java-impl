@@ -8,6 +8,7 @@ import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Group;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -39,8 +40,11 @@ public class VerifyingBulletinBoardV2_0 {
     Function<Integer, ElGamalPK> getPK;
     Function<Integer, ElGamalPK> getIndividualPK;
 
-    private final List<BigInteger> g_vector_vote;
-    private final List<BigInteger> h_vector_vote;
+    /*
+     * Being populated in the given method!
+     */
+    private List<BigInteger> g_vector_vote;
+    private List<BigInteger> h_vector_vote;
 
 
     public VerifyingBulletinBoardV2_0(BulletinBoardV2_0 bb) {
@@ -50,14 +54,12 @@ public class VerifyingBulletinBoardV2_0 {
         getPK = (index) -> retrieveAndVerifyPK();
         getIndividualPK = (index) -> retrievePKShare(index);
 
-        List<List<BigInteger>> vectors = GENERATOR.generateRangeProofGenerators(pk, bb.retrieveNumberOfCandidates());
-        this.g_vector_vote = vectors.get(0);
-        this.h_vector_vote = vectors.get(1);
+
     }
 
-    public List<BigInteger> retrieve_G_and_H_VectorVote() {
-        if(this.g_vector_vote != null) {
-            return this.g_vector_vote;
+    public Pair<List<BigInteger>,List<BigInteger>>  retrieve_G_and_H_VectorVote() {
+        if(this.g_vector_vote != null || this.h_vector_vote != null) {
+            return Pair.of(this.g_vector_vote, this.h_vector_vote);
         } else {
             ElGamalPK pk = retrieveAndVerifyPK();
             //calculate g_vector_vote and h_vector_vote
@@ -66,13 +68,15 @@ public class VerifyingBulletinBoardV2_0 {
             h_vector_vote = vectors.get(1);
         }
 
-        return Pair.of(this.g_vector_vote,h_vector_vote);
+        return Pair.of(g_vector_vote,h_vector_vote);
     }
-    public List<BigInteger> retrieve_H_VectorVote() { return this.h_vector_vote; }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
     private BiFunction<Entry<CombinedCiphertextAndProof>, ElGamalPK, Boolean> constructHomoVerify(List<Ciphertext> ciphertexts) {
-        return (entry, pk) -> SigmaCommonDistributed.verifyHomoComb(ciphertexts, entry.getValues(), pk, bb.retrieveKappa());
+        return (entry, pk) -> {
+
+            return SigmaCommonDistributed.verifyHomoComb(ciphertexts, entry.getValues(), pk, bb.retrieveKappa());
+        };
     }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
@@ -161,6 +165,9 @@ public class VerifyingBulletinBoardV2_0 {
     private <T> PfPhase<T> retrieveValidThresholdPfrPhase(BulletinBoardV2_0 bb, PfPhase<T> pfrPhase, BiFunction<Entry<T>, ElGamalPK, Boolean> verifyEntry, Function<Integer, ElGamalPK> getPK) {
         int tallierCount = bb.retrieveTallierCount();
 
+        logger.info(MARKER, String.format("Waiting for threshold=%d, valid entries", getThreshold()));
+
+
         CompletableFuture<PfPhase<T>> resultFuture = new CompletableFuture<>();
         // Build a chain of completable futures, that verify the messages as they are posted.
         // It sends the growing list down the cain
@@ -171,10 +178,11 @@ public class VerifyingBulletinBoardV2_0 {
 
         for (int i = 0; i < tallierCount; i++) {
             // When then ext entry is available
-            CompletableFuture<Entry<T>> future = pfrPhase.getFuture(i);
+            CompletableFuture<Entry<T>> entryFuture = pfrPhase.getFuture(i);
 
             // Continue chain, by verifying the entry and adding to Pfr
-            futureChain = futureChain.thenCombine(future, (PfPhase<T> chainPfrPhase, Entry<T> entry) -> {
+            futureChain = futureChain.thenCombine(entryFuture, (PfPhase<T> chainPfrPhase, Entry<T> entry) -> {
+                logger.info(MARKER, String.format("retrieveValidThreshold is verifying entry from T%d", entry.getIndex()));
 
                 // Verify entry
                 ElGamalPK pk = getPK.apply(entry.getIndex());
@@ -183,10 +191,15 @@ public class VerifyingBulletinBoardV2_0 {
                 // Grow list if valid
                 if(isValid) {
                     chainPfrPhase.add(entry);
+                    logger.info(MARKER, String.format("Entry was valid. Pf size is now %d", chainPfrPhase.size()));
+                } else {
+                    logger.info(MARKER, String.format("Entry was invalid. Pf size is now %d", chainPfrPhase.size()));
                 }
 
                 // When done, complete and stop the chain of futures
                 if(chainPfrPhase.size() == getThreshold()){
+                    logger.info(MARKER, "retrieveValidThreshold reached threshold size");
+
                     resultFuture.complete(chainPfrPhase);
                     throw new CancellationException("pfr has reached threshold size");
                 }

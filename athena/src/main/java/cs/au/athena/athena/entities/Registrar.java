@@ -19,13 +19,15 @@ import java.util.stream.IntStream;
 public class Registrar {
     private List<CredentialTuple> credentialList;
     private final Athena athena;
-    private BulletinBoardV2_0 bb;
-    private PK_Vector pkVector;
     private int kappa;
 
     public Registrar(Athena athena, BulletinBoardV2_0 bulletinBoard, int kappa) {
         this.athena = athena;
-        this.bb = bulletinBoard;
+        this.kappa = kappa;
+    }
+
+    public Registrar(Athena athena, int kappa) {
+        this.athena = athena;
         this.kappa = kappa;
     }
 

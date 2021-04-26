@@ -65,7 +65,7 @@ public class BulletinBoardV2_0 {
         this.encryptedSubShares = new HashMap<>();
         this.kappa = kappa;
         this.tallierCount = tallierCount;
-        this.k = (tallierCount-1)/2; // It must satisfy k < n/2, e.g. 0 < 2/2, 1 < 3/2,  1 < 4/2,  2 < 5/2,  2 < 6/2
+        this.k = (tallierCount - 1) / 2; // It must satisfy k < n/2, e.g. 0 < 2/2, 1 < 3/2,  1 < 4/2,  2 < 5/2,  2 < 6/2
         this.electoralRoll = new ElectoralRoll();
         this.ballots = new ArrayList<>();
 
@@ -192,8 +192,8 @@ public class BulletinBoardV2_0 {
 
     // Returns the index in the pfrPhaseOne
     public synchronized void publishPfrPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> values) {
-        if(values.size() == ballots.size()) {
-            throw new IllegalArgumentException("list must be the same length as ballots");
+        if(values.size() != ballots.size()) {
+            throw new IllegalArgumentException(String.format("T%d: list must be the same length as ballots", tallierIndex));
         }
 
         pfrPhasePhaseOne.add(new Entry<>(tallierIndex, values));
@@ -205,8 +205,8 @@ public class BulletinBoardV2_0 {
 
 
     public synchronized void publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> values) {
-        if(values.size() == ballots.size()) {
-            throw new IllegalArgumentException("list must be the same length as ballots");
+        if(values.size() != ballots.size()) {
+            throw new IllegalArgumentException(String.format("T%d: list must be the same length as ballots", tallierIndex));
         }
 
         // Set values in pfr
@@ -219,15 +219,15 @@ public class BulletinBoardV2_0 {
 
 
     public void publishPfdPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> values) {
-        if(values.size() == ballots.size()) {
-            throw new IllegalArgumentException("list must be the same length as ballots");
+        if(values.size() != ballots.size()) {
+            throw new IllegalArgumentException(String.format("T%d: list must be the same length as ballots", tallierIndex));
         }
 
         pfdPhasePhaseOne.add(new Entry<>(tallierIndex, values));
     }
 
     public synchronized void publishPfdPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> values) {
-        if(values.size() == ballots.size()) {
+        if(values.size() != ballots.size()) {
             throw new IllegalArgumentException("list must be the same length as ballots");
         }
 
@@ -235,7 +235,7 @@ public class BulletinBoardV2_0 {
     }
 
     public synchronized void publishPfdPhaseThreeEntry(int tallierIndex, List<DecryptionShareAndProof> values) {
-        if(values.size() == ballots.size()) {
+        if(values.size() != ballots.size()) {
             throw new IllegalArgumentException("list must be the same length as ballots");
         }
 

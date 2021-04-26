@@ -44,6 +44,7 @@ public class AthenaDistributed {
     public AthenaDistributed(AthenaFactory athenaFactory) {
         this.athenaFactory = athenaFactory;
         this.bb = this.athenaFactory.getBulletinBoard();
+        this.vbb = this.athenaFactory.getVerifyingBulletinBoard();
     }
 
     public ElGamalSK setup(int tallierIndex, int nc, int kappa) {
@@ -89,11 +90,11 @@ public class AthenaDistributed {
         Sigma1Proof rho_i = this.proveKey(pk_i, sk_i, kappa);
 
         // Publish my individual public key, so others can send me a subShare
-        logger.info(MARKER, "publish individual pk.");
+        logger.info(MARKER, "publishing individual pk.");
         bb.publishIndividualPKvector(tallierIndex, new PK_Vector(pk_i, rho_i));
 
         // Send subshares P_i(j) to T_j
-        logger.info(MARKER, "publishSubShares start");
+        logger.info(MARKER, "publishing subshares");
         this.publishSubShares(tallierIndex, group, random, tallierCount, polynomial, kappa);
 
         // Receive subshares, add our own, and compute our final share
@@ -128,7 +129,7 @@ public class AthenaDistributed {
             Ciphertext encSubShare = Elgamal.encrypt(GroupTheory.fromZqToG(subShare, group), pk_j, random);
 
             // Send subshare, by encrypting and positing
-            logger.info(MARKER, String.format("tallier %d publishing P_%d(%d)", tallierIndex, tallierIndex ,j));
+            //logger.info(MARKER, String.format("tallier %d publishing P_%d(%d)", tallierIndex, tallierIndex ,j));
             bb.publishEncSubShare(tallierIndex, j, encSubShare); // key = (i,j)
         }
     }
@@ -279,6 +280,7 @@ public class AthenaDistributed {
 
     // Returns a list of nonced ciphertexts
     public List<Ciphertext> performPfrPhaseOneHomoComb(int tallierIndex, List<Ballot> ballots, BigInteger nonce, ElGamalSK sk, int kappa) {
+        logger.info(MARKER,String.format("T%d: AthenaDistributed.performPfrPhaseOneHomoComb[started]", tallierIndex));
         int ell = ballots.size();
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
 
@@ -307,10 +309,14 @@ public class AthenaDistributed {
         }
 
         // Publish
+        logger.info(MARKER, "publishing entry and awaiting threshold entries");
         bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve threshold shares
         PfPhase<CombinedCiphertextAndProof> completedPfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne();
+        logger.info(MARKER, "Retrieved threshold entries");
+
+        // Combine shares
 
         // We want to create a list of cipertexts, where element i is the product of the k+1 ciphertexts
         // This is done by making a list of ciphertexts, and multiplying a talliers ciphertexts onto the corresponding entry
@@ -320,13 +326,18 @@ public class AthenaDistributed {
                 .limit(ell)
                 .collect(Collectors.toList());
 
+        logger.info(MARKER, String.format("T%d: Calculating: RES: %s", tallierIndex, result.stream().map(Ciphertext::toOneLineString)));
+        logger.info(MARKER, String.format("T%d: completedPfrPhaseOne.size() =%d", tallierIndex,completedPfrPhaseOne.size()));
+
         // For each tallier in the set
         for (int i = 0; i < completedPfrPhaseOne.size(); i++) {
             List<CombinedCiphertextAndProof> ciphertextAndProofs = completedPfrPhaseOne.get(i).getValues();
+            logger.info(MARKER, String.format("T%d: CAlC_%d ", tallierIndex, i));
 
             // For each ciphertext
             for (int j = 0; j < ell; j++) {
                 CombinedCiphertextAndProof combinedCiphertextAndProof = ciphertextAndProofs.get(i);
+                logger.info(MARKER, String.format("T%d: CAlC_%d-Proof_%d", tallierIndex, i, j));
 
                 // Multiply onto the result list
                 Ciphertext oldValue = result.get(j);
@@ -334,6 +345,8 @@ public class AthenaDistributed {
                 result.set(j, newValue);
             }
         }
+
+        logger.info(MARKER,String.format("T%d: AthenaDistributed.performPfrPhaseOneHomoComb[ended]", tallierIndex));
 
         return result;
     }
@@ -456,17 +469,17 @@ public class AthenaDistributed {
         List<DecryptionShareAndProof> decryptionSharesAndProofs = generateDecryptionShareAndProofs(tallierIndex, encryptedVotes, skShare, kappa);
 
         // Publish
-        bb.publishPfdPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
+        bb.publishPfdPhaseThreeEntry(tallierIndex, decryptionSharesAndProofs);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
-        PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseThree(encryptedVotes);
-        assert completedPfdPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfdPhaseTwo.size());
+        PfPhase<DecryptionShareAndProof> completedPfdPhaseThree = vbb.retrieveValidThresholdPfdPhaseThree(encryptedVotes);
+        assert completedPfdPhaseThree.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfdPhaseThree.size());
 
         // A ballot is authorized if m == 1.
         List<Boolean> authorizedToDecrypt = m_list.stream().map(m -> m.equals(BigInteger.ONE)).collect(Collectors.toList());
 
         // Decrypt
-        List<BigInteger> noncedCombinedCredentials = combineDecryptionSharesAndDecrypt(encryptedVotes, completedPfdPhaseTwo, authorizedToDecrypt);
+        List<BigInteger> noncedCombinedCredentials = combineDecryptionSharesAndDecrypt(encryptedVotes, completedPfdPhaseThree, authorizedToDecrypt);
         return noncedCombinedCredentials;
     }
 
