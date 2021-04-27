@@ -51,7 +51,7 @@ public class AthenaTally {
             logger.error(MARKER,"T"+ tallierIndex+ ": AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             throw new RuntimeException("Step 1 yielded no valid ballots on bulletin-board.");
         }
-
+        logger.info(MARKER, String.format("T%d: starting on validBallots: %s", tallierIndex, validBallots.toString()));
 
         /* ********
          * Step 2: Mix final votes
@@ -245,14 +245,16 @@ public class AthenaTally {
         List<Ciphertext> combinedCredentialsWithNonce = this.distributed.performPfdPhaseOneHomoComb(tallierIndex, combinedCredentials, random, sk, kappa);
         List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
         logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ]", tallierIndex,m_list));
-        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ] mod p", tallierIndex,m_list.stream().map( e -> e.mod(sk.pk.group.p)).collect(Collectors.toList())));
 
-        List<BigInteger> voteGroupElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
+        List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
 
-        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ |votes|= %d ]", tallierIndex,voteGroupElements.size()));
+        logger.info(MARKER, String.format("T%d: elgamal lookup table: %s", tallierIndex, elgamal.getLookupTable().toString()));
+        logger.info(MARKER, String.format("T%d: decrypted vote elements to: %s", tallierIndex, voteElements.toString()));
+
+        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ |votes|= %d ]", tallierIndex, voteElements.size()));
 
         // Lookup to go from g^v to v
-        List<Integer> votes = voteGroupElements.stream().map(voteGroupElement -> this.elgamal.lookup(voteGroupElement)).collect(Collectors.toList());
+        List<Integer> votes = voteElements.stream().map(voteGroupElement -> this.elgamal.lookup(voteGroupElement)).collect(Collectors.toList());
 
         // Tally votes
         for(Integer vote : votes) {

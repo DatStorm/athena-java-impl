@@ -254,4 +254,11 @@ public class UTIL {
         return res;
     }
 
+    public String hashMapToStringAsTable(HashMap<T,T> map ) {
+        String s = "";
+
+
+        return s;
+    }
+
 }

@@ -29,7 +29,7 @@ public class PfPhase<T> {
         return entries.get(i).join();
     }
 
-    public List<Entry<T>> getAll() {
+    public List<Entry<T>> getEntries() {
         return entries.stream().map(CompletableFuture::join).collect(Collectors.toList());
     }
 

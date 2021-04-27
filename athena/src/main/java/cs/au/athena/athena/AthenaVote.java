@@ -54,6 +54,8 @@ public class AthenaVote {
 
         ElGamalPK pk = vbb.retrieveAndVerifyPK();
 
+
+
         boolean vote_in_range = vote >= 0 && vote < nc;
         boolean not_in_message_space = BigInteger.valueOf(nc).compareTo(pk.group.q) >= 0; // Should be in Z_q
         if (!vote_in_range || not_in_message_space) {
@@ -77,6 +79,8 @@ public class AthenaVote {
         BigInteger voteAsBigInteger = BigInteger.valueOf(vote);
         BigInteger randomness_t = UTIL.getRandomElement(q, random);
         Ciphertext encryptedVote = elgamal.exponentialEncrypt(voteAsBigInteger, pk, randomness_t);
+
+        logger.info(MARKER, String.format("vote:%d, VoteElement:%d", vote, pk.group.g.pow(vote).mod(pk.group.p)));
 
         // message/vector u used to make ballot proofs specific to the given ballot
         //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)

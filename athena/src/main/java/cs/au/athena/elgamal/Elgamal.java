@@ -52,6 +52,10 @@ public class Elgamal {
         return lookupTable;
     }
 
+    public Map<BigInteger, Integer> getLookupTable() {
+        return this.lookupTable;
+    }
+
     @Deprecated // Use generateGroup instead, and pass group to constructor.
     public Elgamal(int bitLength, int messageSpaceLength, Random random) {
         this(generateGroup(bitLength, random), messageSpaceLength, random);
@@ -173,7 +177,7 @@ public class Elgamal {
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt: Possible votes = " + lookupTable.values() + CONSTANTS.ANSI_RESET);
-            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: ");
+            throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + Collections.max(lookupTable.values()));
         } else {
             return lookupTable.get(element);
         }

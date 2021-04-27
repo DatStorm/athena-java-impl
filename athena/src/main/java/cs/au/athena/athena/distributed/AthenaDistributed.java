@@ -248,7 +248,7 @@ public class AthenaDistributed {
             // Is it our turn to mix?
             if(nextTallierToMix == tallierIndex) {
                 // Mix and prove
-                logger.info(MARKER, String.format("T%d mixing", tallierIndex));
+                logger.info(MARKER, String.format("T%d mixing============", tallierIndex));
                 mixedBallotsAndProof = mixnet.mixAndProveMix(previousMixedBallots, pk, kappa);
 
                 // Publish
@@ -469,7 +469,7 @@ public class AthenaDistributed {
         Group group = bb.retrieveGroup();
 
         // Find the set of talliers in the pfr
-        List<Integer> S = completedPfdPhaseTwo.getAll().stream()
+        List<Integer> S = completedPfdPhaseTwo.getEntries().stream()
                 .map(Entry::getIndex)
                 .collect(Collectors.toList());
 
@@ -480,7 +480,7 @@ public class AthenaDistributed {
         // Therefore we need to traverse the k+1 lists in pfr simultaneously
         // This is done by making an iterator for each tallier, and using calling each one time per ballot
         List<Pair<Integer, Iterator<DecryptionShareAndProof>>> iteratorPairs = new ArrayList<>();
-        for (Entry<DecryptionShareAndProof> entry : completedPfdPhaseTwo.getAll()) {
+        for (Entry<DecryptionShareAndProof> entry : completedPfdPhaseTwo.getEntries()) {
             Integer s = entry.getIndex();
             List<DecryptionShareAndProof> listOfDecryptionSharesAndProof = entry.getValues();
             iteratorPairs.add(Pair.of(s, listOfDecryptionSharesAndProof.iterator()));

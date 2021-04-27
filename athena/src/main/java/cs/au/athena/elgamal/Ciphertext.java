@@ -35,6 +35,11 @@ public class Ciphertext {
         return "Ciphertext={\t'c1': " + this.c1 + ",\t'c2': " + this.c2 + "}";
     }
 
+
+    public String toOneLineShortString() {
+        return "Ciphertext={\t'c1': " + this.c1.toString().substring(0,5) + ",\t'c2': " + this.c2.toString().substring(0,5) + "}";
+    }
+
     public Ciphertext multiply(Ciphertext c, BigInteger p) {
         if (p == null || c == null) {
             throw new IllegalArgumentException("Ciphertext.multiply: Missing group p ");
