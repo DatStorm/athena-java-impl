@@ -23,7 +23,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 
 @Tag("TestAthenaWith3Talliers")
 @DisplayName("Test Athena with 3 talliers")
-public class TestAthenaWith3Talliers {
+public class TestAthenaDistributedWith3Talliers {
 
 
     @Test
@@ -32,18 +32,15 @@ public class TestAthenaWith3Talliers {
         int kappa = CONSTANTS.KAPPA;
         int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
         MainAthenaFactory factory = new MainAthenaFactory(tallierCount, kappa);
-        System.out.println("K: " + factory.getBulletinBoard().retrieveK());
-        System.out.println("tallierCount: " + factory.getBulletinBoard().retrieveTallierCount());
 
         AthenaImpl athena = new AthenaImpl(factory);
         Map<Integer,ElGamalSK> talliersSK_HACKY_ASF = new HashMap<>();
 
         Function<Integer, Runnable> newRunnable =
-                (Integer i) ->
+                (tallierIndex) ->
                         () -> {
-                            int tallierIndex = i;
                             ElGamalSK T_i_sk = athena.Setup(tallierIndex, nc, kappa);
-                            talliersSK_HACKY_ASF.put(i,T_i_sk);
+                            talliersSK_HACKY_ASF.put(tallierIndex, T_i_sk);
                             try {
                                 Thread.sleep(10000);
                             } catch (InterruptedException e) {
@@ -83,12 +80,12 @@ public class TestAthenaWith3Talliers {
 
         // Tally votes
         Function<Integer, Runnable> tallyRunnable =
-                (Integer i) ->
+                (tallierIndex) ->
                         () -> {
-                            ElGamalSK T_i_sk = talliersSK_HACKY_ASF.get(i);
-                            System.err.println("--".repeat(30) + "> Tally T"+ i + " is tallying");
+                            ElGamalSK T_i_sk = talliersSK_HACKY_ASF.get(tallierIndex);
+                            System.err.println("--".repeat(30) + "> Tally T"+ tallierIndex + " is tallying");
 
-                            Map<Integer, Integer> map = athena.Tally(i, T_i_sk, nc, kappa);
+                            Map<Integer, Integer> map = athena.Tally(tallierIndex, T_i_sk, nc, kappa);
                             try {
                                 Thread.sleep(10000);
                             } catch (InterruptedException e) {

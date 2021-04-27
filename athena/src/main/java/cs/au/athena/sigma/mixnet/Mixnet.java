@@ -1,4 +1,4 @@
-package cs.au.athena.mixnet;
+package cs.au.athena.sigma.mixnet;
 
 import cs.au.athena.HASH;
 import cs.au.athena.UTIL;
@@ -8,7 +8,6 @@ import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.Elgamal;
 import cs.au.athena.elgamal.Group;
 import cs.au.athena.elgamal.ElGamalPK;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.*;

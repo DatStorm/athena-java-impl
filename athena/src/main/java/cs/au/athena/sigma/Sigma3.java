@@ -8,39 +8,102 @@ import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
+import cs.au.athena.elgamal.Group;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
 
 public class Sigma3 {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+    private static final Marker MARKER = MarkerFactory.getMarker("Sigma3: ");
 
     public Sigma3() {    }
 
-    private static void d(String s) {
-//        System.out.println("Sigma3: " + s);
-    }
 
-    // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
-    /**
-    * param plaintextElement: A group element representing the plaintext. g^m
-    *
-    */
     public Sigma3Proof proveDecryption(Ciphertext ciphertext, BigInteger plaintextElement, ElGamalSK sk, int kappa) {
-        return proveLogEquality(createStatement(sk.pk, ciphertext, plaintextElement), sk.toBigInteger(), kappa);
+        Sigma3Statement statement = createDecryptionStatement(ciphertext, plaintextElement, sk.pk);
+        return proveLogEquality(statement, sk.toBigInteger(), kappa);
     }
 
-    public Sigma3Proof proveDecryption(Sigma3Statement statement, BigInteger secret, int kappa) {
-        return proveLogEquality(statement, secret, kappa);
-    }
-
-    public boolean verifyDecryption(Ciphertext ciphertext, BigInteger plaintextElement, ElGamalPK pk, Sigma3Proof decProof, int kappa) {
-        return verifyLogEquality(createStatement(pk, ciphertext, plaintextElement), decProof, kappa);
-    }
-
-    public boolean verifyDecryption(Sigma3Statement statement, Sigma3Proof decProof, int kappa) {
+    public boolean verifyDecryption(Ciphertext ciphertext, BigInteger decryptionShare, Sigma3Proof decProof, ElGamalPK pk, int kappa) {
+        Sigma3Statement statement = createDecryptionStatement(ciphertext, decryptionShare, pk);
         return verifyLogEquality(statement, decProof, kappa);
     }
+
+
+
+    // FIXME: Test this
+    public Sigma3Proof proveDecryptionShare(Ciphertext ciphertext, BigInteger decryptionShare, ElGamalSK sk, int kappa) {
+        Sigma3Statement statement = createDecryptionShareStatement(ciphertext, decryptionShare, sk.pk);
+        Sigma3Proof proof = proveLogEquality(statement, sk.sk, kappa);
+
+//        assert verifyDecryptionShare(ciphertext, decryptionShare, proof, sk.pk, kappa): String.format("Verification of share failed. ");
+
+        return proof;
+    }
+
+    // FIXME: Test this
+    public boolean verifyDecryptionShare(Ciphertext ciphertext, BigInteger plaintextElement, Sigma3Proof decProof, ElGamalPK pk, int kappa) {
+        Sigma3Statement statement = createDecryptionShareStatement(ciphertext, plaintextElement, pk);
+        return verifyLogEquality(statement, decProof, kappa);
+    }
+
+
+
+
+
+
+
+
+
+    /**
+     *
+     * @param ciphertext
+     * @param plaintextElement : the group element representing the value. g^m
+     * @param pk
+     * @return
+     */
+    public static Sigma3Statement createDecryptionStatement(Ciphertext ciphertext, BigInteger plaintextElement, ElGamalPK pk) {
+        Group group = pk.group;
+
+        // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
+        BigInteger alpha_base = pk.group.g;
+        BigInteger alpha = pk.h;
+
+        // beta = c2 * g^(plain)^{-1} mod p 
+        // c2/g^m = h^r g^m * g^-m
+        BigInteger beta_base = ciphertext.c1;
+        BigInteger beta = ciphertext.c2.multiply(plaintextElement.modInverse(group.p)).mod(group.p);
+
+        return new Sigma3Statement(pk.getGroup(), alpha, beta, alpha_base, beta_base);
+    }
+
+    public Sigma3Statement createDecryptionShareStatement(Ciphertext ciphertext, BigInteger decryptionShare, ElGamalPK pk) {
+        Group group = pk.group;
+
+        // Check that h_j = g^{P(j)} and log_g h_j = log_c1 d_j^-1
+        BigInteger alpha_base = group.g;
+        BigInteger alpha = pk.h;
+        BigInteger beta_base = ciphertext.c1;
+        BigInteger beta = decryptionShare.modInverse(group.p);
+
+        return new Sigma3Statement(group, alpha, beta, alpha_base, beta_base);
+    }
+
+
+
+
+
+
+
+
+
 
     // log_{alpha_base} alpha = log_{beta_base} beta}
     public Sigma3Proof proveLogEquality(Sigma3Statement statement, BigInteger secret, int kappa) {
@@ -55,7 +118,6 @@ public class Sigma3 {
 
         //Step 1
         BigInteger s = UTIL.getRandomElement(BigInteger.ZERO, q, random);
-
         BigInteger a = alpha_base.modPow(s, p);
         BigInteger b = beta_base.modPow(s, p);
 
@@ -65,9 +127,6 @@ public class Sigma3 {
         BigInteger alpha_c = c.multiply(secret).mod(q);
         BigInteger r = s.add(alpha_c).mod(q); //r = s + c*secret
 
-        d("prove.check1: " + checkPart1(alpha_base, r, a, alpha, c, p));
-        d("prove.check2: " + checkPart2(beta_base,  r, b, beta,  c, p));
-
         // ProveDecryption
         return new Sigma3Proof(a, b, r);
     }
@@ -76,7 +135,7 @@ public class Sigma3 {
         if(decProof.isEmpty()){
             System.err.println("Sigma3.verifyLogEquality=> decProof is empty");
         }
-        
+
         BigInteger p = statement.group.p;
 
         // verify that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/m
@@ -94,15 +153,8 @@ public class Sigma3 {
         boolean checkPart1 = checkPart1(alpha_base, r, a, alpha, c, p);
         boolean checkPart2 = checkPart2(beta_base,  r, b, beta,  c, p);
 
-        d("verify.check1: " + checkPart1);
-        d("verify.check2: " + checkPart2);
-
         return checkPart1 && checkPart2;
     }
-
-
-
-
 
     public BigInteger hash(BigInteger ... values) {
         byte[] concatenated = new byte[]{};
@@ -114,35 +166,10 @@ public class Sigma3 {
         return new BigInteger(1,hashed);
     }
 
-
-    /**
-     *
-     * @param pk
-     * @param ciphertext
-     * @param plaintextElement: the group element representing the value. g^m
-     * @return
-     */
-    public static Sigma3Statement createStatement(ElGamalPK pk, Ciphertext ciphertext, BigInteger plaintextElement) {
-        BigInteger p = pk.getGroup().getP();
-
-        // prove that log_g g^sk = log_c1 c1^sk aka log_g h = log_c1 c2/g^m
-        BigInteger alpha = pk.getH();
-        BigInteger alpha_base = pk.getGroup().getG();
-        
-        // beta = c2 * g^(plain)^{-1} mod p 
-        // c2/g^m = h^r g^m * g^-m
-        BigInteger beta = ciphertext.c2.multiply(plaintextElement.modInverse(p)).mod(p);
-        BigInteger beta_base = ciphertext.c1;
-
-        return new Sigma3Statement(pk.getGroup(), alpha, beta, alpha_base, beta_base);
-    }
-
-
     public boolean checkPart1(BigInteger alpha_base, BigInteger r, BigInteger a, BigInteger alpha, BigInteger c, BigInteger p) {
         BigInteger alpha_base_r = alpha_base.modPow(r, p);
         BigInteger a_alpha_c = a.multiply(alpha.modPow(c,p)).mod(p);
-        d("check1: alpha_base_r=  " + alpha_base_r);
-        d("check1: a_alpha_c=     " + a_alpha_c);
+
         return alpha_base_r.compareTo(a_alpha_c) == 0;
     }
     
@@ -151,10 +178,7 @@ public class Sigma3 {
         BigInteger beta_base_r = beta_base.modPow(r,p);
 
         BigInteger b_beta_c = b.multiply(beta.modPow(c,p)).mod(p);
-        d("check2: beta_base_r=   " + beta_base_r);
-        d("check2: b_beta_c=      " + b_beta_c);
+
         return beta_base_r.compareTo(b_beta_c) == 0;
     }
-
-
 }

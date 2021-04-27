@@ -4,7 +4,7 @@ import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
-import cs.au.athena.mixnet.Mixnet;
+import cs.au.athena.sigma.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import cs.au.athena.sigma.Sigma3;

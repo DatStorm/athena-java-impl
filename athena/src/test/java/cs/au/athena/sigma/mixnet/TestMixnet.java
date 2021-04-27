@@ -1,4 +1,4 @@
-package cs.au.athena.mixnet;
+package cs.au.athena.sigma.mixnet;
 
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import org.junit.jupiter.api.BeforeEach;

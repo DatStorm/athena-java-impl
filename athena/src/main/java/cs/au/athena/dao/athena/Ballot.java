@@ -53,7 +53,7 @@ public class Ballot {
                 "pd=" + publicCredential.toShortString() +
                 ", c1=" + encryptedNegatedPrivateCredential.toShortString() +
                 CONSTANTS.ANSI_RED +
-                ", enc_VOTE:=" + encryptedVote.toFormattedString() +
+                ", enc_VOTE:=" + encryptedVote.toOneLineShortString() +
                 CONSTANTS.ANSI_RESET +
 //                ", sigma1=" + proofVote.toNameString() +
 //                ", sigma2=" + proofNegatedPrivateCredential.toNameString() +

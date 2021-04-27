@@ -42,7 +42,7 @@ public class TestSigma3 {
         // g^41 is though
         plain_msg_m = new BigInteger("41");
         cipher = elGamal.exponentialEncrypt(plain_msg_m, pk);
-        statement = Sigma3.createStatement(pk, cipher, plain_msg_m);
+        statement = Sigma3.createDecryptionStatement(cipher, plain_msg_m, pk);
     }
 
 
@@ -53,7 +53,7 @@ public class TestSigma3 {
         BigInteger p = sk.pk.group.p;
         BigInteger g_raised_to_plain = g.modPow(this.plain_msg_m,p);
         Sigma3Proof sigma3Proof = sigma3.proveDecryption(cipher, g_raised_to_plain, sk, kappa);
-        boolean verification = sigma3.verifyDecryption(cipher, g_raised_to_plain, sk.getPK(), sigma3Proof, kappa);
+        boolean verification = sigma3.verifyDecryption(cipher, g_raised_to_plain, sigma3Proof, sk.getPK(), kappa);
         MatcherAssert.assertThat("VerDec(...)=1", verification, is(true));
     }
 
