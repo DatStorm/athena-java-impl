@@ -73,7 +73,6 @@ public class SigmaCommonDistributed {
 
 
 
-
     public static List<CombinedCiphertextAndProof> proveHomoCombPfrPhaseOne(List<Ciphertext> ciphertexts, BigInteger nonce, ElGamalSK sk, int kappa) {
         int ell = ciphertexts.size();
 
@@ -133,7 +132,6 @@ public class SigmaCommonDistributed {
             logger.info(MARKER, String.format("i=%d = %b: Verifying: %s", i, isValid, currentObj));
 
             if(!isValid) {
-
                 return false;
             }
         }
