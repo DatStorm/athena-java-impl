@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 @Tag("TestAthenaDistributed")
 @SelectClasses({
         TestAthenaDistributedStrategy.class,
-        TestAthenaWith3Talliers.class,
+        TestAthenaDistributedWith3Talliers.class,
 })
 public class TestAthenaDistributed {
 }

@@ -1,8 +1,6 @@
 package cs.au.athena.factory;
 
-import cs.au.athena.elgamal.Elgamal;
-import cs.au.athena.elgamal.ElGamalPK;
-import cs.au.athena.mixnet.Mixnet;
+import cs.au.athena.sigma.mixnet.Mixnet;
 import cs.au.athena.sigma.Sigma1;
 import cs.au.athena.sigma.Sigma2Pedersen;
 import cs.au.athena.sigma.Sigma3;

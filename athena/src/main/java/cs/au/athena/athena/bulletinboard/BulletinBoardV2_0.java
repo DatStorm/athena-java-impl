@@ -199,9 +199,7 @@ public class BulletinBoardV2_0 {
         pfrPhasePhaseOne.add(new Entry<>(tallierIndex, values));
     }
 
-    public PfPhase<CombinedCiphertextAndProof> retrievePfrPhaseOne() {
-        return this.pfrPhasePhaseOne;
-    }
+
 
 
     public synchronized void publishPfrPhaseTwoEntry(int tallierIndex, List<DecryptionShareAndProof> values) {
@@ -211,10 +209,6 @@ public class BulletinBoardV2_0 {
 
         // Set values in pfr
         pfrPhasePhaseTwo.add(new Entry<>(tallierIndex, values));
-    }
-
-    public PfPhase<DecryptionShareAndProof> retrievePfrPhaseTwo() {
-        return this.pfrPhasePhaseTwo;
     }
 
 
@@ -248,22 +242,31 @@ public class BulletinBoardV2_0 {
 
 
 
+    public PfPhase<CombinedCiphertextAndProof> retrievePfrPhaseOne() {
+        return this.pfrPhasePhaseOne;
+    }
 
 
+    public PfPhase<DecryptionShareAndProof> retrievePfrPhaseTwo() {
+        return this.pfrPhasePhaseTwo;
+    }
 
 
     public PfPhase<CombinedCiphertextAndProof> retrievePfdPhaseOne() {
-        throw new UnsupportedOperationException();
+        return this.pfdPhasePhaseOne;
     }
 
     public PfPhase<DecryptionShareAndProof> retrievePfdPhaseTwo() {
-        throw new UnsupportedOperationException();
+        return this.pfdPhasePhaseTwo;
 
     }
+
     public PfPhase<DecryptionShareAndProof> retrievePfdPhaseThree() {
-        throw new UnsupportedOperationException();
-
+        return this.pfdPhasePhaseThree;
     }
+
+
+
 
     public Map<Integer, CompletableFuture<MixedBallotsAndProof>> retrieveMixedBallotAndProofs() {
         return this.mixedBallotAndProofs;
@@ -277,7 +280,7 @@ public class BulletinBoardV2_0 {
 
     @Deprecated
     public PFStruct retrievePF() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("FIXIT! BulletinBoardV2_0.retrievePF()! ");
     }
 
 

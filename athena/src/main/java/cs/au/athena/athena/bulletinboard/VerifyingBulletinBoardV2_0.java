@@ -123,7 +123,6 @@ public class VerifyingBulletinBoardV2_0 {
         }
 
         Group group = bb.retrieveGroup();
-
         BigInteger publicKeyShare = BigInteger.ONE;
         Map<Integer, CompletableFuture<List<CommitmentAndProof>>> commitmentAndProofsMap = bb.retrievePolynomialCommitmentsAndProofs();
 
@@ -149,14 +148,13 @@ public class VerifyingBulletinBoardV2_0 {
         return commitmentAndProofs.get(0).commitment;
     }
 
-    // Generic function containing the common code in the retrieveValidThreshold... functions/**
-
+    // Generic function containing the common code in the retrieveValidThreshold... functions
     /**
-     * @param pfrPhase the bulletin board pfr to retrieve from
+     * @param pfPhase the bulletin board pfr to retrieve from
      * @param verifyEntry a method that verifies the entries in the pfr
-     * @return A fytyre that is completed with threshold valid entries, when these are available on the BB
+     * @return A future that is completed with threshold valid entries, when these are available on the BB
      */
-    private <T> CompletableFuture<PfPhase<T>> retrieveValidThresholdPfrPhase(BulletinBoardV2_0 bb, PfPhase<T> pfrPhase, Function<Entry<T>, Boolean> verifyEntry) {
+    private <T> CompletableFuture<PfPhase<T>> retrieveValidThresholdPfPhase(BulletinBoardV2_0 bb, PfPhase<T> pfPhase, Function<Entry<T>, Boolean> verifyEntry) {
         int tallierCount = bb.retrieveTallierCount();
 
         logger.info(MARKER, String.format("Waiting for threshold=%d, valid entries", getThreshold()));
@@ -172,31 +170,31 @@ public class VerifyingBulletinBoardV2_0 {
 
         for (int i = 0; i < tallierCount; i++) {
             // When then ext entry is available
-            CompletableFuture<Entry<T>> entryFuture = pfrPhase.getFuture(i);
+            CompletableFuture<Entry<T>> entryFuture = pfPhase.getFuture(i);
 
             // Continue chain, by verifying the entry and adding to Pfr
-            futureChain = futureChain.thenCombine(entryFuture, (PfPhase<T> chainPfrPhase, Entry<T> entry) -> {
+            futureChain = futureChain.thenCombine(entryFuture, (PfPhase<T> chainPfPhase, Entry<T> entry) -> {
 
                 // Verify entry
                 boolean isValid = verifyEntry.apply(entry);
 
                 // Grow list if valid
                 if(isValid) {
-                    chainPfrPhase.add(entry);
-                    logger.info(MARKER, String.format("Received valid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfrPhase.size()));
+                    chainPfPhase.add(entry);
+                    logger.info(MARKER, String.format("Received valid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfPhase.size()));
                 } else {
-                    logger.info(MARKER, String.format("Received invalid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfrPhase.size()));
+                    logger.info(MARKER, String.format("Received invalid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfPhase.size()));
                 }
 
                 // When done, complete and stop the chain of futures
-                if(chainPfrPhase.size() == getThreshold()){
+                if(chainPfPhase.size() == getThreshold()){
                     logger.info(MARKER, "futureChain pf size reached the threshold");
 
-                    resultFuture.complete(chainPfrPhase);
+                    resultFuture.complete(chainPfPhase);
                     throw new CancellationException("pfr has reached threshold size. Do not wait for the remaining talliers");
                 }
 
-                return chainPfrPhase;
+                return chainPfPhase;
             });
         }
 
@@ -208,11 +206,11 @@ public class VerifyingBulletinBoardV2_0 {
                 .map(Ballot::getEncryptedNegatedPrivateCredential)
                 .collect(Collectors.toList());
 
-        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfrPhaseOne(), constructVerifyHomoCombPfr(encryptedNegatedPrivateCredentials));
+        return retrieveValidThresholdPfPhase(bb, bb.retrievePfrPhaseOne(), constructVerifyHomoCombPfr(encryptedNegatedPrivateCredentials));
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfrPhaseTwo(List<Ciphertext> ciphertexts) {
-        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfrPhaseTwo(), constructDecVerify(ciphertexts));
+        return retrieveValidThresholdPfPhase(bb, bb.retrievePfrPhaseTwo(), constructDecVerify(ciphertexts));
     }
 
     public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfdPhaseOne() {
@@ -220,14 +218,14 @@ public class VerifyingBulletinBoardV2_0 {
                 .map(MixBallot::getCombinedCredential)
                 .collect(Collectors.toList());
 
-        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCiphertexts));
+        return retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCiphertexts));
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseTwo(List<Ciphertext> ciphertexts) {
-        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfdPhaseTwo(), constructDecVerify(ciphertexts));
+        return retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseTwo(), constructDecVerify(ciphertexts));
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseThree(List<Ciphertext> ciphertexts) {
-        return retrieveValidThresholdPfrPhase(bb, bb.retrievePfdPhaseThree(), constructDecVerify(ciphertexts));
+        return retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseThree(), constructDecVerify(ciphertexts));
     }
 }

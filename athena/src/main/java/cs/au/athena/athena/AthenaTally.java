@@ -62,15 +62,21 @@ public class AthenaTally {
 
         // Perform random mix
         logger.info(MARKER, "Step 2b.Mixnet");
+        logger.info(MARKER, String.format("T%d: AthenaTally.mixnet[started]", tallierIndex));
         List<MixBallot> mixedBallots = mixnet(A, pk);
+        logger.info(MARKER, String.format("T%d: AthenaTally.mixnet[ended]", tallierIndex));
 
 
         /* ********
          * Step 3: Reveal eligible votes
          *********/
         logger.info(MARKER, "step 3. Reveal authorised votes");
+        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[started]", tallierIndex));
+
         // Tally eligible votes and prove computations
         Map<Integer, Integer> officialTally = revealAuthorisedVotes(mixedBallots, skShare, kappa);
+        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ended]", tallierIndex));
+
 
         // Post tallyboard
         bb.publishTallyOfVotes(officialTally);
@@ -163,15 +169,15 @@ public class AthenaTally {
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
 
         // Collaborate with other talliers, to apply a nonce to all ciphertexts
-        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.1.start]", tallierIndex));
+//        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.1.start]", tallierIndex));
         List<Ciphertext> combinedCiphertexts = this.distributed.performPfrPhaseOneHomoComb(tallierIndex, ballots, nonce_n, sk, kappa);
-        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.1.end]", tallierIndex));
+//        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.1.end]", tallierIndex));
 
 
         // Collaborate with other talliers, to decrypt combined ciphertexts
-        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.2.start]", tallierIndex));
+//        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.2.start]", tallierIndex));
         List<BigInteger> listOfNoncedNegatedPrivateCredentialElement = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, combinedCiphertexts, sk, kappa);
-        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.2.end]", tallierIndex));
+//        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.2.end]", tallierIndex));
 
         // MapA
         for (int i = 0; i < ell; i++) {
@@ -225,18 +231,28 @@ public class AthenaTally {
             officialTally.put(candidates, 0);
         }
 
-        List<Ciphertext> combinedCredentials = mixedBallots.stream().map(MixBallot::getCombinedCredential).collect(Collectors.toList());
-        List<Ciphertext> encryptedVotes = mixedBallots.stream().map(MixBallot::getEncryptedVote).collect(Collectors.toList());
+        List<Ciphertext> combinedCredentials = mixedBallots
+                .stream()
+                .map(MixBallot::getCombinedCredential)
+                .collect(Collectors.toList());
+
+        List<Ciphertext> encryptedVotes = mixedBallots
+                .stream()
+                .map(MixBallot::getEncryptedVote)
+                .collect(Collectors.toList());
 
         // Collaborate with other talliers, to apply a nonce to all ciphertexts
         List<Ciphertext> combinedCredentialsWithNonce = this.distributed.performPfdPhaseOneHomoComb(tallierIndex, combinedCredentials, random, sk, kappa);
-
         List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
+        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ]", tallierIndex,m_list));
+        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ] mod p", tallierIndex,m_list.stream().map( e -> e.mod(sk.pk.group.p)).collect(Collectors.toList())));
 
-        List<BigInteger> votesAsGroupElement = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
+        List<BigInteger> voteGroupElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
+
+        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ |votes|= %d ]", tallierIndex,voteGroupElements.size()));
 
         // Lookup to go from g^v to v
-        List<Integer> votes = votesAsGroupElement.stream().map(cipherGroup -> elgamal.lookup(cipherGroup)).collect(Collectors.toList());
+        List<Integer> votes = voteGroupElements.stream().map(voteGroupElement -> this.elgamal.lookup(voteGroupElement)).collect(Collectors.toList());
 
         // Tally votes
         for(Integer vote : votes) {

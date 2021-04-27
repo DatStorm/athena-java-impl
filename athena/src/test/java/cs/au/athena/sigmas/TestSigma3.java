@@ -42,7 +42,7 @@ public class TestSigma3 {
         // g^41 is though
         plain_msg_m = new BigInteger("41");
         cipher = elGamal.exponentialEncrypt(plain_msg_m, pk);
-        statement = Sigma3.createDecryptionStatement(pk, cipher, plain_msg_m);
+        statement = Sigma3.createDecryptionStatement(cipher, plain_msg_m, pk);
     }
 
 

@@ -1,4 +1,4 @@
-package cs.au.athena.mixnet;
+package cs.au.athena.sigma.mixnet;
 
 import org.apache.commons.lang3.ArrayUtils;
 

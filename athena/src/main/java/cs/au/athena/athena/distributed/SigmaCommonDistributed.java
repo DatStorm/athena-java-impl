@@ -177,7 +177,6 @@ public class SigmaCommonDistributed {
     public static List<DecryptionShareAndProof> computeDecryptionShareAndProofs(List<Ciphertext> ciphertexts, ElGamalSK sk, int kappa) {
         Group group = sk.pk.group;
         Sigma3 sigma3 = new Sigma3();
-
         List<DecryptionShareAndProof> decryptionSharesAndProofs = new ArrayList<>(ciphertexts.size());
 
         // generate decryption shares and proofs for all ballots
@@ -186,8 +185,8 @@ public class SigmaCommonDistributed {
             // Compute decryption share and proof
             BigInteger decryptionShare = ciphertext.c1.modPow(sk.toBigInteger().negate(), group.p);
 
-            // Prove decryption share
-            Sigma3Proof proof = sigma3.proveDecryptionShare(ciphertext, sk.pk.h, sk, kappa);
+            // Prove decryption share, i.e. show knowledge of P(j) s.t. h_j = g^{P(j)}
+            Sigma3Proof proof = sigma3.proveDecryptionShare(ciphertext, decryptionShare, sk, kappa);
 
             // Add to list
             decryptionSharesAndProofs.add(new DecryptionShareAndProof(decryptionShare, proof));
