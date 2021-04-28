@@ -1,6 +1,7 @@
 package cs.au.athena;
 
 import com.google.common.collect.Streams;
+import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.sigma1.CoinFlipInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -253,6 +254,27 @@ public class UTIL {
 //        System.out.println("RES MARK: " + res_mark);
         return res;
     }
+
+    public static String ballotListToString(List<BigInteger> ballots ) {
+        StringBuilder s = new StringBuilder();
+        s.append("\n");
+        s.append("---".repeat(20));
+        s.append("\n");
+        s.append("|\ti\t|\tval                                            |");
+        s.append("\n");
+
+        for (int i = 0; i < ballots.size(); i++) {
+            s.append("|\t");
+            s.append(i);
+            s.append("\t|\t");
+            s.append(ballots.get(i));
+            s.append("\n");
+        }
+        s.append("---".repeat(20));
+        s.append("\n");
+        return s.toString();
+    }
+
 
     public static String lookupTableToString(Map<BigInteger,Integer> map ) {
 

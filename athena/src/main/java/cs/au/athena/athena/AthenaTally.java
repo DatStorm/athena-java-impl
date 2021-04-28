@@ -52,7 +52,6 @@ public class AthenaTally {
             logger.error(MARKER,"T"+ tallierIndex+ ": AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             throw new RuntimeException("Step 1 yielded no valid ballots on bulletin-board.");
         }
-        logger.info(MARKER, String.format("T%d: starting on validBallots: %s", tallierIndex, validBallots.toString()));
 
         /* ********
          * Step 2: Mix final votes
@@ -63,16 +62,16 @@ public class AthenaTally {
 
         // Perform random mix
         logger.info(MARKER, "Step 2b.Mixnet");
-        logger.info(MARKER, String.format("T%d: AthenaTally.mixnet[started]", tallierIndex));
+        logger.info(MARKER, String.format("T%d: Mixnet[started]", tallierIndex));
         List<MixBallot> mixedBallots = mixnet(A, pk);
-        logger.info(MARKER, String.format("T%d: AthenaTally.mixnet[ended]", tallierIndex));
+        logger.info(MARKER, String.format("T%d: Mixnet[ended]", tallierIndex));
 
 
         /* ********
          * Step 3: Reveal eligible votes
          *********/
         logger.info(MARKER, "step 3. Reveal authorised votes");
-        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[started]", tallierIndex));
+        logger.info(MARKER, String.format("T%d: .revealAuthorisedVotes[started]", tallierIndex));
 
         // Tally eligible votes and prove computations
         Map<Integer, Integer> officialTally = revealAuthorisedVotes(mixedBallots, skShare, kappa);
@@ -244,7 +243,7 @@ public class AthenaTally {
 
         // Phase II. Decrypt nonced combinedCredential
         List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
-        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ]", tallierIndex, m_list));
+//        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ]", tallierIndex, UTIL.ballotListToString(m_list)));
 
         // Phase III. Decrypt authorized votes
         List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);

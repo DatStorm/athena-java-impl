@@ -420,7 +420,7 @@ public class AthenaDistributed {
             boolean isAuthorized = m.equals(BigInteger.ONE);
 
             if(!isAuthorized) {
-                logger.info(MARKER, String.format("unauthorized ballot removed. m:%d", m));
+                logger.info(MARKER, String.format("unauthorized ballot removed. m:%d", m)); //TODO: FIXME: issue is here, so start here!!!!!!
                 continue;
             }
 
