@@ -1,12 +1,12 @@
 package cs.au.athena.generator;
 
-import cs.au.athena.elgamal.Elgamal;
+import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalSK;
 
 import java.util.Random;
 
 public class Gen implements Generator {
-    private final Elgamal elGamal;
+    private final ElGamal elGamal;
 
     public Gen(Random random, int msgSpaceLength, int bitlength) {
         if(random == null){
@@ -16,11 +16,11 @@ public class Gen implements Generator {
             throw new RuntimeException("Gen() => kappa is 0");
         }
 
-        this.elGamal = new Elgamal(bitlength, msgSpaceLength, random);
+        this.elGamal = new ElGamal(bitlength, msgSpaceLength, random);
     }
 
     @Override
-    public Elgamal getElGamal() {
+    public ElGamal getElGamal() {
         return elGamal;
     }
 

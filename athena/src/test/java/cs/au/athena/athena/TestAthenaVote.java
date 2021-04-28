@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.Elgamal;
+import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.elgamal.Group;
 import cs.au.athena.factory.MainAthenaFactory;
@@ -34,7 +34,7 @@ public class TestAthenaVote {
     private ElGamalSK sk;
 
     private AthenaImpl athena;
-    private Elgamal elgamal;
+    private ElGamal elgamal;
 
 
     @BeforeEach
@@ -48,7 +48,7 @@ public class TestAthenaVote {
         PK_Vector pk_vector = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
         Group group = pk_vector.pk.group;
 
-        this.elgamal = new Elgamal(group, nc, msFactory.getRandom());
+        this.elgamal = new ElGamal(group, nc, msFactory.getRandom());
 
         pkv = pk_vector;
 
@@ -78,7 +78,7 @@ public class TestAthenaVote {
 
         // Enc_pk(d) * Enc_pk(-d) = g^0
         Ciphertext combinedCredential = ballot.publicCredential.multiply(ballot.encryptedNegatedPrivateCredential, sk.pk.group.p);
-        BigInteger m = Elgamal.decrypt(combinedCredential, sk);
+        BigInteger m = ElGamal.decrypt(combinedCredential, sk);
         assertEquals("m is equal to 1 ", BigInteger.ONE, m);
 
 

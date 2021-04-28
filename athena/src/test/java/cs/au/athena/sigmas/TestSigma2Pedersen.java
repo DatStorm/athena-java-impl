@@ -5,7 +5,7 @@ import cs.au.athena.UTIL;
 import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenProof;
 import cs.au.athena.dao.athena.UVector;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.Elgamal;
+import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.sigma.Sigma2Pedersen;
@@ -32,7 +32,7 @@ public class TestSigma2Pedersen {
     Sigma2Pedersen sigma2Pedersen;
     ElGamalSK sk;
     ElGamalPK pk;
-    Elgamal elGamal;
+    ElGamal elGamal;
     private static Random random;
 
     @BeforeAll
@@ -45,7 +45,7 @@ public class TestSigma2Pedersen {
         sigma2Pedersen = new Sigma2Pedersen(random);
 
         logger.info(MARKER,"BEFORE ELGAMAL");
-        elGamal = new Elgamal(CONSTANTS.ELGAMAL_CURRENT.GROUP, 0, random);
+        elGamal = new ElGamal(CONSTANTS.ELGAMAL_CURRENT.GROUP, 0, random);
         logger.info(MARKER,"AFTER ELGAMAL");
 
         this.sk = elGamal.generateSK();

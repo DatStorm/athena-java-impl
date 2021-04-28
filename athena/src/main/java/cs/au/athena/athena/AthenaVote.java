@@ -20,7 +20,7 @@ import cs.au.athena.dao.bulletproof.BulletproofProof;
 import cs.au.athena.dao.bulletproof.BulletproofSecret;
 import cs.au.athena.dao.bulletproof.BulletproofStatement;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.Elgamal;
+import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.sigma.bulletproof.Bulletproof;
 
@@ -35,7 +35,7 @@ public class AthenaVote {
 
     private Bulletproof bulletProof;
     private Random random;
-    private Elgamal elgamal;
+    private ElGamal elgamal;
     private int kappa;
     private AthenaDistributed distributed;
     private BulletinBoardV2_0 bb;
@@ -128,7 +128,7 @@ public class AthenaVote {
 
 
     public static class Builder {
-        private Elgamal elgamal;
+        private ElGamal elgamal;
         private int kappa;
         private AthenaFactory athenaFactory;
 
@@ -138,7 +138,7 @@ public class AthenaVote {
             return this;
         }
 
-        public Builder setElGamal(Elgamal elgamal) {
+        public Builder setElGamal(ElGamal elgamal) {
             this.elgamal = elgamal;
             return this;
         }

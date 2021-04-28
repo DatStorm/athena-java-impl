@@ -5,6 +5,7 @@ import cs.au.athena.CONSTANTS;
 import cs.au.athena.UTIL;
 import cs.au.athena.dao.athena.ElectoralRoll;
 import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -12,10 +13,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -25,6 +23,22 @@ import static org.junit.Assert.*;
 @DisplayName("Test cs.au.cs.au.athena.athena.UTIL")
 public class TestUTIL {
 
+
+    @Test
+    void TestTablePrintPermutation() {
+        BigInteger p = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_P;
+        BigInteger q = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_Q;
+        BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G;
+        Map<BigInteger, Integer> map = new HashMap<>();
+
+        map.put(p, 1);
+        map.put(q, 2);
+        map.put(g, 3);
+        map.put(p, 4);
+
+        System.out.println(UTIL.lookupTableToString(map));
+
+    }
 
     @Test
     void TestInversePermutation() {
@@ -37,7 +51,7 @@ public class TestUTIL {
 
         String msg = "A: " + Arrays.toString(objects.toArray()) + "\n B: " + Arrays.toString(result.toArray()) + "\n";
 //        System.out.println(msg);
-        assertArrayEquals(msg, objects.toArray(), result.toArray());
+        Assertions.assertArrayEquals(objects.toArray(), result.toArray(), msg);
     }
 
     @Test

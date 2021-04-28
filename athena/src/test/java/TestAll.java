@@ -1,7 +1,7 @@
 
 import cs.au.athena.athena.TestAthena;
 import cs.au.athena.bulletproof.TestBulletProofs;
-import cs.au.athena.elgamal.TestElgamalAll;
+import cs.au.athena.elgamal.TestElGamalAll;
 import cs.au.athena.sigma.mixnet.TestMixnet;
 import cs.au.athena.sigmas.TestSigmas;
 import cs.au.athena.util.TestUTIL;
@@ -12,7 +12,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         TestAthena.class,
         TestBulletProofs.class,
-        TestElgamalAll.class,
+        TestElGamalAll.class,
 //        TestEntities.class,
 //        TestExperiments.class,
         TestMixnet.class,

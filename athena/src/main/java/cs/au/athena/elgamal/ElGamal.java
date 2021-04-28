@@ -7,14 +7,14 @@ import cs.au.athena.UTIL;
 import java.math.BigInteger;
 import java.util.*;
 
-public class Elgamal {
+public class ElGamal {
     private Group group;
     private Random random;
 
     private int messageSpaceLength;
     private Map<BigInteger, Integer> lookupTable;
 
-    public Elgamal(Group group, int messageSpaceLength, Random random) {
+    public ElGamal(Group group, int messageSpaceLength, Random random) {
         if (messageSpaceLength < 0) {
             System.err.println("ERROR messageSpaceLength < 0");
         }
@@ -33,7 +33,7 @@ public class Elgamal {
         }
     }
 
-    public Elgamal(Group group, Random random) {
+    public ElGamal(Group group, Random random) {
         this.group = group;
         this.random = random;
     }
@@ -57,7 +57,7 @@ public class Elgamal {
     }
 
     @Deprecated // Use generateGroup instead, and pass group to constructor.
-    public Elgamal(int bitLength, int messageSpaceLength, Random random) {
+    public ElGamal(int bitLength, int messageSpaceLength, Random random) {
         this(generateGroup(bitLength, random), messageSpaceLength, random);
 
     }
@@ -175,7 +175,7 @@ public class Elgamal {
     public static Integer lookup(Map<BigInteger, Integer> lookupTable, BigInteger element) {
         if(!lookupTable.containsKey(element)){
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt Dec_sk(c) = g^m = " + element + CONSTANTS.ANSI_RESET);
-            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + lookupTable + CONSTANTS.ANSI_RESET);
+            System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt           table = " + UTIL.lookupTableToString(lookupTable) + CONSTANTS.ANSI_RESET);
             System.out.println(CONSTANTS.ANSI_GREEN + "ElGamal.decrypt: Possible votes = " + lookupTable.values() + CONSTANTS.ANSI_RESET);
             throw new IllegalArgumentException("Ciphertext is not contained in the decryption lookup table. The value must be smaller than: " + Collections.max(lookupTable.values()));
         } else {
