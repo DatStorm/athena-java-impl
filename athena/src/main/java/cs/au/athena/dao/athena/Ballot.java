@@ -51,10 +51,8 @@ public class Ballot {
     public String toString() {
         return "Ballot{" +
                 "pd=" + publicCredential.toShortString() +
-                ", c1=" + encryptedNegatedPrivateCredential.toShortString() +
-                CONSTANTS.ANSI_RED +
-                ", enc_VOTE:=" + encryptedVote.toOneLineShortString() +
-                CONSTANTS.ANSI_RESET +
+                ", c1=" + CONSTANTS.ANSI_YELLOW + encryptedNegatedPrivateCredential.toShortString() + CONSTANTS.ANSI_RESET +
+        ", enc_VOTE:=" +  CONSTANTS.ANSI_RED + encryptedVote.toOneLineShortString() + CONSTANTS.ANSI_RESET +
 //                ", sigma1=" + proofVote.toNameString() +
 //                ", sigma2=" + proofNegatedPrivateCredential.toNameString() +
                 ", cnt=" + counter +

@@ -11,6 +11,7 @@ import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
 import cs.au.athena.dao.bulletinboard.PfPhase;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.elgamal.Ciphertext;
+import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.factory.AthenaFactory;
 import org.apache.commons.lang3.tuple.Pair;
@@ -29,7 +30,6 @@ public class AthenaVerify {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-VERIFY");
 
-
     private BulletinBoardV2_0 bb;
     private VerifyingBulletinBoardV2_0 vbb;
 
@@ -42,12 +42,6 @@ public class AthenaVerify {
         //Fetch from bulletin board
         int nc = this.bb.retrieveNumberOfCandidates();
         Map<Integer, Map<Integer, Integer>> officialTallys = this.bb.retrieveOfficialTally();
-
-        // tallyVotes length should contain at most nc elements
-        if (officialTally.keySet().size() > nc) {
-            System.err.println("AthenaVerify:=> ERROR: tallyOfVotes.keySet().size()=" + officialTally.keySet().size() + " > nc=" + nc);
-            return false;
-        }
 
         // Retrieve and verify ElGamal PK produced form the polynomial of the talliers
         ElGamalPK pk = vbb.retrieveAndVerifyPK();
@@ -67,32 +61,55 @@ public class AthenaVerify {
         }
 
 
+        // Ground truth
+        Map<Integer, Integer> tally = calculateTally(pk, nc);
+
+
+        // is my "tally" equal to k+1 "officialTally";
+        int numberOfCorrectTallies = 0;
+       for (Map.Entry<Integer, Map<Integer, Integer>> entry : officialTallys.entrySet()) {
+            boolean tallierTallyMatchGroundTruth = entry.getValue().equals(tally);
+           if (tallierTallyMatchGroundTruth) {
+               numberOfCorrectTallies++;
+           } else {
+               logger.info(MARKER, String.format("AthenaVerify.Verify[T%d calculated wrong tally!]", entry.getKey()));
+           }
+        }
+
+       // we need k+1 equal tallies of the election.
+        boolean electionIsValid = numberOfCorrectTallies >= bb.retrieveK() + 1;
+        logger.info(MARKER, "AthenaVerify.Verify[ended]");
+        return electionIsValid;
+    }
+
+
+    private Map<Integer, Integer> calculateTally(ElGamalPK pk, int nc) {
+        logger.info(MARKER, "AthenaVerify.Verify.calculateTally[started]");
         /* ********
          * Verify Step 1: check ballot removal
          *********/
         List<Ballot> validBallots = AthenaTally.removeInvalidBallots(pk, this.bb, this.vbb);
-        if (validBallots.isEmpty() && !AthenaCommon.valuesAreAllX(officialTally, 0)) {
+        if (validBallots.isEmpty()) {
             System.err.println("AthenaVerify:=> Check 1 failed.");
-            return false;
+            throw new RuntimeException();
         }
 
 
         /* ********
-         * Verify step 2: check mixing
+         * Verify step 2:
          *********/
         List<Ciphertext> encryptedNegatedPrivateCredentials = validBallots
                 .stream()
                 .map(Ballot::getEncryptedNegatedPrivateCredential)
                 .collect(Collectors.toList());
 
-        // Verify homo comb proofs, and get nonced negated private credentials
-        // Combine shares
+        // Phase I: Nonce private credential
+        // Verify homo comb proofs, and get nonced negated private credentials, then Combine shares
         PfPhase<CombinedCiphertextAndProof> validPfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne(encryptedNegatedPrivateCredentials).join();
         List<Ciphertext> combinedCiphertexts = AthenaDistributed.combineCiphertexts(validPfrPhaseOne, pk.group);
 
-
-        // Verify decryption of homomorphic combination
-        // Combine shares
+        // Phase II: Filter re-votes
+        // Verify decryption of homomorphic combination, then Combine shares
         PfPhase<DecryptionShareAndProof> validPfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(combinedCiphertexts).join();
         List<BigInteger> noncedNegatedPrivateCredentials = AthenaDistributed.combineDecryptionSharesAndDecrypt(combinedCiphertexts, validPfrPhaseTwo, pk.group);
 
@@ -106,10 +123,10 @@ public class AthenaVerify {
                 .map(MapAValue::toMixBallot)
                 .collect(Collectors.toList());
 
+        // Phase III: Mixnet
         // Map<tallyIndex, MixProof>
         Map<Integer, CompletableFuture<MixedBallotsAndProof>> pfrPhaseThreeMixnet = vbb.retrieveValidMixedBallotAndProofs(initialMixBallots);
         List<MixBallot> finalMixedBallots = pfrPhaseThreeMixnet.get(bb.retrieveTallierCount()).join().mixedBallots; // Could be replaced with a PfPhaseMixnet.getFinalMix()
-
 
 
         /* ********
@@ -117,12 +134,36 @@ public class AthenaVerify {
          * This is Phase1, Phase2 and Phase3 for PFD.
          *********/
 
-        //checkrevalation udregner tally. og retunere isValid = tally == officialTally.
-        //is my "tally" == "oficialTally";
+        // For phase I
+        List<Ciphertext> combinedCredentials = finalMixedBallots
+                .stream()
+                .map(MixBallot::getCombinedCredential)
+                .collect(Collectors.toList());
 
-        boolean check = this.checkRevelation(finalMixedBallots, officialTally, pk, nc);
-        logger.info(MARKER, "AthenaVerify.Verify[ended]");
-        return check;
+        // For phase III
+        List<Ciphertext> encryptedVotes = finalMixedBallots
+                .stream()
+                .map(MixBallot::getEncryptedVote)
+                .collect(Collectors.toList());
+
+
+        // Phase I. Nonce combinedCredential
+        PfPhase<CombinedCiphertextAndProof> validPfdPhaseOne = vbb.retrieveValidThresholdPfdPhaseOne(combinedCredentials).join();
+        List<Ciphertext> noncedCombinedCredentials = AthenaDistributed.combineCiphertexts(validPfdPhaseOne, pk.group);
+
+        // Phase II. Decrypt nonced combinedCredential
+        PfPhase<DecryptionShareAndProof> validPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(noncedCombinedCredentials).join();
+        List<BigInteger> m_list = AthenaDistributed.combineDecryptionSharesAndDecrypt(combinedCredentials, validPfdPhaseTwo, pk.group);
+
+        // Remove unauthorized ballots
+        List<Ciphertext> authorizedEncryptedVotes = AthenaDistributed.removeUnauthorizedVotes(m_list, encryptedVotes);
+
+        // Phase III. Decrypt authorized votes
+        PfPhase<DecryptionShareAndProof> validPfdPhaseThree = vbb.retrieveValidThresholdPfdPhaseThree(authorizedEncryptedVotes).join();
+        List<BigInteger> voteElements = AthenaDistributed.combineDecryptionSharesAndDecrypt(authorizedEncryptedVotes, validPfdPhaseThree, pk.group);
+
+        // Compute tally
+        return AthenaTally.computeTally(voteElements, nc, pk.group);
     }
 
     // Verify that g,h vectors are choosen from a "random" seed.
@@ -140,45 +181,6 @@ public class AthenaVerify {
         boolean isValid2 = h_vector_vote.equals(h_vector_vote_from_bb);
 
         return isValid1 && isValid2;
-    }
-
-
-    private boolean checkRevelation(List<MixBallot> mixedBallots, Map<Integer, Integer> officialTally, ElGamalPK pk, int nc) {
-
-        // For phase I
-        List<Ciphertext> combinedCredentials = mixedBallots
-                .stream()
-                .map(MixBallot::getCombinedCredential)
-                .collect(Collectors.toList());
-
-        // For phase III
-        List<Ciphertext> encryptedVotes = mixedBallots
-                .stream()
-                .map(MixBallot::getEncryptedVote)
-                .collect(Collectors.toList());
-
-
-        // Phase I. Nonce combinedCredential
-        PfPhase<CombinedCiphertextAndProof> validPfdPhaseOne = vbb.retrieveValidThresholdPfdPhaseOne(combinedCredentials).join();
-        List<Ciphertext> noncedCombinedCredentials = AthenaDistributed.combineCiphertexts(validPfdPhaseOne, pk.group);
-
-        // Phase II. Decrypt nonced combinedCredential
-        PfPhase<DecryptionShareAndProof> validPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(noncedCombinedCredentials).join();
-        List<BigInteger> m_list = AthenaDistributed.combineDecryptionSharesAndDecrypt(combinedCredentials, validPfdPhaseTwo, pk.group);
-
-        // Remove unauthorized ballots
-        List<Ciphertext> authorizedEncryptedVotes = AthenaDistributed.removeUnauthorizedVotes(m_list, encryptedVotes);
-
-
-        // Phase III. Decrypt authorized votes
-        PfPhase<DecryptionShareAndProof> validPfdPhaseThree = vbb.retrieveValidThresholdPfdPhaseThree(authorizedEncryptedVotes).join();
-        List<BigInteger> voteElements = AthenaDistributed.combineDecryptionSharesAndDecrypt(authorizedEncryptedVotes, validPfdPhaseThree, pk.group);
-
-        // Compute tally
-        Map<Integer, Integer> tally = AthenaTally.computeTally(voteElements, nc, pk.group);
-
-        // Verify tally
-        return tally.equals(officialTally);
     }
 
 
