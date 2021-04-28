@@ -1,6 +1,7 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
 import cs.au.athena.athena.distributed.AthenaDistributed;
@@ -29,7 +30,7 @@ public class AthenaTally {
 
 
     private Random random;
-    private Elgamal elgamal;
+    private ElGamal elgamal;
     private BulletinBoardV2_0 bb;
     private VerifyingBulletinBoardV2_0 vbb;
     private AthenaDistributed distributed;
@@ -78,8 +79,8 @@ public class AthenaTally {
         logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ended]", tallierIndex));
 
 
-        // Post tallyboard
-        bb.publishTallyOfVotes(officialTally);
+        // Post tallyboard, THE TALLIERS NO LONGER POST THEIR TALLY! Instead the tally is computed from the information on the bulletin board.
+        bb.publishTallyOfVotes(tallierIndex, officialTally);
 
         return officialTally;
     }
@@ -160,37 +161,41 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
-    private Map<MapAKey, MapAValue> filterReVotes(int tallierIndex, List<Ballot> ballots, ElGamalSK sk) {
+    private Map<MapAKey, MapAValue> filterReVotes(int tallierIndex, List<Ballot> validBallots, ElGamalSK sk) {
         logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[started]", tallierIndex));
-        int ell = ballots.size();
-        Map<MapAKey, MapAValue> A = new HashMap<>();
+        int ell = validBallots.size();
 
         // Pick a nonce to mask public credentials.
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
 
         // Collaborate with other talliers, to apply a nonce to all ciphertexts
-//        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.1.start]", tallierIndex));
-        List<Ciphertext> combinedCiphertexts = this.distributed.performPfrPhaseOneHomoComb(tallierIndex, ballots, nonce_n, sk, kappa);
-//        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.1.end]", tallierIndex));
-
+        List<Ciphertext> combinedCiphertexts = this.distributed.performPfrPhaseOneHomoComb(tallierIndex, validBallots, nonce_n, sk, kappa);
 
         // Collaborate with other talliers, to decrypt combined ciphertexts
-//        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.2.start]", tallierIndex));
-        List<BigInteger> listOfNoncedNegatedPrivateCredentialElement = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, combinedCiphertexts, sk, kappa);
-//        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[pfr.phase.2.end]", tallierIndex));
+        List<BigInteger> noncedNegatedPrivateCredentials = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, combinedCiphertexts, sk, kappa);
 
         // MapA
+        Map<MapAKey, MapAValue> A = performMapA(validBallots, noncedNegatedPrivateCredentials, sk.pk.group);
+
+        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[ended]", tallierIndex));
+        return A;
+    }
+
+    // Does the filtering. Read the athena paper for documentation.
+    public static Map<MapAKey, MapAValue> performMapA(List<Ballot> validBallots, List<BigInteger> listOfNoncedNegatedPrivateCredentialElement, Group group) {
+        int ell = validBallots.size();
+
+        Map<MapAKey, MapAValue> A = new HashMap<>();
         for (int i = 0; i < ell; i++) {
-            Ballot ballot = ballots.get(i);
+            Ballot ballot = validBallots.get(i);
             BigInteger N = listOfNoncedNegatedPrivateCredentialElement.get(i);
 
             // Update map with highest counter entry.
             MapAKey key = new MapAKey(ballot.getPublicCredential(), N);
             MapAValue existingValue = A.get(key);
-            MapAValue updatedValue = getHighestCounterEntry(existingValue, ballot, sk.pk.group);
+            MapAValue updatedValue = getHighestCounterEntry(existingValue, ballot, group);
             A.put(key, updatedValue);
         }
-        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[ended]", tallierIndex));
         return A;
     }
 
@@ -225,12 +230,6 @@ public class AthenaTally {
     private Map<Integer, Integer> revealAuthorisedVotes(List<MixBallot> mixedBallots, ElGamalSK sk, int kappa) {
         int nc = bb.retrieveNumberOfCandidates();
 
-        // Init tally map
-        Map<Integer, Integer> officialTally = new HashMap<>();
-        for (int candidates = 0; candidates < nc; candidates++) {
-            officialTally.put(candidates, 0);
-        }
-
         List<Ciphertext> combinedCredentials = mixedBallots
                 .stream()
                 .map(MixBallot::getCombinedCredential)
@@ -241,20 +240,37 @@ public class AthenaTally {
                 .map(MixBallot::getEncryptedVote)
                 .collect(Collectors.toList());
 
-        // Collaborate with other talliers, to apply a nonce to all ciphertexts
+        // Phase I. Nonce combinedCredential
         List<Ciphertext> combinedCredentialsWithNonce = this.distributed.performPfdPhaseOneHomoComb(tallierIndex, combinedCredentials, random, sk, kappa);
+
+        // Phase II. Decrypt nonced combinedCredential
         List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
         logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ]", tallierIndex,m_list));
 
+        // Phase III. Decrypt authorized votes
         List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
-
-        logger.info(MARKER, String.format("T%d: elgamal lookup table: %s", tallierIndex, elgamal.getLookupTable().toString()));
+        logger.info(MARKER, String.format("T%d: elgamal lookup table: %s", tallierIndex, UTIL.lookupTableToString(elgamal.getLookupTable())));
         logger.info(MARKER, String.format("T%d: decrypted vote elements to: %s", tallierIndex, voteElements.toString()));
-
         logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ |votes|= %d ]", tallierIndex, voteElements.size()));
 
+        Map<Integer, Integer> officialTally = computeTally(voteElements, nc, sk.pk.group);
+
+        return officialTally;
+    }
+
+    public static Map<Integer, Integer> computeTally(List<BigInteger> voteElements, int nc, Group group) {
+        Map<BigInteger, Integer> lookupTable = ElGamal.generateLookupTable(group, nc);
+
         // Lookup to go from g^v to v
-        List<Integer> votes = voteElements.stream().map(voteGroupElement -> this.elgamal.lookup(voteGroupElement)).collect(Collectors.toList());
+        List<Integer> votes = voteElements.stream()
+                .map(lookupTable::get)
+                .collect(Collectors.toList());
+
+        // Init tally map
+        Map<Integer, Integer> officialTally = new HashMap<>();
+        for (int candidates = 0; candidates < nc; candidates++) {
+            officialTally.put(candidates, 0);
+        }
 
         // Tally votes
         for(Integer vote : votes) {
@@ -262,15 +278,12 @@ public class AthenaTally {
             Integer totalVotes = officialTally.get(vote);
             officialTally.put(vote, totalVotes + 1);
         }
-
         return officialTally;
     }
 
 
-
-
     public static class Builder {
-        private Elgamal elgamal;
+        private ElGamal elgamal;
         private AthenaFactory athenaFactory;
         private int tallierIndex;
         private int kappa;
@@ -282,7 +295,7 @@ public class AthenaTally {
             return this;
         }
 
-        public Builder setElgamal(Elgamal elgamal) {
+        public Builder setElgamal(ElGamal elgamal) {
             this.elgamal = elgamal;
             return this;
         }

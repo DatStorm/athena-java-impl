@@ -19,7 +19,7 @@ public class AthenaImpl implements Athena {
 
     private final AthenaFactory athenaFactory;
     private final AthenaDistributed distributed;
-    private Elgamal elgamalWithLookUpTable;
+    private ElGamal elGamalWithLookUpTable;
     //private BigInteger mc;
     private boolean initialised;
 
@@ -43,7 +43,7 @@ public class AthenaImpl implements Athena {
         Random random = athenaFactory.getRandom();
         Group group = athenaFactory.getBulletinBoard().retrieveGroup();
 
-        this.elgamalWithLookUpTable = new Elgamal(group, nc, random);
+        this.elGamalWithLookUpTable = new ElGamal(group, nc, random);
         this.initialised = true;
         return distributed.setup(tallierIndex, nc, kappa);
     }
@@ -61,7 +61,7 @@ public class AthenaImpl implements Athena {
         }
         return new AthenaRegister.Builder()
                 .setFactory(this.athenaFactory)
-                .setElGamal(this.elgamalWithLookUpTable)
+                .setElGamal(this.elGamalWithLookUpTable)
                 .setKappa(kappa)
                 .build()
                 .Register();
@@ -77,7 +77,7 @@ public class AthenaImpl implements Athena {
         }
         return new AthenaVote.Builder()
                 .setFactory(this.athenaFactory)
-                .setElGamal(this.elgamalWithLookUpTable)
+                .setElGamal(this.elGamalWithLookUpTable)
                 .setKappa(kappa)
                 .build()
                 .Vote(credentialTuple, vote, cnt, nc);
@@ -94,7 +94,7 @@ public class AthenaImpl implements Athena {
         }
         return new AthenaTally.Builder()
                 .setFactory(this.athenaFactory)
-                .setElgamal(this.elgamalWithLookUpTable)
+                .setElgamal(this.elGamalWithLookUpTable)
                 .setTallierIndex(tallierIndex)
                 .setKappa(kappa)
                 .build()
@@ -112,7 +112,7 @@ public class AthenaImpl implements Athena {
         return new AthenaVerify.Builder()
                 .setFactory(this.athenaFactory)
                 //.setMc(this.mc)
-                .setKappa(kappa)
+//                .setKappa(kappa)
                 .build()
                 .Verify();
     }

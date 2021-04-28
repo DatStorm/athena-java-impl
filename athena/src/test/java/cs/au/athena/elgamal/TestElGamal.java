@@ -13,9 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("TestElgamal")
 @DisplayName("Test Elgamal Encryption+Decryption")
-public class TestElgamal {
+public class TestElGamal {
     private Random random;
-    private Elgamal elGamal;
+    private ElGamal elGamal;
     private ElGamalSK sk;
     private ElGamalPK pk;
     private int bitlength;
@@ -34,7 +34,7 @@ public class TestElgamal {
         BigInteger g = CONSTANTS.ELGAMAL_CURRENT.ELGAMAL_G;
 
         Group group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
-        elGamal = new Elgamal(group, CONSTANTS.MSG_SPACE_LENGTH, random);
+        elGamal = new ElGamal(group, CONSTANTS.MSG_SPACE_LENGTH, random);
         sk = elGamal.generateSK();
         pk = elGamal.generatePk(sk);
 
@@ -67,7 +67,7 @@ public class TestElgamal {
 //    @RepeatedTest(100)
     @Test
     void TestRandomLong() {
-        Elgamal elGamal = new Elgamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
+        ElGamal elGamal = new ElGamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
 
         ElGamalSK sk = elGamal.generateSK();
         ElGamalPK pk = elGamal.generatePk(sk);
@@ -88,7 +88,7 @@ public class TestElgamal {
         Ciphertext c = elGamal.exponentialEncrypt(msg, pk);
 
         // g^m = Dec_sk(c)
-        BigInteger result = Elgamal.decrypt(c, sk);
+        BigInteger result = ElGamal.decrypt(c, sk);
 
         assertEquals(expected, result);
     }
@@ -106,18 +106,18 @@ public class TestElgamal {
 
         // Enc_pk(m)=(g^r, g^m*h^r)
         Ciphertext c = elGamal.exponentialEncrypt(msg, pk);
-        BigInteger result = Elgamal.decrypt(c, sk);
+        BigInteger result = ElGamal.decrypt(c, sk);
 
         assertEquals(expected, result);
     }
 
     @Test
     void TestElGamalDescription() {
-        Elgamal elgamal1 = new Elgamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
-        Elgamal elgamal2 = new Elgamal(elgamal1.getDescription(),CONSTANTS.MSG_SPACE_LENGTH ,random);
+        ElGamal elGamal1 = new ElGamal(Long.SIZE, CONSTANTS.MSG_SPACE_LENGTH, new Random(CONSTANTS.RANDOM_SEED));
+        ElGamal elGamal2 = new ElGamal(elGamal1.getDescription(),CONSTANTS.MSG_SPACE_LENGTH ,random);
 
-        ElGamalSK sk = elgamal1.generateSK();
-        ElGamalPK pk = elgamal1.generatePk(sk);
+        ElGamalSK sk = elGamal1.generateSK();
+        ElGamalPK pk = elGamal1.generatePk(sk);
 
         // Generate strictly positive long.
         long value;
@@ -133,10 +133,10 @@ public class TestElgamal {
         BigInteger expected = pk.getGroup().g.modPow(msg,pk.getGroup().p);
 
         // Enc_pk(m)=(g^r, g^m*h^r)
-        Ciphertext c = elgamal1.exponentialEncrypt(msg, pk);
+        Ciphertext c = elGamal1.exponentialEncrypt(msg, pk);
 
         // g^m = Dec_sk(c)
-        BigInteger result = Elgamal.decrypt(c, sk);
+        BigInteger result = ElGamal.decrypt(c, sk);
 
         assertEquals(expected, result);
     }
@@ -160,7 +160,7 @@ public class TestElgamal {
 
         // Decrypt
         BigInteger expected = BigInteger.ONE;
-        BigInteger result = Elgamal.decrypt(noncedCombinedCredential, sk);
+        BigInteger result = ElGamal.decrypt(noncedCombinedCredential, sk);
 
 
 
@@ -188,7 +188,7 @@ public class TestElgamal {
 
         Group group = new Group(p, q, g);
         int messageSpaceLength = (int) Math.pow(2, 10); // 1.000.000
-        elGamal = new Elgamal(group, messageSpaceLength, random);
+        elGamal = new ElGamal(group, messageSpaceLength, random);
     }
 
 

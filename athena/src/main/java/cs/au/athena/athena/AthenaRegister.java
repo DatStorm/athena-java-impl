@@ -13,7 +13,7 @@ import org.slf4j.MarkerFactory;
 import cs.au.athena.dao.athena.CredentialTuple;
 import cs.au.athena.dao.athena.RegisterStruct;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.Elgamal;
+import cs.au.athena.elgamal.ElGamal;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
@@ -26,7 +26,7 @@ public class AthenaRegister {
     private BulletinBoardV2_0 bb;
     private VerifyingBulletinBoardV2_0 vbb;
     private Random random;
-    private Elgamal elGamal;
+    private ElGamal elGamal;
     private int kappa;
     private AthenaDistributed distributed;
 
@@ -55,7 +55,7 @@ public class AthenaRegister {
     public static class Builder {
         private AthenaFactory factory;
         private Integer kappa;
-        private Elgamal elgamal;
+        private ElGamal elgamal;
 
 
         public Builder setFactory(AthenaFactory factory) {
@@ -69,7 +69,7 @@ public class AthenaRegister {
             return this;
         }
 
-        public Builder setElGamal(Elgamal elgamal) {
+        public Builder setElGamal(ElGamal elgamal) {
             this.elgamal = elgamal;
             return this;
         }

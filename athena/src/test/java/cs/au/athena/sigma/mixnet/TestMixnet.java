@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.mixnet.*;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.Elgamal;
+import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.Factory;
@@ -32,7 +32,7 @@ public class TestMixnet {
 
     
     private Mixnet mixnet;
-    private Elgamal elgamal;
+    private ElGamal elgamal;
     private ElGamalPK pk;
     private ElGamalSK sk;
 
@@ -72,10 +72,10 @@ public class TestMixnet {
         BigInteger p = pk.getGroup().getP();
         MixBallot mult = mb1.multiply(mb2,p);
 
-        BigInteger dec_c1 = Elgamal.decrypt(mult.getCombinedCredential(), sk);
+        BigInteger dec_c1 = ElGamal.decrypt(mult.getCombinedCredential(), sk);
         assertEquals("should be ??", g.modPow(BigInteger.valueOf(c),p), dec_c1);
         
-        BigInteger dec_c2 = Elgamal.decrypt(mult.getEncryptedVote(), sk);
+        BigInteger dec_c2 = ElGamal.decrypt(mult.getEncryptedVote(), sk);
         assertEquals("should be ??", g.modPow(BigInteger.valueOf(vc),p), dec_c2);
     }
 

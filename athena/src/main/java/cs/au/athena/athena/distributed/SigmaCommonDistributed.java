@@ -5,6 +5,8 @@ import cs.au.athena.athena.AthenaCommon;
 import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
 import cs.au.athena.dao.bulletinboard.CommitmentAndProof;
 import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
+import cs.au.athena.dao.mixnet.MixProof;
+import cs.au.athena.dao.mixnet.MixStatement;
 import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
@@ -15,6 +17,7 @@ import cs.au.athena.elgamal.Group;
 import cs.au.athena.sigma.Sigma1;
 import cs.au.athena.sigma.Sigma3;
 import cs.au.athena.sigma.Sigma4;
+import cs.au.athena.sigma.mixnet.Mixnet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -22,6 +25,7 @@ import org.slf4j.MarkerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.*;
 
 public class SigmaCommonDistributed {
@@ -216,5 +220,9 @@ public class SigmaCommonDistributed {
         }
 
         return true;
+    }
+
+    public static boolean verifyMix(MixStatement statement, MixProof mixProof, ElGamalPK pk, int kappa) {
+        return Mixnet.verify(statement, mixProof, pk, kappa);
     }
 }

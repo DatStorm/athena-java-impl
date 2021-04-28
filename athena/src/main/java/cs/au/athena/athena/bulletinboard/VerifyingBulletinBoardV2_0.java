@@ -2,9 +2,9 @@ package cs.au.athena.athena.bulletinboard;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.distributed.SigmaCommonDistributed;
-import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.bulletinboard.*;
 import cs.au.athena.dao.mixnet.MixBallot;
+import cs.au.athena.dao.mixnet.MixStatement;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.elgamal.Group;
@@ -23,7 +23,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class VerifyingBulletinBoardV2_0 {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -201,11 +200,7 @@ public class VerifyingBulletinBoardV2_0 {
         return resultFuture;
     }
 
-    public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfrPhaseOne() {
-        List<Ciphertext> encryptedNegatedPrivateCredentials = bb.retrieveBallots().stream()
-                .map(Ballot::getEncryptedNegatedPrivateCredential)
-                .collect(Collectors.toList());
-
+    public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfrPhaseOne(List<Ciphertext> encryptedNegatedPrivateCredentials) {
         return retrieveValidThresholdPfPhase(bb, bb.retrievePfrPhaseOne(), constructVerifyHomoCombPfr(encryptedNegatedPrivateCredentials));
     }
 
@@ -213,12 +208,8 @@ public class VerifyingBulletinBoardV2_0 {
         return retrieveValidThresholdPfPhase(bb, bb.retrievePfrPhaseTwo(), constructDecVerify(ciphertexts));
     }
 
-    public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfdPhaseOne() {
-        List<Ciphertext> combinedCiphertexts = bb.retrieveMixedBallots().stream()
-                .map(MixBallot::getCombinedCredential)
-                .collect(Collectors.toList());
-
-        return retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCiphertexts));
+    public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfdPhaseOne(List<Ciphertext> combinedCredentials) {
+        return retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCredentials));
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseTwo(List<Ciphertext> ciphertexts) {
@@ -228,4 +219,65 @@ public class VerifyingBulletinBoardV2_0 {
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseThree(List<Ciphertext> ciphertexts) {
         return retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseThree(), constructDecVerify(ciphertexts));
     }
+
+    public Map<Integer, CompletableFuture<MixedBallotsAndProof>> retrieveValidMixedBallotAndProofs(List<MixBallot> initialMixBallots) {
+        Map<Integer, CompletableFuture<MixedBallotsAndProof>> mixedBallotAndProofs = bb.retrieveMixedBallotAndProofs();
+
+        // For each mix
+        List<MixBallot> previousMixBallots = initialMixBallots;
+        for (int i = 1; i < bb.retrieveTallierCount(); i++) {
+            MixedBallotsAndProof mixedBallotsAndProof = mixedBallotAndProofs.get(i).join();
+
+            // Verify
+            MixStatement statement = new MixStatement(previousMixBallots, mixedBallotsAndProof.mixedBallots);
+            boolean isValidMix = SigmaCommonDistributed.verifyMix(statement, mixedBallotsAndProof.mixProof, pk, bb.retrieveKappa());
+
+            if(!isValidMix){
+                throw new RuntimeException(String.format("Malicious tallier T%d detected during mixing of the ballots", i));
+            }
+
+            previousMixBallots = mixedBallotsAndProof.mixedBallots;
+        }
+
+        // If a mix was invalid, we have thrown an exception before this point.
+
+        // Therefore all proofs are valid
+        return mixedBallotAndProofs;
+    }
+
+    /*
+
+    public PFStruct retrieveValidPF() {
+        // Remove invalid ballots
+        AthenaTally.removeInvalidBallots();
+        List<Ciphertext> encryptedNegatedPrivateCredentials = new ArrayList<>();
+        List<Ciphertext> noncedEncyptedPrivateCredentialCiphertexts = new ArrayList<>();
+        List<Ciphertext> combinedCredentials = new ArrayList<>();
+        List<Ciphertext> noncedCombinedCredentialCiphertexts = new ArrayList<>();
+        List<Ciphertext> authorizedVoteElementCiphertexts = new ArrayList<>();
+
+        //// PFR info ////
+        // Proof of homomorphic combination
+        retrieveValidThresholdPfrPhaseOne(encryptedNegatedPrivateCredentials);
+
+        // Proof of decryption
+        retrieveValidThresholdPfrPhaseTwo(noncedEncyptedPrivateCredentialCiphertexts);
+
+        // Proof of mixnet
+        retrieveValidMixedBallotAndProofs();
+
+
+        //// PFD info ////
+        // Proof of homomorphic combination
+        retrieveValidThresholdPfdPhaseOne(combinedCredentials);
+
+        // Proof of decryption of noncedCombinedCredential
+        retrieveValidThresholdPfdPhaseTwo(noncedCombinedCredentialCiphertexts);
+
+        // Proof of decryption of voteElement, i.e. g^v
+        retrieveValidThresholdPfdPhaseThree(authorizedVoteElementCiphertexts);
+
+        return null;
+    }
+     */
 }

@@ -254,11 +254,32 @@ public class UTIL {
         return res;
     }
 
-    public String hashMapToStringAsTable(HashMap<T,T> map ) {
-        String s = "";
+    public static String lookupTableToString(Map<BigInteger,Integer> map ) {
 
+        Map<BigInteger, Integer> sorted = map
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.<BigInteger, Integer>comparingByValue())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        return s;
+        StringBuilder s = new StringBuilder();
+        s.append("\n");
+        s.append("---".repeat(20));
+
+        s.append("\n");
+        s.append("|\tv\t|\tg^v                                            |");
+        s.append("\n");
+
+        for(Map.Entry<BigInteger, Integer> entry : sorted.entrySet() ){
+            s.append("|\t");
+            s.append(entry.getValue());
+            s.append("\t|\t");
+            s.append(entry.getKey());
+            s.append("\n");
+        }
+        s.append("---".repeat(20));
+        s.append("\n");
+        return s.toString();
     }
 
 }
