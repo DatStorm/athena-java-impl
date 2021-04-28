@@ -57,7 +57,6 @@ public class SigmaCommonDistributed {
 
 
 
-
     public static List<CombinedCiphertextAndProof> computeHomoCombinationAndProofs(List<Ciphertext> ciphertexts, BigInteger nonce, ElGamalSK sk, int kappa) {
         int ell = ciphertexts.size();
         Sigma4 sigma4 = new Sigma4();
