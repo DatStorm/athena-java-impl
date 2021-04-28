@@ -1,0 +1,27 @@
+<configuration debug="true">
+<!-- https://reflectoring.io/logging-format-logback/ -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+<!--        <withJansi>true</withJansi>-->
+        <withJansi>true</withJansi>
+
+        <encoder>
+<!--     %highlight([%thread])   %cyan(%d{HH:mm:ss.SSS})   %logger{36}  %highlight(%-5level)-->
+            <pattern>%cyan(%d{HH:mm:ss.SSSS}) | %green(%-10.10(%thread)) | %highlight(%-50.50(%class{0}.%method:%L)) | %msg%n</pattern>
+<!--            <pattern>%d{HH:mm:ss} [%thread] %-5p %class{0}.%method:%L - %m%n</pattern>-->
+<!--            <pattern>%d %highlight{%p} %style{%C{1.} [%t] %m}{bold,green}%n</pattern>-->
+<!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+            <disableAnsi>false</disableAnsi>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="console"/>
+    </root>
+
+</configuration>
+
+<!--        2021-04-28 11:03:57,997 [Thread-0] AthenaDistributed:66 &ndash;&gt; proving polynomial-->
+<!--        2021-04-28 11:03:58,000 [Thread-1] AthenaDistributed:66 &ndash;&gt; proving polynomial-->
+<!--        2021-04-28 11:04:00,049 [Thread-0] AthenaDistributed:78 &ndash;&gt; T1 publishing polynomial commitment and proofs-->
+<!--        2021-04-28 11:04:00,078 [Thread-1] AthenaDistributed:78 &ndash;&gt; T2 publishing polynomial commitment and proofs-->
+<!--        2021-04-28 11:04:00,110 [Thread-2] AthenaDistributed:78 &ndash;&gt; T3 publishing polynomial commitment and proofs-->

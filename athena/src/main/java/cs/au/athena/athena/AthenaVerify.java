@@ -41,7 +41,7 @@ public class AthenaVerify {
         logger.info(MARKER, "AthenaVerify.Verify[started]");
         //Fetch from bulletin board
         int nc = this.bb.retrieveNumberOfCandidates();
-        Map<Integer, Map<Integer, Integer>> officialTallys = this.bb.retrieveOfficialTally();
+        Map<Integer, CompletableFuture<Map<Integer, Integer>>> officialTallys = this.bb.retrieveOfficialTally();
 
         // Retrieve and verify ElGamal PK produced form the polynomial of the talliers
         ElGamalPK pk = vbb.retrieveAndVerifyPK();
@@ -67,19 +67,27 @@ public class AthenaVerify {
 
         // is my "tally" equal to k+1 "officialTally";
         int numberOfCorrectTallies = 0;
-       for (Map.Entry<Integer, Map<Integer, Integer>> entry : officialTallys.entrySet()) {
-            boolean tallierTallyMatchGroundTruth = entry.getValue().equals(tally);
-           if (tallierTallyMatchGroundTruth) {
-               numberOfCorrectTallies++;
-           } else {
-               logger.info(MARKER, String.format("AthenaVerify.Verify[T%d calculated wrong tally!]", entry.getKey()));
-           }
+        for (Map.Entry<Integer, CompletableFuture<Map<Integer, Integer>>> entry : officialTallys.entrySet()) {
+
+            Map<Integer, Integer> officialTally = entry.getValue().join();
+            boolean tallierTallyMatchGroundTruth = officialTally.equals(tally);
+
+            if (tallierTallyMatchGroundTruth) {
+                numberOfCorrectTallies++;
+            } else {
+                logger.info(MARKER, String.format("AthenaVerify.Verify[T%d calculated wrong tally!]", entry.getKey()));
+            }
+
+            // When k+1 correct official tallys have been published, return true.
+            boolean electionIsValid = numberOfCorrectTallies >= bb.retrieveK() + 1;
+            if(electionIsValid){
+                logger.info(MARKER, "AthenaVerify.Verify[ended] by finding k+1 correct official tallies");
+                return true;
+            }
         }
 
-       // we need k+1 equal tallies of the election.
-        boolean electionIsValid = numberOfCorrectTallies >= bb.retrieveK() + 1;
-        logger.info(MARKER, "AthenaVerify.Verify[ended]");
-        return electionIsValid;
+        logger.info(MARKER, "AthenaVerify.Verify[ended] without finding k+1 correct official tallies");
+        return false;
     }
 
 

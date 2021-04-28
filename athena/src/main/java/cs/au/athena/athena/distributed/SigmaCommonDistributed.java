@@ -2,6 +2,7 @@ package cs.au.athena.athena.distributed;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.AthenaCommon;
+import cs.au.athena.SecretSharingUTIL;
 import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
 import cs.au.athena.dao.bulletinboard.CommitmentAndProof;
 import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
@@ -186,7 +187,7 @@ public class SigmaCommonDistributed {
         for (Ciphertext ciphertext : ciphertexts) {
 
             // Compute decryption share and proof
-            BigInteger decryptionShare = ciphertext.c1.modPow(sk.toBigInteger().negate(), group.p);
+            BigInteger decryptionShare = SecretSharingUTIL.computeDecryptionShare(ciphertext, sk);
 
             // Prove decryption share, i.e. show knowledge of P(j) s.t. h_j = g^{P(j)}
             Sigma3Proof proof = sigma3.proveDecryptionShare(ciphertext, decryptionShare, sk, kappa);

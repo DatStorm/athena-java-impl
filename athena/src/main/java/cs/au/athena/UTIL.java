@@ -259,8 +259,9 @@ public class UTIL {
         Map<BigInteger, Integer> sorted = map
                 .entrySet()
                 .stream()
-                .sorted(Map.Entry.<BigInteger, Integer>comparingByValue())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .sorted(Map.Entry.comparingByValue())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                        (e1, e2) -> e1, LinkedHashMap::new));
 
         StringBuilder s = new StringBuilder();
         s.append("\n");

@@ -21,12 +21,12 @@ public class Polynomial {
     }
 
     // Returns a random polynomial of degree @Param polyDegree, where P(0)=secret
-    public static Polynomial newRandom(int polynomialDegree, Group group, Random random) {
+    public static Polynomial newRandom(int k, Group group, Random random) {
         // Compute coefficients
         List<BigInteger> coefficients = new ArrayList<>();
 
         // The coefficients are random
-        for (int i = 0; i <= polynomialDegree; i++) { // k + 1 coef
+        for (int i = 0; i <= k; i++) { // k + 1 coef
             coefficients.add(UTIL.getRandomElement(group.q, random));
         }
 
@@ -52,7 +52,6 @@ public class Polynomial {
 
     // Returns g^P(X)
     public List<BigInteger> getCommitments() {
-        // [0: 1943345851, 1:3634149401, 2:1863252840]
         int size = coefficients.size();
         List<BigInteger> commitments = new ArrayList<>();
 
@@ -65,7 +64,8 @@ public class Polynomial {
     }
 
     public  BigInteger getPointCommitment(int index) {
-        return getPointCommitment(index, getCommitments(), group);
+        BigInteger pointCommitment = getPointCommitment(index, getCommitments(), group);
+        return pointCommitment;
     }
 
     public static BigInteger getPointCommitment(int index, List<BigInteger> polynomialCommitments, Group group) {
@@ -101,4 +101,22 @@ public class Polynomial {
         }
         return prod;
     }
+
+    public int size() {
+        return this.coefficients.size();
+    }
+
+    public Polynomial add(Polynomial p) {
+        assert this.size() == p.size();
+
+        List<BigInteger> coefficients = new ArrayList<>();
+        for (int i = 0; i < this.size(); i++) {
+            BigInteger sum = this.coefficients.get(i).add(p.coefficients.get(i));
+            coefficients.add(sum);
+        }
+
+
+        return new Polynomial(coefficients, group);
+    }
+
 }

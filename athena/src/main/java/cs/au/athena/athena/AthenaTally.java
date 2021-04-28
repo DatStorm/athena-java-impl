@@ -79,9 +79,8 @@ public class AthenaTally {
         logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ended]", tallierIndex));
 
 
-        // Post tallyboard, THE TALLIERS NO LONGER POST THEIR TALLY! Instead the tally is computed from the information on the bulletin board.
+        // Post tallyboard
         bb.publishTallyOfVotes(tallierIndex, officialTally);
-
         return officialTally;
     }
 
@@ -245,12 +244,12 @@ public class AthenaTally {
 
         // Phase II. Decrypt nonced combinedCredential
         List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
-        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ]", tallierIndex,m_list));
+        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ]", tallierIndex, m_list));
 
         // Phase III. Decrypt authorized votes
         List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
-        logger.info(MARKER, String.format("T%d: elgamal lookup table: %s", tallierIndex, UTIL.lookupTableToString(elgamal.getLookupTable())));
-        logger.info(MARKER, String.format("T%d: decrypted vote elements to: %s", tallierIndex, voteElements.toString()));
+//        logger.info(MARKER, String.format("T%d: elgamal lookup table: %s", tallierIndex, UTIL.lookupTableToString(elgamal.getLookupTable())));
+//        logger.info(MARKER, String.format("T%d: decrypted vote elements to: %s", tallierIndex, voteElements.toString()));
         logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ |votes|= %d ]", tallierIndex, voteElements.size()));
 
         Map<Integer, Integer> officialTally = computeTally(voteElements, nc, sk.pk.group);

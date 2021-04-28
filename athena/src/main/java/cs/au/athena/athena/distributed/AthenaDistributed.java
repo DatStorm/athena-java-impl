@@ -8,6 +8,7 @@ import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.bulletinboard.*;
 import cs.au.athena.dao.mixnet.MixBallot;
+import cs.au.athena.dao.mixnet.MixStatement;
 import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.dao.sigma3.Sigma3Proof;
 import cs.au.athena.dao.sigma4.Sigma4Proof;
@@ -218,14 +219,14 @@ public class AthenaDistributed {
         return proof;
     }
 
-    public Sigma4Proof proveCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, BigInteger nonce_n, ElGamalSK sk, int kappa) {
-        Sigma4 sigma4 = athenaFactory.getSigma4();
-        return sigma4.proveCombination(sk,listOfCombinedCiphertexts, listCiphertexts, nonce_n, kappa);
-    }
-
-    public boolean verifyCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, Sigma4Proof omega, ElGamalPK pk, int kappa) {
-        throw new UnsupportedOperationException();
-    }
+//    public Sigma4Proof proveCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, BigInteger nonce_n, ElGamalSK sk, int kappa) {
+//        Sigma4 sigma4 = athenaFactory.getSigma4();
+//        return sigma4.proveCombination(sk,listOfCombinedCiphertexts, listCiphertexts, nonce_n, kappa);
+//    }
+//
+//    public boolean verifyCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, Sigma4Proof omega, ElGamalPK pk, int kappa) {
+//        throw new UnsupportedOperationException();
+//    }
 
 
 
@@ -233,17 +234,17 @@ public class AthenaDistributed {
         Mixnet mixnet = this.athenaFactory.getMixnet();
 
         // For each tallier
-        List<MixBallot> previousMixedBallots = ballots;
+        List<MixBallot> previousRoundMixBallots = ballots;
+        MixedBallotsAndProof mixedBallotsAndProof;
+
+        // For each mix round
         for (int nextTallierToMix = 1; nextTallierToMix <= bb.retrieveTallierCount(); nextTallierToMix++) {
-
-            MixedBallotsAndProof mixedBallotsAndProof;
-
             // Is it our turn to mix?
             if(nextTallierToMix == tallierIndex) {
 
                 // Mix and prove
                 logger.info(MARKER, String.format("T%d mixing============", tallierIndex));
-                mixedBallotsAndProof = mixnet.mixAndProveMix(previousMixedBallots, pk, kappa);
+                mixedBallotsAndProof = mixnet.mixAndProveMix(previousRoundMixBallots, pk, kappa);
 
                 // Publish
                 logger.info(MARKER, String.format("T%d publishing mix", tallierIndex));
@@ -253,15 +254,24 @@ public class AthenaDistributed {
 
                 // Retrieve mixed ballots from bb
                 logger.info(MARKER, String.format("T%d awaiting mix from T%d", tallierIndex, nextTallierToMix));
-                mixedBallotsAndProof = vbb.retrieveValidMixedBallotAndProofs(previousMixedBallots).get(nextTallierToMix).join();
+                mixedBallotsAndProof = bb.retrieveMixedBallotAndProofs().get(nextTallierToMix).join();
+
+                // Verify
+                MixStatement statement = new MixStatement(previousRoundMixBallots, mixedBallotsAndProof.mixedBallots);
+                boolean isValidMix = SigmaCommonDistributed.verifyMix(statement, mixedBallotsAndProof.mixProof, pk, bb.retrieveKappa());
+
+                if(!isValidMix){
+                    throw new RuntimeException(String.format("Malicious tallier T%d did not mix correctly", nextTallierToMix));
+                }
+
                 logger.info(MARKER, String.format("T%d received mix from T%d", tallierIndex, nextTallierToMix));
             }
 
             // Feed result forward to next round
-            previousMixedBallots = mixedBallotsAndProof.mixedBallots;
+            previousRoundMixBallots = mixedBallotsAndProof.mixedBallots;
         }
 
-        return previousMixedBallots;
+        return previousRoundMixBallots;
     }
 
 
@@ -319,14 +329,6 @@ public class AthenaDistributed {
     }
 
 
-    // TODO: This might need revision before letting the "Verifiers" use it!
-    public boolean verifyDecryption(Ciphertext c, BigInteger M, ElGamalPK pk, Sigma3Proof phi, int kappa) {
-        throw new UnsupportedOperationException("FIX IT--".repeat(30));
-        // Sigma3 sigma3 = athenaFactory.getSigma3();
-        //return sigma3.verifyDecryption(c,M,pk,phi,kappa);
-    }
-
-
     /**
      * @param sk is the shamir secret sharing share: P(i)
      * @param kappa
@@ -353,8 +355,6 @@ public class AthenaDistributed {
 
 
     public List<Ciphertext> performPfdPhaseOneHomoComb(int tallierIndex, List<Ciphertext> combinedCredentials, Random random, ElGamalSK sk, int kappa) {
-        int ell = combinedCredentials.size();
-
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfd(combinedCredentials, random, sk, kappa);
 
         // Publish
@@ -367,7 +367,6 @@ public class AthenaDistributed {
         // This is done by making a list of ciphertexts, and multiplying a talliers ciphertexts onto the corresponding entry
         // Make and initial list of neutral ciphertexts
         List<Ciphertext> combinedNoncedCombinedCredentials = combineCiphertexts(completedPfdPhaseOne, sk.pk.group);
-
         return combinedNoncedCombinedCredentials;
     }
 
@@ -432,7 +431,6 @@ public class AthenaDistributed {
 
 
     public static List<BigInteger> combineDecryptionSharesAndDecrypt(List<Ciphertext> ciphertexts, PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo, Group group) {
-
         // Find the set of talliers in the pfr
         List<Integer> S = completedPfdPhaseTwo.getEntries().stream()
                 .map(Entry::getIndex)
@@ -481,5 +479,4 @@ public class AthenaDistributed {
 
         return decryptedCiphertexts;
     }
-
 }

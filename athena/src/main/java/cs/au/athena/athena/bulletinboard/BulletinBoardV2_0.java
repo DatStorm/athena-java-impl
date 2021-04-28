@@ -41,7 +41,7 @@ public class BulletinBoardV2_0 {
 
     //    private final Map<Pair<Ciphertext, Integer>, CompletableFuture<DecryptionShareAndProof>> decryptionShareMap;
     private final int kappa;
-    private Map<Integer, Map<Integer, Integer>> officialTallyMap;
+    private Map<Integer, CompletableFuture<Map<Integer, Integer>>> officialTallyMap;
     private int nc;
 
     // static method to create instance of Singleton class
@@ -55,9 +55,6 @@ public class BulletinBoardV2_0 {
 
     private BulletinBoardV2_0(int tallierCount, int kappa) {
         this.group = CONSTANTS.ELGAMAL_CURRENT.GROUP;
-        this.tallierCommitmentsAndProofs = new HashMap<>();
-        this.mapOfIndividualPK_vector = new HashMap<>();
-        this.encryptedSubShares = new HashMap<>();
         this.kappa = kappa;
         this.tallierCount = tallierCount;
         this.k = (tallierCount - 1) / 2; // It must satisfy k < n/2, e.g. 0 < 2/2, 1 < 3/2,  1 < 4/2,  2 < 5/2,  2 < 6/2
@@ -71,12 +68,16 @@ public class BulletinBoardV2_0 {
         this.mc = CONSTANTS.MC;
         this.mb = CONSTANTS.MB;
 
+        this.tallierCommitmentsAndProofs = new HashMap<>();
+        this.mapOfIndividualPK_vector = new HashMap<>();
+        this.encryptedSubShares = new HashMap<>();
         this.pfrPhasePhaseOne = new PfPhase<>(tallierCount);
         this.pfrPhasePhaseTwo = new PfPhase<>(tallierCount);
         this.pfdPhasePhaseOne = new PfPhase<>(tallierCount);
         this.pfdPhasePhaseTwo = new PfPhase<>(tallierCount);
         this.pfdPhasePhaseThree = new PfPhase<>(tallierCount);
         this.mixedBallotAndProofs = new HashMap<>(tallierCount);
+        this.officialTallyMap = new HashMap<>(tallierCount);
 
         this.init(tallierCount);
     }
@@ -90,6 +91,7 @@ public class BulletinBoardV2_0 {
             tallierCommitmentsAndProofs.put(i, new CompletableFuture<>());
             mapOfIndividualPK_vector.put(i, new CompletableFuture<>());
             mixedBallotAndProofs.put(i, new CompletableFuture<>());
+            officialTallyMap.put(i, new CompletableFuture<>());
 
             for(int j = 1; j <= tallierCount; j++) {
                 if(i == j) continue;
@@ -124,7 +126,7 @@ public class BulletinBoardV2_0 {
     public List<Ballot> retrievePublicBallots() { return this.ballots; }
     public boolean electoralRollContains(Ciphertext publicCredential) { return this.electoralRoll.contains(publicCredential); }
 
-    public Map<Integer, Map<Integer, Integer>> retrieveOfficialTally() { return this.officialTallyMap; }
+    public Map<Integer, CompletableFuture<Map<Integer, Integer>>> retrieveOfficialTally() { return this.officialTallyMap; }
 
 
 
@@ -172,7 +174,7 @@ public class BulletinBoardV2_0 {
 
     // each tallier update their respective tally
     public void publishTallyOfVotes(int tallierIndex, Map<Integer, Integer> tallyMap) {
-        this.officialTallyMap.put(tallierIndex, tallyMap);
+        this.officialTallyMap.get(tallierIndex).complete(tallyMap);
     }
 
 

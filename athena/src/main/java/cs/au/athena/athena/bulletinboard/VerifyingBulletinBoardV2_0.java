@@ -48,8 +48,8 @@ public class VerifyingBulletinBoardV2_0 {
         pkShares = new HashMap<>(this.bb.retrieveTallierCount());
     }
 
-    public Pair<List<BigInteger>,List<BigInteger>>  retrieve_G_and_H_VectorVote() {
-        if(this.g_vector_vote != null || this.h_vector_vote != null) {
+    public Pair<List<BigInteger>, List<BigInteger>> retrieve_G_and_H_VectorVote() {
+        if (this.g_vector_vote != null || this.h_vector_vote != null) {
             return Pair.of(this.g_vector_vote, this.h_vector_vote);
         } else {
             ElGamalPK pk = retrieveAndVerifyPK();
@@ -59,7 +59,7 @@ public class VerifyingBulletinBoardV2_0 {
             h_vector_vote = vectors.get(1);
         }
 
-        return Pair.of(g_vector_vote,h_vector_vote);
+        return Pair.of(g_vector_vote, h_vector_vote);
     }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
@@ -78,12 +78,12 @@ public class VerifyingBulletinBoardV2_0 {
         return (entry) -> SigmaCommonDistributed.verifyDecryptionShareAndProofs(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
     }
 
-    private int getThreshold(){
+    private int getThreshold() {
         return this.bb.retrieveK() + 1;
     }
 
     public ElGamalPK retrieveAndVerifyPK() {
-        if(this.pk != null) {
+        if (this.pk != null) {
             return this.pk;
         }
 
@@ -94,10 +94,10 @@ public class VerifyingBulletinBoardV2_0 {
         // For every tallier
         for (int tallierIndex = 1; tallierIndex <= bb.retrieveTallierCount(); tallierIndex++) {
             // Get pk share and proof
-            List<CommitmentAndProof> commitmentAndProofs =  bb.retrievePolynomialCommitmentsAndProofs(tallierIndex).join();
+            List<CommitmentAndProof> commitmentAndProofs = bb.retrievePolynomialCommitmentsAndProofs(tallierIndex).join();
 
             // Verify degree of polynomial
-            if(commitmentAndProofs.size() != getThreshold()) {
+            if (commitmentAndProofs.size() != getThreshold()) {
                 throw new RuntimeException(String.format("Malicious tallier detected. Tallier T%d published a polynomial of wrong degree", tallierIndex));
             }
 
@@ -117,7 +117,7 @@ public class VerifyingBulletinBoardV2_0 {
 
     // Compute and return the public key share h_j=g^P(j) from the committed polynomials
     public ElGamalPK retrievePKShare(int j) {
-        if(this.pkShares.containsKey(j)) {
+        if (this.pkShares.containsKey(j)) {
             return this.pkShares.get(j);
         }
 
@@ -143,13 +143,14 @@ public class VerifyingBulletinBoardV2_0 {
         return pkShare;
     }
 
-    private BigInteger getZeroCommitment(List<CommitmentAndProof> commitmentAndProofs){
+    private BigInteger getZeroCommitment(List<CommitmentAndProof> commitmentAndProofs) {
         return commitmentAndProofs.get(0).commitment;
     }
 
     // Generic function containing the common code in the retrieveValidThreshold... functions
+
     /**
-     * @param pfPhase the bulletin board pfr to retrieve from
+     * @param pfPhase     the bulletin board pfr to retrieve from
      * @param verifyEntry a method that verifies the entries in the pfr
      * @return A future that is completed with threshold valid entries, when these are available on the BB
      */
@@ -178,7 +179,7 @@ public class VerifyingBulletinBoardV2_0 {
                 boolean isValid = verifyEntry.apply(entry);
 
                 // Grow list if valid
-                if(isValid) {
+                if (isValid) {
                     chainPfPhase.add(entry);
                     logger.info(MARKER, String.format("Received valid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfPhase.size()));
                 } else {
@@ -186,7 +187,7 @@ public class VerifyingBulletinBoardV2_0 {
                 }
 
                 // When done, complete and stop the chain of futures
-                if(chainPfPhase.size() == getThreshold()){
+                if (chainPfPhase.size() == getThreshold()) {
                     logger.info(MARKER, "futureChain pf size reached the threshold");
 
                     resultFuture.complete(chainPfPhase);
@@ -223,7 +224,7 @@ public class VerifyingBulletinBoardV2_0 {
     public Map<Integer, CompletableFuture<MixedBallotsAndProof>> retrieveValidMixedBallotAndProofs(List<MixBallot> initialMixBallots) {
         Map<Integer, CompletableFuture<MixedBallotsAndProof>> mixedBallotAndProofs = bb.retrieveMixedBallotAndProofs();
 
-        // For each mix
+        // For each tallier
         List<MixBallot> previousMixBallots = initialMixBallots;
         for (int i = 1; i < bb.retrieveTallierCount(); i++) {
             MixedBallotsAndProof mixedBallotsAndProof = mixedBallotAndProofs.get(i).join();
@@ -232,7 +233,7 @@ public class VerifyingBulletinBoardV2_0 {
             MixStatement statement = new MixStatement(previousMixBallots, mixedBallotsAndProof.mixedBallots);
             boolean isValidMix = SigmaCommonDistributed.verifyMix(statement, mixedBallotsAndProof.mixProof, pk, bb.retrieveKappa());
 
-            if(!isValidMix){
+            if (!isValidMix) {
                 throw new RuntimeException(String.format("Malicious tallier T%d detected during mixing of the ballots", i));
             }
 
@@ -244,40 +245,4 @@ public class VerifyingBulletinBoardV2_0 {
         // Therefore all proofs are valid
         return mixedBallotAndProofs;
     }
-
-    /*
-
-    public PFStruct retrieveValidPF() {
-        // Remove invalid ballots
-        AthenaTally.removeInvalidBallots();
-        List<Ciphertext> encryptedNegatedPrivateCredentials = new ArrayList<>();
-        List<Ciphertext> noncedEncyptedPrivateCredentialCiphertexts = new ArrayList<>();
-        List<Ciphertext> combinedCredentials = new ArrayList<>();
-        List<Ciphertext> noncedCombinedCredentialCiphertexts = new ArrayList<>();
-        List<Ciphertext> authorizedVoteElementCiphertexts = new ArrayList<>();
-
-        //// PFR info ////
-        // Proof of homomorphic combination
-        retrieveValidThresholdPfrPhaseOne(encryptedNegatedPrivateCredentials);
-
-        // Proof of decryption
-        retrieveValidThresholdPfrPhaseTwo(noncedEncyptedPrivateCredentialCiphertexts);
-
-        // Proof of mixnet
-        retrieveValidMixedBallotAndProofs();
-
-
-        //// PFD info ////
-        // Proof of homomorphic combination
-        retrieveValidThresholdPfdPhaseOne(combinedCredentials);
-
-        // Proof of decryption of noncedCombinedCredential
-        retrieveValidThresholdPfdPhaseTwo(noncedCombinedCredentialCiphertexts);
-
-        // Proof of decryption of voteElement, i.e. g^v
-        retrieveValidThresholdPfdPhaseThree(authorizedVoteElementCiphertexts);
-
-        return null;
-    }
-     */
 }

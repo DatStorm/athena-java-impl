@@ -8,6 +8,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitPlatform.class)
 @Tag("TestElgamalAll")
-@SelectClasses( {TestElGamal.class, TestElGamalCiphertext.class} )
+@SelectClasses({TestElGamal.class, TestElGamalCiphertext.class, TestSecretSharing.class,})
 public class TestElGamalAll {
 }
