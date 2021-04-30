@@ -1,6 +1,8 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.SecretSharingUTIL;
+import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
@@ -119,7 +121,7 @@ public class AthenaVerify {
         // Phase II: Filter re-votes
         // Verify decryption of homomorphic combination, then Combine shares
         PfPhase<DecryptionShareAndProof> validPfrPhaseTwo = vbb.retrieveValidThresholdPfrPhaseTwo(combinedCiphertexts).join();
-        List<BigInteger> noncedNegatedPrivateCredentials = AthenaDistributed.combineDecryptionSharesAndDecrypt(combinedCiphertexts, validPfrPhaseTwo, pk.group);
+        List<BigInteger> noncedNegatedPrivateCredentials = SecretSharingUTIL.combineDecryptionSharesAndDecrypt(combinedCiphertexts, validPfrPhaseTwo, pk.group);
 
 
         // MapA
@@ -161,14 +163,15 @@ public class AthenaVerify {
 
         // Phase II. Decrypt nonced combinedCredential
         PfPhase<DecryptionShareAndProof> validPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(noncedCombinedCredentials).join();
-        List<BigInteger> m_list = AthenaDistributed.combineDecryptionSharesAndDecrypt(combinedCredentials, validPfdPhaseTwo, pk.group);
+        List<BigInteger> m_list = SecretSharingUTIL.combineDecryptionSharesAndDecrypt(combinedCredentials, validPfdPhaseTwo, pk.group);
+        logger.info(MARKER, String.format("VERIFY: m_list=[ %s ]", UTIL.ballotListToString(m_list)));
 
         // Remove unauthorized ballots
         List<Ciphertext> authorizedEncryptedVotes = AthenaDistributed.removeUnauthorizedVotes(m_list, encryptedVotes);
 
         // Phase III. Decrypt authorized votes
         PfPhase<DecryptionShareAndProof> validPfdPhaseThree = vbb.retrieveValidThresholdPfdPhaseThree(authorizedEncryptedVotes).join();
-        List<BigInteger> voteElements = AthenaDistributed.combineDecryptionSharesAndDecrypt(authorizedEncryptedVotes, validPfdPhaseThree, pk.group);
+        List<BigInteger> voteElements = SecretSharingUTIL.combineDecryptionSharesAndDecrypt(authorizedEncryptedVotes, validPfdPhaseThree, pk.group);
 
         // Compute tally
         return AthenaTally.computeTally(voteElements, nc, pk.group);

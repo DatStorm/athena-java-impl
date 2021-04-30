@@ -22,6 +22,7 @@ public class SecretSharingUTIL {
     }
 
 
+    // For a single encryption
     public static BigInteger combineDecryptionShareAndDecrypt(Ciphertext ciphertext, List<BigInteger> shares, List<Integer> S, Group group) {
         int threshold = shares.size();
 
@@ -42,7 +43,8 @@ public class SecretSharingUTIL {
         return ciphertext.c2.multiply(prodSumOfDecryptionShares).mod(group.p);
     }
 
-    public static List<BigInteger> combineDecryptionShareAndDecrypt(List<Ciphertext> ciphertexts, List<Iterator<BigInteger>> shareIterators, List<Integer> S, Group group) {
+    // For a list of decryptions
+    private static List<BigInteger> combineDecryptionShareAndDecrypt(List<Ciphertext> ciphertexts, List<Iterator<BigInteger>> shareIterators, List<Integer> S, Group group) {
         int threshold = S.size();
 
         List<BigInteger> plaintexts = new ArrayList<>();
@@ -69,9 +71,9 @@ public class SecretSharingUTIL {
         return plaintexts;
     }
 
-    public static List<BigInteger> combineDecryptionShareAndDecrypt(List<Ciphertext> ciphertexts, PfPhase<DecryptionShareAndProof> completed, Group group) {
+    public static List<BigInteger> combineDecryptionSharesAndDecrypt(List<Ciphertext> ciphertexts, PfPhase<DecryptionShareAndProof> completedPfPhase, Group group) {
         // Find the set of talliers in the pfr
-        List<Integer> S = completedPfdPhaseTwo.getEntries().stream()
+        List<Integer> S = completedPfPhase.getEntries().stream()
                 .map(Entry::getIndex)
                 .collect(Collectors.toList());
 
@@ -81,7 +83,7 @@ public class SecretSharingUTIL {
         // Therefore we need to traverse the k+1 lists in pfr simultaneously
         // This is done by making an iterator for each tallier, and using calling each one time per ballot
         List<Iterator<BigInteger>> iterators = new ArrayList<>();
-        for (Entry<DecryptionShareAndProof> entry : completedPfdPhaseTwo.getEntries()) {
+        for (Entry<DecryptionShareAndProof> entry : completedPfPhase.getEntries()) {
             Iterator<BigInteger> iterator = entry.getValues().stream()
                     .map(DecryptionShareAndProof::getShare)
                     .collect(Collectors.toList())
@@ -89,5 +91,7 @@ public class SecretSharingUTIL {
 
             iterators.add(iterator);
         }
+
+        return combineDecryptionShareAndDecrypt(ciphertexts, iterators, S, group);
     }
 }

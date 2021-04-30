@@ -96,10 +96,17 @@ public class AthenaDistributed {
         logger.info(MARKER, "publishing subshares");
         this.publishSubShares(tallierIndex, group, random, tallierCount, polynomial, kappa);
 
-        // Receive subshares, add our own, and compute our final share
+        // Receive subshares
         List<BigInteger> listOfSubShares = this.receiveSubShares(tallierIndex, group, tallierCount, k, sk_i, kappa);
-        listOfSubShares.add(polynomial.eval(tallierIndex));
-        BigInteger share_i = listOfSubShares.stream().reduce(BigInteger.ZERO, (a,b) -> a.add(b).mod(group.q));
+
+        // add our own P_i(i)
+        BigInteger p_i_i = polynomial.eval(tallierIndex);
+        listOfSubShares.add(p_i_i);
+
+        // and compute our final share
+        // share_i =
+        BigInteger share_i = listOfSubShares.stream()
+                .reduce(BigInteger.ZERO, (a,b) -> a.add(b).mod(group.q));
 
 
         return new ElGamalSK(group, share_i);
@@ -123,6 +130,7 @@ public class AthenaDistributed {
                 throw new RuntimeException("Tallier T_i retrieved an invalid public key pk_j from tallier T_j.");
             }
 
+            // Compute subshare
             BigInteger subShare = polynomial.eval(j);
 
             // Encrypt subShare using pk_j
@@ -371,7 +379,7 @@ public class AthenaDistributed {
         assert completedPfrPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfrPhaseTwo.size());
 
         // Decrypt nonced negated private credentials
-        return combineDecryptionSharesAndDecrypt(combinedCiphertexts, completedPfrPhaseTwo, sk.pk.group);
+        return SecretSharingUTIL.combineDecryptionSharesAndDecrypt(combinedCiphertexts, completedPfrPhaseTwo, sk.pk.group);
     }
 
 
@@ -417,12 +425,18 @@ public class AthenaDistributed {
         // Publish
         bb.publishPfdPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
+        // SK share should match our committed polynomial.
+        assert sk.pk.group.g.modPow(sk.sk, sk.pk.group.p).equals(vbb.retrievePKShare(tallierIndex).h): String.format("T%d: sk WRONG", tallierIndex);
+
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
         PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(combinedCredentialCiphertexts).join();
         assert completedPfdPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfdPhaseTwo.size());
 
+
+
+
         // Decrypt nonced combined credentials
-        return ??.combineDecryptionSharesAndDecrypt(combinedCredentialCiphertexts, completedPfdPhaseTwo, sk.pk.group);
+        return SecretSharingUTIL.combineDecryptionSharesAndDecrypt(combinedCredentialCiphertexts, completedPfdPhaseTwo, sk.pk.group);
     }
 
     public List<BigInteger> performPfdPhaseThreeDecryption(int tallierIndex, List<BigInteger> m_list, List<Ciphertext> encryptedVotes, ElGamalSK sk, int kappa) {
@@ -442,7 +456,7 @@ public class AthenaDistributed {
         assert completedPfdPhaseThree.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfdPhaseThree.size());
 
         // Decrypt the vote, this yield decryptions on the form g^v
-        return ??.combineDecryptionSharesAndDecrypt(authorizedEncryptedVotes, completedPfdPhaseThree, sk.pk.group);
+        return SecretSharingUTIL.combineDecryptionSharesAndDecrypt(authorizedEncryptedVotes, completedPfdPhaseThree, sk.pk.group);
     }
 
     public static List<Ciphertext> removeUnauthorizedVotes(List<BigInteger> m_list, List<Ciphertext> encryptedVotes) {
@@ -463,55 +477,5 @@ public class AthenaDistributed {
             authorizedEncryptedVotes.add(encryptedVote);
         }
         return authorizedEncryptedVotes;
-    }
-
-
-    public static List<BigInteger> combineDecryptionSharesAndDecrypt(List<Ciphertext> ciphertexts, PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo, Group group) {
-
-
-        List<BigInteger> decryptedCiphertexts = SecretSharingUTIL.combineDecryptionShareAndDecrypt(ciphertexts, iterators, S, group);
-
-
-       return SecretSharingUTIL.combineDecryptionShareAndDecrypt(ciphertexts, completedPfdPhaseTwo, group);
-
-        /*
-        List<Pair<Integer, Iterator<DecryptionShareAndProof>>> iteratorPairs = new ArrayList<>();
-        for (Entry<DecryptionShareAndProof> entry : completedPfdPhaseTwo.getEntries()) {
-            Integer s = entry.getIndex();
-            List<DecryptionShareAndProof> listOfDecryptionSharesAndProof = entry.getValues();
-            iteratorPairs.add(Pair.of(s, listOfDecryptionSharesAndProof.iterator()));
-        }
-
-        List<BigInteger> decryptedCiphertexts = new ArrayList<>(ciphertexts.size());
-
-
-        // Decrypt each ciphertext
-        for (Ciphertext ciphertext : ciphertexts) {
-            // Decrypt by combining the shares
-            BigInteger prodSumOfDecryptionShares = BigInteger.ONE;
-
-            // For each share
-            for (Pair<Integer, Iterator<DecryptionShareAndProof>> pair : iteratorPairs) {
-                int s = pair.getLeft();
-                Iterator<DecryptionShareAndProof> iter = pair.getRight();
-
-                // combine the k+1 shares
-                DecryptionShareAndProof decryptionShareAndProof = iter.next();
-
-                // Make lambda
-                BigInteger lambda = Polynomial.getLambda(0, s, S).mod(group.q);
-
-                // Perform lagrange interpolation
-                BigInteger decShare = decryptionShareAndProof.share;
-                prodSumOfDecryptionShares = prodSumOfDecryptionShares.multiply(decShare.modPow(lambda, group.p)).mod(group.p);
-            }
-
-            // Decrypt the ciphertext
-            BigInteger plaintextElement = ciphertext.c2.multiply(prodSumOfDecryptionShares).mod(group.p);
-            decryptedCiphertexts.add(plaintextElement);
-        }
-         */
-
-        return decryptedCiphertexts;
     }
 }

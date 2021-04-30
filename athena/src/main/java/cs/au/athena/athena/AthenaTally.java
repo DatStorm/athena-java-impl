@@ -259,6 +259,7 @@ public class AthenaTally {
         logger.info(MARKER, String.format("T%d: m_list=[ %s ]", tallierIndex, UTIL.ballotListToString(m_list)));
 
 
+
         // Phase III. Decrypt authorized votes
         List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
 //        logger.info(MARKER, String.format("T%d: elgamal lookup table: %s", tallierIndex, UTIL.lookupTableToString(elgamal.getLookupTable())));
