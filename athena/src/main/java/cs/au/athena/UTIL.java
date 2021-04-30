@@ -3,6 +3,7 @@ package cs.au.athena;
 import com.google.common.collect.Streams;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.sigma1.CoinFlipInfo;
+import cs.au.athena.elgamal.Ciphertext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -305,4 +306,23 @@ public class UTIL {
         return s.toString();
     }
 
+    public static String cipherTextListToString(List<Ciphertext> ciphertextList) {
+        StringBuilder s = new StringBuilder();
+        s.append("\n");
+        s.append("---".repeat(20));
+        s.append("\n");
+        s.append("|\ti\t|\tval                                            |");
+        s.append("\n");
+
+        for (int i = 0; i < ciphertextList.size(); i++) {
+            s.append("|\t");
+            s.append(i);
+            s.append("\t|\t");
+            s.append(ciphertextList.get(i).toListString());
+            s.append("\n");
+        }
+        s.append("---".repeat(20));
+        s.append("\n");
+        return s.toString();
+    }
 }

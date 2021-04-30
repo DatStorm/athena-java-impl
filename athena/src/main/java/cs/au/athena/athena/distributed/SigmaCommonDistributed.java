@@ -134,18 +134,15 @@ public class SigmaCommonDistributed {
 
         // Nonce each ciphertext, and compute proof
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = new ArrayList<>(ell);
-        for (Ciphertext combinedCredential : ciphertexts) {
+        for (Ciphertext ciphertext : ciphertexts) {
             BigInteger nonce = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, random);
 
             // Homomorpically re-encrypt(by raising to power n) ballot and decrypt
-            Ciphertext noncedCredential = AthenaCommon.homoCombination(combinedCredential, nonce, sk.pk.group);
+            Ciphertext combinedCiphertext = AthenaCommon.homoCombination(ciphertext, nonce, sk.pk.group);
 
             //Prove the combination of a valid combination nonce n
-            List<Ciphertext> listCiphertexts = Collections.singletonList(noncedCredential);
-            List<Ciphertext> listCombined = Collections.singletonList(combinedCredential);
-
-            Sigma4Proof omega = sigma4.proveCombination(sk, listCiphertexts, listCombined, nonce, kappa);
-            listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(noncedCredential, omega));
+            Sigma4Proof omega = sigma4.proveCombination(sk, combinedCiphertext, ciphertext, nonce, kappa);
+            listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(combinedCiphertext, omega));
         }
 
         return listOfCombinedCiphertextAndProof;
@@ -185,7 +182,6 @@ public class SigmaCommonDistributed {
 
         // generate decryption shares and proofs for all ballots
         for (Ciphertext ciphertext : ciphertexts) {
-
             // Compute decryption share and proof
             BigInteger decryptionShare = SecretSharingUTIL.computeDecryptionShare(ciphertext, sk);
 

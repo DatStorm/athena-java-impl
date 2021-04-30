@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 // Keeps a list of CompletableFuture<Entry>
 public class PfPhase<T> {
-    List<CompletableFuture<Entry<T>>> entries;
-    int nextIncompleteEntry = 0;
+    private List<CompletableFuture<Entry<T>>> entries;
+    private int nextIncompleteEntry = 0;
 
     public PfPhase(int size) {
         entries =  new ArrayList<>(size);
@@ -21,12 +21,8 @@ public class PfPhase<T> {
         return entries.get(nextIncompleteEntry++).complete(entry);
     }
 
-    public CompletableFuture<Entry<T>> getFuture(int i) {
+    public CompletableFuture<Entry<T>> getEntryFuture(int i) {
         return entries.get(i);
-    }
-
-    public Entry<T> get(int i) {
-        return entries.get(i).join();
     }
 
     public List<Entry<T>> getEntries() {
@@ -37,4 +33,8 @@ public class PfPhase<T> {
         return nextIncompleteEntry;
     }
 
+    public String toString() {
+
+        return "";
+    }
 }

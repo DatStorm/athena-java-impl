@@ -167,10 +167,10 @@ public class AthenaTally {
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
 
         // Collaborate with other talliers, to apply a nonce to all ciphertexts
-        List<Ciphertext> combinedCiphertexts = this.distributed.performPfrPhaseOneHomoComb(tallierIndex, validBallots, nonce_n, sk, kappa);
+        List<Ciphertext> noncedEncryptedNegatedPrivateCredentials = this.distributed.performPfrPhaseOneHomoComb(tallierIndex, validBallots, nonce_n, sk, kappa);
 
         // Collaborate with other talliers, to decrypt combined ciphertexts
-        List<BigInteger> noncedNegatedPrivateCredentials = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, combinedCiphertexts, sk, kappa);
+        List<BigInteger> noncedNegatedPrivateCredentials = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, noncedEncryptedNegatedPrivateCredentials, sk, kappa);
 
         // MapA
         Map<MapAKey, MapAValue> A = performMapA(validBallots, noncedNegatedPrivateCredentials, sk.pk.group);
@@ -221,6 +221,7 @@ public class AthenaTally {
                 .collect(Collectors.toList());
 
         return this.distributed.performMixnet(tallierIndex, ballots, pk, kappa);
+        //return ballots; //FIXME: We skipped mixnet
 
     }
 
@@ -238,12 +239,25 @@ public class AthenaTally {
                 .map(MixBallot::getEncryptedVote)
                 .collect(Collectors.toList());
 
-        // Phase I. Nonce combinedCredential
+        // Phase I. Nonced combinedCredential
         List<Ciphertext> combinedCredentialsWithNonce = this.distributed.performPfdPhaseOneHomoComb(tallierIndex, combinedCredentials, random, sk, kappa);
+
+        /******************************
+         * FAKE !!!!!!!!!
+         ********************************/
+        for (Ciphertext c : combinedCredentialsWithNonce) {
+            ElGamalSK fakeSK = bb.getFakeSK();
+
+            BigInteger decryptedM = ElGamal.decrypt(c, fakeSK);
+            logger.info(MARKER, String.format("T%d Decrypt(c)=%d", tallierIndex, decryptedM));
+            assert fakeSK.pk.h.equals(vbb.retrieveAndVerifyPK().h): "FakeSK did not match PK on BulletinBoard";
+
+        }
 
         // Phase II. Decrypt nonced combinedCredential
         List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
-//        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes.m_list=[ %s ]", tallierIndex, UTIL.ballotListToString(m_list)));
+        logger.info(MARKER, String.format("T%d: m_list=[ %s ]", tallierIndex, UTIL.ballotListToString(m_list)));
+
 
         // Phase III. Decrypt authorized votes
         List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
@@ -251,9 +265,7 @@ public class AthenaTally {
 //        logger.info(MARKER, String.format("T%d: decrypted vote elements to: %s", tallierIndex, voteElements.toString()));
         logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ |votes|= %d ]", tallierIndex, voteElements.size()));
 
-        Map<Integer, Integer> officialTally = computeTally(voteElements, nc, sk.pk.group);
-
-        return officialTally;
+        return computeTally(voteElements, nc, sk.pk.group);
     }
 
     public static Map<Integer, Integer> computeTally(List<BigInteger> voteElements, int nc, Group group) {

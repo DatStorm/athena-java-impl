@@ -1,5 +1,6 @@
 package cs.au.athena.athena.bulletinboard;
 
+import cs.au.athena.CONSTANTS;
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.distributed.SigmaCommonDistributed;
 import cs.au.athena.dao.bulletinboard.*;
@@ -158,7 +159,7 @@ public class VerifyingBulletinBoardV2_0 {
     private <T> CompletableFuture<PfPhase<T>> retrieveValidThresholdPfPhase(BulletinBoardV2_0 bb, PfPhase<T> pfPhase, Function<Entry<T>, Boolean> verifyEntry) {
         int tallierCount = bb.retrieveTallierCount();
 
-        logger.info(MARKER, String.format("Waiting for threshold=%d, valid entries", getThreshold()));
+        logger.info(MARKER, String.format("Waiting for threshold=%d, valid entries (TallierCount=%d)", getThreshold(), tallierCount));
 
 
         CompletableFuture<PfPhase<T>> resultFuture = new CompletableFuture<>();
@@ -171,7 +172,7 @@ public class VerifyingBulletinBoardV2_0 {
 
         for (int i = 0; i < tallierCount; i++) {
             // When then ext entry is available
-            CompletableFuture<Entry<T>> entryFuture = pfPhase.getFuture(i);
+            CompletableFuture<Entry<T>> entryFuture = pfPhase.getEntryFuture(i);
 
             // Continue chain, by verifying the entry and adding to Pfr
             futureChain = futureChain.thenCombine(entryFuture, (PfPhase<T> chainPfPhase, Entry<T> entry) -> {
@@ -202,37 +203,40 @@ public class VerifyingBulletinBoardV2_0 {
 
     public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfrPhaseOne(List<Ciphertext> encryptedNegatedPrivateCredentials) {
         CompletableFuture<PfPhase<CombinedCiphertextAndProof>> pfPhaseCompletableFuture = retrieveValidThresholdPfPhase(bb, bb.retrievePfrPhaseOne(), constructVerifyHomoCombPfr(encryptedNegatedPrivateCredentials));
-        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.info(MARKER, String.format("-- PFR-ONE -> entries: %s", pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
+        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.error(MARKER, String.format(fr("-- PFR-ONE -> entries: %s"), pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
 
         return pfPhaseCompletableFuture;
     }
 
+
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfrPhaseTwo(List<Ciphertext> ciphertexts) {
         CompletableFuture<PfPhase<DecryptionShareAndProof>> pfPhaseCompletableFuture = retrieveValidThresholdPfPhase(bb, bb.retrievePfrPhaseTwo(), constructDecVerify(ciphertexts));
-        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.info(MARKER, String.format("-- PFR-TWO -> entries: %s", pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
+        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.error(MARKER, String.format(fr("-- PFR-TWO -> entries: %s"), pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
         return pfPhaseCompletableFuture;
     }
 
     public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfdPhaseOne(List<Ciphertext> combinedCredentials) {
         CompletableFuture<PfPhase<CombinedCiphertextAndProof>> pfPhaseCompletableFuture = retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCredentials));
-        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.info(MARKER, String.format("-- PFD-ONE -> entries: %s", pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
+        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.error(MARKER, String.format(fy("-- PFD-ONE -> entries: %s"), pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
 
         return pfPhaseCompletableFuture;
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseTwo(List<Ciphertext> ciphertexts) {
         CompletableFuture<PfPhase<DecryptionShareAndProof>> pfPhaseCompletableFuture = retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseTwo(), constructDecVerify(ciphertexts));
-        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.info(MARKER, String.format("-- PFD-TWO -> entries: %s", pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
+        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.error(MARKER, String.format(fy("-- PFD-TWO -> entries: %s"), pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
 
         return pfPhaseCompletableFuture;
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseThree(List<Ciphertext> ciphertexts) {
         CompletableFuture<PfPhase<DecryptionShareAndProof>> pfPhaseCompletableFuture = retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseThree(), constructDecVerify(ciphertexts));
-        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.info(MARKER, String.format("-- PFD-THR -> entries: %s", pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
+        pfPhaseCompletableFuture.thenAccept((pfPhase) -> logger.error(MARKER, String.format(fy("-- PFD-THR -> entries: %s"), pfPhase.getEntries().stream().map(Entry::getIndex).collect(Collectors.toList()))));
 
         return pfPhaseCompletableFuture;
     }
+
+
 
     public Map<Integer, CompletableFuture<MixedBallotsAndProof>> retrieveValidMixedBallotAndProofs(List<MixBallot> initialMixBallots) {
         Map<Integer, CompletableFuture<MixedBallotsAndProof>> mixedBallotAndProofs = bb.retrieveMixedBallotAndProofs();
@@ -258,4 +262,7 @@ public class VerifyingBulletinBoardV2_0 {
         // Therefore all proofs are valid
         return mixedBallotAndProofs;
     }
+
+    private String fr(String s) { return CONSTANTS.ANSI_RED + s + CONSTANTS.ANSI_RESET; }
+    private String fy(String s) { return CONSTANTS.ANSI_YELLOW + s + CONSTANTS.ANSI_RESET;  }
 }

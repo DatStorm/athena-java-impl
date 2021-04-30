@@ -1,6 +1,8 @@
 package cs.au.athena;
 
 import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
+import cs.au.athena.dao.bulletinboard.Entry;
+import cs.au.athena.dao.bulletinboard.PfPhase;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.elgamal.Group;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import java.math.BigInteger;
+import java.util.stream.Collectors;
 
 public class SecretSharingUTIL {
 
@@ -36,34 +39,55 @@ public class SecretSharingUTIL {
         }
 
         // Decrypt the ciphertext
-        BigInteger plaintextElement = ciphertext.c2.multiply(prodSumOfDecryptionShares).mod(group.p);
-        return plaintextElement;
+        return ciphertext.c2.multiply(prodSumOfDecryptionShares).mod(group.p);
     }
 
-    /*
-
-    public static BigInteger combineDecryptionShare2(Ciphertext ciphertext, List<Iterator<BigInteger>> shareIterators, List<Integer> S, Group group) {
+    public static List<BigInteger> combineDecryptionShareAndDecrypt(List<Ciphertext> ciphertexts, List<Iterator<BigInteger>> shareIterators, List<Integer> S, Group group) {
         int threshold = S.size();
 
-        // Combine shares
-        BigInteger prodSumOfDecryptionShares = BigInteger.ONE;
-        for (int i = 0; i < threshold; i++) {
-            BigInteger share = shareIterators.get(i).next();
-            int s = S.get(i);
+        List<BigInteger> plaintexts = new ArrayList<>();
+        for (Ciphertext ciphertext : ciphertexts) {
 
-            // Make lambda
-            BigInteger lambda = Polynomial.getLambda(0, s, S).mod(group.q);
+            // Combine shares from each tallier using shareIterators
+            BigInteger prodSumOfDecryptionShares = BigInteger.ONE;
+            for (int i = 0; i < threshold; i++) {
+                BigInteger share = shareIterators.get(i).next();
+                int s = S.get(i);
 
-            // Perform lagrange interpolation
-            prodSumOfDecryptionShares = prodSumOfDecryptionShares.multiply(share.modPow(lambda, group.p)).mod(group.p);
+                // Make lambda
+                BigInteger lambda = Polynomial.getLambda(0, s, S).mod(group.q);
+
+                // Perform lagrange interpolation
+                prodSumOfDecryptionShares = prodSumOfDecryptionShares.multiply(share.modPow(lambda, group.p)).mod(group.p);
+            }
+
+            // Decrypt the ciphertext
+            plaintexts.add(ciphertext.c2.multiply(prodSumOfDecryptionShares).mod(group.p));
+
         }
 
-        // Decrypt the ciphertext
-        BigInteger plaintextElement = ciphertext.c2.multiply(prodSumOfDecryptionShares).mod(group.p);
-        return plaintextElement;
+        return plaintexts;
     }
 
-     */
+    public static List<BigInteger> combineDecryptionShareAndDecrypt(List<Ciphertext> ciphertexts, PfPhase<DecryptionShareAndProof> completed, Group group) {
+        // Find the set of talliers in the pfr
+        List<Integer> S = completedPfdPhaseTwo.getEntries().stream()
+                .map(Entry::getIndex)
+                .collect(Collectors.toList());
 
+        // Decrypt by combining decryption shares
 
+        // We need to get k+1 decryption shares for each ballot.
+        // Therefore we need to traverse the k+1 lists in pfr simultaneously
+        // This is done by making an iterator for each tallier, and using calling each one time per ballot
+        List<Iterator<BigInteger>> iterators = new ArrayList<>();
+        for (Entry<DecryptionShareAndProof> entry : completedPfdPhaseTwo.getEntries()) {
+            Iterator<BigInteger> iterator = entry.getValues().stream()
+                    .map(DecryptionShareAndProof::getShare)
+                    .collect(Collectors.toList())
+                    .iterator();
+
+            iterators.add(iterator);
+        }
+    }
 }

@@ -13,5 +13,7 @@ public class DecryptionShareAndProof {
         this.proof = proof;
     }
 
-
+    public BigInteger getShare() {
+        return share;
+    }
 }
