@@ -53,8 +53,8 @@ public class SecretSharingUTIL {
             // Combine shares from each tallier using shareIterators
             BigInteger prodSumOfDecryptionShares = BigInteger.ONE;
             for (int i = 0; i < threshold; i++) {
-                BigInteger share = shareIterators.get(i).next();
                 int s = S.get(i);
+                BigInteger share = shareIterators.get(i).next();
 
                 // Make lambda
                 BigInteger lambda = Polynomial.getLambda(0, s, S).mod(group.q);
