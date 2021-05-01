@@ -252,7 +252,7 @@ public class AthenaDistributed {
             if(nextTallierToMix == tallierIndex) {
 
                 // Mix and prove
-                logger.info(MARKER, String.format("T%d mixing============", tallierIndex));
+                logger.info(MARKER, String.format("T%d mixing", tallierIndex));
                 mixedBallotsAndProof = mixnet.mixAndProveMix(previousRoundMixBallots, pk, kappa);
 
                 // Publish
@@ -262,7 +262,6 @@ public class AthenaDistributed {
             } else {
 
                 // Retrieve mixed ballots from bb
-                logger.info(MARKER, String.format("T%d awaiting mix from T%d", tallierIndex, nextTallierToMix));
                 mixedBallotsAndProof = bb.retrieveMixedBallotAndProofs().get(nextTallierToMix).join();
 
                 // Verify
@@ -273,7 +272,6 @@ public class AthenaDistributed {
                     throw new RuntimeException(String.format("Malicious tallier T%d did not mix correctly", nextTallierToMix));
                 }
 
-                logger.info(MARKER, String.format("T%d received mix from T%d", tallierIndex, nextTallierToMix));
             }
 
             // Feed result forward to next round

@@ -20,15 +20,15 @@ public class SecretSharingUTIL {
     public static BigInteger computeDecryptionShare(Ciphertext ciphertext, ElGamalSK sk) {
         // d_i = c_1^{-P(i)}
         return ciphertext.c1.modPow(sk.toBigInteger().negate(), sk.pk.group.p);
+//        return ciphertext.c1.modPow(sk.toBigInteger(), sk.pk.group.p).modInverse(sk.pk.group.p);
     }
-
 
     // For a single encryption
     public static BigInteger combineDecryptionShareAndDecrypt(Ciphertext ciphertext, List<BigInteger> shares, List<Integer> S, Group group) {
         int threshold = shares.size();
 
         // Combine shares
-        BigInteger prodSumOfDecryptionShares = BigInteger.ONE;
+        BigInteger prod = BigInteger.ONE;
         for (int i = 0; i < threshold; i++) {
             BigInteger share = shares.get(i);
             int s = S.get(i);
@@ -37,11 +37,13 @@ public class SecretSharingUTIL {
             BigInteger lambda = Polynomial.getLambda(0, s, S, group).mod(group.q);
 
             // Perform lagrange interpolation
-            prodSumOfDecryptionShares = prodSumOfDecryptionShares.multiply(share.modPow(lambda, group.p)).mod(group.p);
+            prod = prod.multiply(share.modPow(lambda, group.p)).mod(group.p);
         }
 
         // Decrypt the ciphertext
-        return ciphertext.c2.multiply(prodSumOfDecryptionShares).mod(group.p);
+        return ciphertext.c2.multiply(prod).mod(group.p);
+
+
     }
 
     // For a list of decryptions

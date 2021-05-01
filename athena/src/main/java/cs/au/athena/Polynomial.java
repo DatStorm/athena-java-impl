@@ -20,7 +20,16 @@ public class Polynomial {
         return this.coefficients;
     }
 
-    // Returns a random polynomial of degree @Param polyDegree, where P(0)=secret
+
+    /**
+     *
+     * P(0)=secret
+     *
+     * @param k polynomial degree => Makes k+1 coefficients
+     * @param group Elgamal group
+     * @param random random
+     * @return a new random polynomial
+     */
     public static Polynomial newRandom(int k, Group group, Random random) {
         // Compute coefficients
         List<BigInteger> coefficients = new ArrayList<>();
@@ -52,24 +61,20 @@ public class Polynomial {
 
     // Returns g^P(X)
     public List<BigInteger> getCommitments() {
-        int size = coefficients.size();
         List<BigInteger> commitments = new ArrayList<>();
 
-        for (int i = 0; i < size; i++){
-            BigInteger coefficient = coefficients.get(i);
-            BigInteger commitment = group.g.modPow(coefficient, group.p);
+        for (BigInteger coefficient : this.coefficients) {
+            BigInteger commitment = this.group.g.modPow(coefficient, this.group.p);
             commitments.add(commitment);
         }
         return commitments;
     }
 
     public  BigInteger getPointCommitment(int index) {
-        BigInteger pointCommitment = getPointCommitment(index, getCommitments(), group);
-        return pointCommitment;
+        return getPointCommitment(index, getCommitments(), this.group);
     }
 
     public static BigInteger getPointCommitment(int index, List<BigInteger> polynomialCommitments, Group group) {
-
         int size = polynomialCommitments.size();
         // P(X) = a0 + a1*x^1 + ... + ak * x^k
         // Så k+1 coefficienter
@@ -90,10 +95,10 @@ public class Polynomial {
         BigInteger iBigInt = BigInteger.valueOf(i);
 
         for(int j : S) {
-            BigInteger jBigInt = BigInteger.valueOf(j);
-            if (iBigInt.equals(jBigInt)) {
+            if (i == j) {
                 continue;
             }
+            BigInteger jBigInt = BigInteger.valueOf(j);
             // j-x / j-i
             BigInteger j_sub_x = jBigInt.subtract(xBigInt);
             BigInteger j_sub_i = jBigInt.subtract(iBigInt);
@@ -112,8 +117,8 @@ public class Polynomial {
 
         List<BigInteger> coefficients = new ArrayList<>();
         for (int i = 0; i < this.size(); i++) {
-            BigInteger sum = this.coefficients.get(i).add(p.coefficients.get(i));
-            coefficients.add(sum);
+            BigInteger add = this.coefficients.get(i).add(p.coefficients.get(i)).mod(group.q);
+            coefficients.add(add);
         }
 
 

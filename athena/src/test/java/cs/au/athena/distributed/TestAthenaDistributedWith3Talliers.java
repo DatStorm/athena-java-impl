@@ -117,10 +117,7 @@ public class TestAthenaDistributedWith3Talliers {
     }
 
     private void registerAndVote(int voteToCast, AthenaFactory factory, AthenaImpl athena, int nc, int kappa) throws InterruptedException {
-        /********************************/
         RegisterStruct registerResult = athena.Register(kappa);
-//        System.out.println("--> D:    " + registerResult.d);
-//        System.out.println("--> Cred: " + registerResult.pd);
         MatcherAssert.assertThat("pd != null", registerResult.pd, notNullValue());
         MatcherAssert.assertThat("d != null", registerResult.d, notNullValue());
         Thread.sleep(1000);
@@ -129,5 +126,5 @@ public class TestAthenaDistributedWith3Talliers {
         Ballot ballot = athena.Vote(registerResult.d, voteToCast, cnt, nc, kappa);
         factory.getBulletinBoard().publishBallot(ballot); // VERY IMPORTANT! Instead just use a Voter
         MatcherAssert.assertThat("b[1]=pubcred != null", ballot.getPublicCredential(), notNullValue());
-        /********************************/}
+    }
 }
