@@ -248,11 +248,11 @@ public class AthenaDistributed {
             if(nextTallierToMix == tallierIndex) {
 
                 // Mix and prove
-                logger.info(MARKER, String.format("T%d mixing", tallierIndex));
+                logger.info(MARKER, String.format("T%d: mixing", tallierIndex));
                 mixedBallotsAndProof = mixnet.mixAndProveMix(previousRoundMixBallots, pk, kappa);
 
                 // Publish
-                logger.info(MARKER, String.format("T%d publishing mix", tallierIndex));
+                logger.info(MARKER, String.format("T%d: publishing mix", tallierIndex));
                 bb.publishMixedBallotsAndProof(tallierIndex, mixedBallotsAndProof);
 
             } else {

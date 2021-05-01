@@ -246,7 +246,6 @@ public class BulletinBoardV2_0 {
 
 
     public PfPhase<CombinedCiphertextAndProof> retrievePfdPhaseOne() {
-        System.out.println("BulletinBoard retrievePfdPhaseOne of size" + this.pfdPhasePhaseOne.size());
         return this.pfdPhasePhaseOne;
     }
 

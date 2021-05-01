@@ -94,7 +94,6 @@ public class AthenaImpl implements Athena {
         }
         return new AthenaTally.Builder()
                 .setFactory(this.athenaFactory)
-                .setElgamal(this.elGamalWithLookUpTable)
                 .setTallierIndex(tallierIndex)
                 .setKappa(kappa)
                 .build()

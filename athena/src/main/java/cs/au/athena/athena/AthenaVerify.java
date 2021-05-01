@@ -41,7 +41,7 @@ public class AthenaVerify {
 
 
     public boolean Verify() {
-        logger.info(MARKER, "AthenaVerify.Verify[started]");
+        logger.info(MARKER, "Verify[started]");
         //Fetch from bulletin board
         int nc = this.bb.retrieveNumberOfCandidates();
         Map<Integer, CompletableFuture<Map<Integer, Integer>>> officialTallys = this.bb.retrieveOfficialTally();
@@ -78,18 +78,18 @@ public class AthenaVerify {
             if (tallierTallyMatchGroundTruth) {
                 numberOfCorrectTallies++;
             } else {
-                logger.info(MARKER, String.format("AthenaVerify.Verify[T%d calculated wrong tally!]", entry.getKey()));
+                logger.info(MARKER, String.format("Verify[T%d calculated wrong tally!]", entry.getKey()));
             }
 
             // When k+1 correct official tallys have been published, return true.
             boolean electionIsValid = numberOfCorrectTallies >= bb.retrieveK() + 1;
             if(electionIsValid){
-                logger.info(MARKER, "AthenaVerify.Verify[ended] by finding k+1 correct official tallies");
+                logger.info(MARKER, "Verify[ended] by finding k+1 correct official tallies");
                 return true;
             }
         }
 
-        logger.info(MARKER, "AthenaVerify.Verify[ended] without finding k+1 correct official tallies");
+        logger.info(MARKER, "Verify[ended] without finding k+1 correct official tallies");
         return false;
     }
 

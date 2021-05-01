@@ -28,9 +28,7 @@ public class AthenaTally {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-TALLY");
 
-
     private Random random;
-    private ElGamal elgamal;
     private BulletinBoardV2_0 bb;
     private VerifyingBulletinBoardV2_0 vbb;
     private AthenaDistributed distributed;
@@ -46,7 +44,7 @@ public class AthenaTally {
         /* ********
          * Step 1: Remove invalid ballots
          *********/
-        logger.info(MARKER, "Step 1. Remove invalid ballots");
+        logger.info(MARKER, "Removing invalid ballots");
         List<Ballot> validBallots = removeInvalidBallots(pk, this.bb, this.vbb);
         if (validBallots.isEmpty()) {
             logger.error(MARKER,"T"+ tallierIndex+ ": AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
@@ -57,32 +55,26 @@ public class AthenaTally {
          * Step 2: Mix final votes
          *********/
         //Filter ReVotes and pfr proof of same nonce
-        logger.info(MARKER, "Step 2a. Filter ReVotes");
+        logger.info(MARKER, String.format("T%d: Filtering ReVotes", tallierIndex));
         Map<MapAKey, MapAValue> A = filterReVotes(tallierIndex, validBallots, skShare);
 
         // Perform random mix
-        logger.info(MARKER, "Step 2b.Mixnet");
-        logger.info(MARKER, String.format("T%d: Mixnet[started]", tallierIndex));
+        logger.info(MARKER, String.format("T%d: Mixnet", tallierIndex));
         List<MixBallot> mixedBallots = mixnet(A, pk);
-        logger.info(MARKER, String.format("T%d: Mixnet[ended]", tallierIndex));
 
 
         /* ********
          * Step 3: Reveal eligible votes
          *********/
-        logger.info(MARKER, "step 3. Reveal authorised votes");
-        logger.info(MARKER, String.format("T%d: .revealAuthorisedVotes[started]", tallierIndex));
+        logger.info(MARKER, String.format("T%d: Revealing authorised votes", tallierIndex));
 
         // Tally eligible votes and prove computations
         Map<Integer, Integer> officialTally = revealAuthorisedVotes(mixedBallots, skShare, kappa);
-        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ended]", tallierIndex));
-
 
         // Post tallyboard
         bb.publishTallyOfVotes(tallierIndex, officialTally);
         return officialTally;
     }
-
 
 
     // Step 1 of Tally
@@ -160,8 +152,6 @@ public class AthenaTally {
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
     private Map<MapAKey, MapAValue> filterReVotes(int tallierIndex, List<Ballot> validBallots, ElGamalSK sk) {
-        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[started]", tallierIndex));
-        int ell = validBallots.size();
 
         // Pick a nonce to mask public credentials.
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
@@ -173,10 +163,7 @@ public class AthenaTally {
         List<BigInteger> noncedNegatedPrivateCredentials = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, noncedEncryptedNegatedPrivateCredentials, sk, kappa);
 
         // MapA
-        Map<MapAKey, MapAValue> A = performMapA(validBallots, noncedNegatedPrivateCredentials, sk.pk.group);
-
-        logger.info(MARKER, String.format("T%d: AthenaTally.filterReVotes[ended]", tallierIndex));
-        return A;
+        return performMapA(validBallots, noncedNegatedPrivateCredentials, sk.pk.group);
     }
 
     // Does the filtering. Read the athena paper for documentation.
@@ -249,7 +236,7 @@ public class AthenaTally {
 
         // Phase III. Decrypt authorized votes
         List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
-        logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ |votes|= %d ]", tallierIndex, voteElements.size()));
+        logger.info(MARKER, String.format("T%d: computing tally with -> |votes|= %d", tallierIndex, voteElements.size()));
 
         return computeTally(voteElements, nc, sk.pk.group);
     }
@@ -279,7 +266,6 @@ public class AthenaTally {
 
 
     public static class Builder {
-        private ElGamal elgamal;
         private AthenaFactory athenaFactory;
         private int tallierIndex;
         private int kappa;
@@ -291,10 +277,6 @@ public class AthenaTally {
             return this;
         }
 
-        public Builder setElgamal(ElGamal elgamal) {
-            this.elgamal = elgamal;
-            return this;
-        }
 
 
         public Builder setKappa(int kappa) {
@@ -310,7 +292,6 @@ public class AthenaTally {
         public AthenaTally build() {
             //Check that all fields are set
             if (athenaFactory == null ||
-                    elgamal == null ||
                     kappa == 0
             ) {
                 throw new IllegalArgumentException("Not all fields have been set");
@@ -318,7 +299,6 @@ public class AthenaTally {
 
             //Construct Object
             AthenaTally athenaTally = new AthenaTally();
-            athenaTally.elgamal = elgamal;
             athenaTally.distributed = this.athenaFactory.getDistributedAthena();
             athenaTally.random = this.athenaFactory.getRandom();
             athenaTally.bb = this.athenaFactory.getBulletinBoard();
