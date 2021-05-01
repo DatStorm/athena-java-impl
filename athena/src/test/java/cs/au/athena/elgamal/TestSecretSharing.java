@@ -7,7 +7,12 @@ import cs.au.athena.factory.Factory;
 import cs.au.athena.factory.MainFactory;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +23,9 @@ import static org.hamcrest.CoreMatchers.is;
 @Tag("TestSecretSharing")
 @DisplayName("Test Secret Sharing.")
 public class TestSecretSharing {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+    private static final Marker MARKER = MarkerFactory.getMarker("TEST! SecretSharingUTIL");
+
     Random random;
     Group group;
     ElGamal elGamal;
@@ -33,15 +41,49 @@ public class TestSecretSharing {
 
 
     @Test
+    void testLambda() {
+        Polynomial poly1 = new Polynomial(Arrays.asList(BigInteger.valueOf(1),BigInteger.valueOf(1),BigInteger.valueOf(0)), group);
+        Polynomial poly2 = new Polynomial(Arrays.asList(BigInteger.valueOf(0),BigInteger.valueOf(0),BigInteger.valueOf(0)), group);
+        Polynomial poly3 = new Polynomial(Arrays.asList(BigInteger.valueOf(0),BigInteger.valueOf(0),BigInteger.valueOf(0)), group);
+        Polynomial poly = poly1.add(poly2).add(poly3);
+
+        // Make sk and pk
+        ElGamalPK pk = new ElGamalPK(poly.getPointCommitment(0), group);
+
+        // Compute shares of the secret key poly.eval(0)
+        ElGamalSK sk1 = new ElGamalSK(group, poly.eval(1));
+        ElGamalSK sk2 = new ElGamalSK(group, poly.eval(2));
+        ElGamalSK sk3 = new ElGamalSK(group, poly.eval(3));
+        ElGamalSK expectedSk = new ElGamalSK(group, poly.eval(0));
+
+        List<ElGamalSK> sks = Arrays.asList(sk1, sk2, sk3);
+        List<Integer> S = Arrays.asList(1, 2, 3);
+
+        int i = 1;
+        for (ElGamalSK sk : sks) {
+            logger.info(MARKER, String.format("P%d :: ski=%d",i, sk.sk));
+            i++;
+        }
+
+        ElGamalSK sk = SecretSharingUTIL.combineSecretKeys(sks, S, group);
+
+        MatcherAssert.assertThat(sk.sk, is(expectedSk.sk));
+
+    }
+
+    @Test
     void testSecretSharingWithThreeSmall() {
         int eval_1 = 1;
         int eval_2 = 2;
         int eval_3 = 3;
 
+        //
         Polynomial poly1 = new Polynomial(Arrays.asList(BigInteger.valueOf(0),BigInteger.valueOf(1),BigInteger.valueOf(0)), group);
         Polynomial poly2 = new Polynomial(Arrays.asList(BigInteger.valueOf(0),BigInteger.valueOf(0),BigInteger.valueOf(0)), group);
         Polynomial poly3 = new Polynomial(Arrays.asList(BigInteger.valueOf(0),BigInteger.valueOf(0),BigInteger.valueOf(0)), group);
         Polynomial poly = poly1.add(poly2).add(poly3);
+        System.out.println("POLY: " + poly);
+
 
         MatcherAssert.assertThat("Poly check 1", poly.getCoefficients().get(0), is(BigInteger.ZERO));
         MatcherAssert.assertThat("Poly check 2", poly.getCoefficients().get(1), is(BigInteger.ONE));
@@ -49,7 +91,9 @@ public class TestSecretSharing {
 
 
         // Make sk and pk
-        ElGamalPK pk = new ElGamalPK(poly.getPointCommitment(0), group);
+        ElGamalPK pk = new ElGamalPK(poly.getPointCommitment(0), group); // pk.h => 1
+        MatcherAssert.assertThat("Pk check 1", pk.h, is(BigInteger.ONE));
+
 
         // Compute shares of the secret key poly.eval(0)
         ElGamalSK sk1 = new ElGamalSK(group, poly.eval(eval_1));
@@ -190,6 +234,7 @@ public class TestSecretSharing {
 
         // Make sk and pk
         ElGamalPK pk = new ElGamalPK(poly.getPointCommitment(0), group);
+
 
         // Compute shares of the secret key poly.eval(0)
         ElGamalSK sk1 = new ElGamalSK(group, poly.eval(eval_1));

@@ -38,7 +38,7 @@ public class PowerModCalculater {
             BigInteger res = baseBig.modPow(exponentBig,modBig);
 
             System.out.printf("%d^%d mod %d \n", baseBig,exponentBig,modBig);
-            System.out.printf("= %d", res);
+            System.out.printf("= %d\n", res);
         }
     }
 }

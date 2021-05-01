@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+
 import cs.au.athena.elgamal.Group;
 
 // P(X) = a_0 + a_1*x^1 + ... + a_k x^k
@@ -22,11 +23,10 @@ public class Polynomial {
 
 
     /**
-     *
      * P(0)=secret
      *
-     * @param k polynomial degree => Makes k+1 coefficients
-     * @param group Elgamal group
+     * @param k      polynomial degree => Makes k+1 coefficients
+     * @param group  Elgamal group
      * @param random random
      * @return a new random polynomial
      */
@@ -70,7 +70,7 @@ public class Polynomial {
         return commitments;
     }
 
-    public  BigInteger getPointCommitment(int index) {
+    public BigInteger getPointCommitment(int index) {
         return getPointCommitment(index, getCommitments(), this.group);
     }
 
@@ -80,7 +80,7 @@ public class Polynomial {
         // Så k+1 coefficienter
 
         BigInteger commitment = BigInteger.ONE;
-        for(int ell = 0; ell < size; ell++) { // 0, 1, 2
+        for (int ell = 0; ell < size; ell++) { // 0, 1, 2
             BigInteger jPowEll = BigInteger.valueOf(index).modPow(BigInteger.valueOf(ell), group.q);
             BigInteger coefficientCommitment = polynomialCommitments.get(ell);
             commitment = commitment.multiply(coefficientCommitment.modPow(jPowEll, group.p)).mod(group.p);
@@ -94,15 +94,15 @@ public class Polynomial {
         BigInteger xBigInt = BigInteger.valueOf(x);
         BigInteger iBigInt = BigInteger.valueOf(i);
 
-        for(int j : S) {
+        for (int j : S) {
             if (i == j) {
                 continue;
             }
             BigInteger jBigInt = BigInteger.valueOf(j);
             // j-x / j-i
-            BigInteger j_sub_x = jBigInt.subtract(xBigInt);
-            BigInteger j_sub_i = jBigInt.subtract(iBigInt);
-            BigInteger divide = j_sub_x.divide(j_sub_i);
+            BigInteger j_sub_x = jBigInt.subtract(xBigInt).mod(group.q).add(group.q).mod(group.q);
+            BigInteger j_sub_i = jBigInt.subtract(iBigInt).mod(group.q).add(group.q).mod(group.q);
+            BigInteger divide = j_sub_x.multiply(j_sub_i.modInverse(group.q)).mod(group.q).add(group.q).mod(group.q);
             prod = prod.multiply(divide).mod(group.q); // Properly not needed to modulo as the indices are much smaller than q.
         }
         return prod;
@@ -125,4 +125,22 @@ public class Polynomial {
         return new Polynomial(coefficients, group);
     }
 
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+
+        s.append("P(X)= ");
+
+        int ell = coefficients.size();
+        for (int i = 0; i < ell; i++) {
+            BigInteger coef = coefficients.get(i);
+            s.append("x_").append(i).append("*").append(coef);
+            if (i < ell - 1) {
+                s.append(" + ");
+            }
+        }
+
+        return s.toString();
+    }
 }
