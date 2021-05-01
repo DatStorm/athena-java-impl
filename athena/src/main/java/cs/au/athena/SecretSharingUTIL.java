@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class SecretSharingUTIL {
 
     public static BigInteger computeDecryptionShare(Ciphertext ciphertext, ElGamalSK sk) {
+        // d_i = c_1^{-P(i)}
         return ciphertext.c1.modPow(sk.toBigInteger().negate(), sk.pk.group.p);
     }
 
@@ -33,7 +34,7 @@ public class SecretSharingUTIL {
             int s = S.get(i);
 
             // Make lambda
-            BigInteger lambda = Polynomial.getLambda(0, s, S).mod(group.q);
+            BigInteger lambda = Polynomial.getLambda(0, s, S, group).mod(group.q);
 
             // Perform lagrange interpolation
             prodSumOfDecryptionShares = prodSumOfDecryptionShares.multiply(share.modPow(lambda, group.p)).mod(group.p);
@@ -57,7 +58,7 @@ public class SecretSharingUTIL {
                 BigInteger share = shareIterators.get(i).next();
 
                 // Make lambda
-                BigInteger lambda = Polynomial.getLambda(0, s, S).mod(group.q);
+                BigInteger lambda = Polynomial.getLambda(0, s, S, group).mod(group.q);
 
                 // Perform lagrange interpolation
                 prodSumOfDecryptionShares = prodSumOfDecryptionShares.multiply(share.modPow(lambda, group.p)).mod(group.p);
@@ -70,6 +71,8 @@ public class SecretSharingUTIL {
 
         return plaintexts;
     }
+
+
 
     public static List<BigInteger> combineDecryptionSharesAndDecrypt(List<Ciphertext> ciphertexts, PfPhase<DecryptionShareAndProof> completedPfPhase, Group group) {
         // Find the set of talliers in the pfr

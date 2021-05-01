@@ -173,8 +173,10 @@ public class SigmaCommonDistributed {
     }
 
 
-
-
+    /**
+     * decryption share d_i = c_1^{sk_i} where ciphertext c=(c1,c2)
+     * and sk_i is the share of the secret key held by tallier T_i
+     */
     public static List<DecryptionShareAndProof> computeDecryptionShareAndProofs(List<Ciphertext> ciphertexts, ElGamalSK sk, int kappa) {
         Group group = sk.pk.group;
         Sigma3 sigma3 = new Sigma3();
@@ -192,7 +194,9 @@ public class SigmaCommonDistributed {
             decryptionSharesAndProofs.add(new DecryptionShareAndProof(decryptionShare, proof));
         }
 
+        // TODO: REMOVE WHEN WORKING!!!!!
         assert verifyDecryptionShareAndProofs(ciphertexts, decryptionSharesAndProofs, sk.pk, kappa): "computeDecryptionShareAndProofs result is invalid";
+        // TODO: REMOVE WHEN WORKING!!!!!
 
         return decryptionSharesAndProofs;
     }

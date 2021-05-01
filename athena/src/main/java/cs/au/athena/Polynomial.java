@@ -84,7 +84,7 @@ public class Polynomial {
         return commitment;
     }
 
-    public static BigInteger getLambda(int x, int i, List<Integer> S) {
+    public static BigInteger getLambda(int x, int i, List<Integer> S, Group group) {
         BigInteger prod = BigInteger.ONE;
         BigInteger xBigInt = BigInteger.valueOf(x);
         BigInteger iBigInt = BigInteger.valueOf(i);
@@ -97,7 +97,8 @@ public class Polynomial {
             // j-x / j-i
             BigInteger j_sub_x = jBigInt.subtract(xBigInt);
             BigInteger j_sub_i = jBigInt.subtract(iBigInt);
-            prod = j_sub_x.divide(j_sub_i);
+            BigInteger divide = j_sub_x.divide(j_sub_i);
+            prod = prod.multiply(divide).mod(group.q); // Properly not needed to modulo as the indices are much smaller than q.
         }
         return prod;
     }

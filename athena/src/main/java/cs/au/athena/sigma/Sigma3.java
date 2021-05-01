@@ -40,7 +40,7 @@ public class Sigma3 {
 
     // FIXME: Test this
     public Sigma3Proof proveDecryptionShare(Ciphertext ciphertext, BigInteger decryptionShare, ElGamalSK sk, int kappa) {
-        Sigma3Statement statement = createDecryptionShareStatement(ciphertext, decryptionShare, sk.pk);
+        Sigma3Statement statement = createDecryptionShareStatement(ciphertext, decryptionShare, sk.pk); // note that pk is h_j=g^P(j)
         Sigma3Proof proof = proveLogEquality(statement, sk.sk, kappa);
 
 //        assert verifyDecryptionShare(ciphertext, decryptionShare, proof, sk.pk, kappa): String.format("Verification of share failed. ");

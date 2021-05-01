@@ -207,7 +207,10 @@ public class BulletinBoardV2_0 {
     }
 
 
-    public void publishPfdPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> values) {
+    /**
+     * TODO: SHOULD THIS BE synchronized
+     */
+    public synchronized void publishPfdPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> values) {
         if(values.size() != ballots.size()) {
             throw new IllegalArgumentException(String.format("T%d: list must be the same length as ballots", tallierIndex));
         }

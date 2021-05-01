@@ -15,6 +15,7 @@ import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalPK;
+import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.AthenaFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -161,10 +162,27 @@ public class AthenaVerify {
         PfPhase<CombinedCiphertextAndProof> validPfdPhaseOne = vbb.retrieveValidThresholdPfdPhaseOne(combinedCredentials).join();
         List<Ciphertext> noncedCombinedCredentials = AthenaDistributed.combineCiphertexts(validPfdPhaseOne, pk.group);
 
+
+
+
         // Phase II. Decrypt nonced combinedCredential
         PfPhase<DecryptionShareAndProof> validPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(noncedCombinedCredentials).join();
-        List<BigInteger> m_list = SecretSharingUTIL.combineDecryptionSharesAndDecrypt(combinedCredentials, validPfdPhaseTwo, pk.group);
-        logger.info(MARKER, String.format("VERIFY: m_list=[ %s ]", UTIL.ballotListToString(m_list)));
+//       OLD => List<BigInteger> m_list = SecretSharingUTIL.combineDecryptionSharesAndDecrypt(combinedCredentials, validPfdPhaseTwo, pk.group);
+        List<BigInteger> m_list = SecretSharingUTIL.combineDecryptionSharesAndDecrypt(noncedCombinedCredentials, validPfdPhaseTwo, pk.group);
+
+        /******************************
+         * FAKE !!!!!!!!!
+         ********************************/
+//        for (Ciphertext c : noncedCombinedCredentials) {
+//            ElGamalSK fakeSK = bb.getFakeSK();
+//
+//            BigInteger decryptedM = ElGamal.decrypt(c, fakeSK);
+//            logger.info(MARKER, String.format("--> VERIFY: Decrypt(c)=%d", decryptedM));
+//            assert fakeSK.pk.h.equals(vbb.retrieveAndVerifyPK().h): "FakeSK did not match PK on BulletinBoard";
+//
+//        }
+
+        logger.info(MARKER, String.format("--> VERIFY: m_list=[ %s ]", UTIL.ballotListToString(m_list)));
 
         // Remove unauthorized ballots
         List<Ciphertext> authorizedEncryptedVotes = AthenaDistributed.removeUnauthorizedVotes(m_list, encryptedVotes);

@@ -221,7 +221,6 @@ public class AthenaTally {
                 .collect(Collectors.toList());
 
         return this.distributed.performMixnet(tallierIndex, ballots, pk, kappa);
-        //return ballots; //FIXME: We skipped mixnet
 
     }
 

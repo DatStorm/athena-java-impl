@@ -432,9 +432,6 @@ public class AthenaDistributed {
         PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(combinedCredentialCiphertexts).join();
         assert completedPfdPhaseTwo.size() == k + 1 : String.format("Shares does not have length k+1 it had %d", completedPfdPhaseTwo.size());
 
-
-
-
         // Decrypt nonced combined credentials
         return SecretSharingUTIL.combineDecryptionSharesAndDecrypt(combinedCredentialCiphertexts, completedPfdPhaseTwo, sk.pk.group);
     }
