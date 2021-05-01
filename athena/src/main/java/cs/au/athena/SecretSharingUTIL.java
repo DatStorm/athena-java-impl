@@ -21,8 +21,8 @@ import java.math.BigInteger;
 import java.util.stream.Collectors;
 
 public class SecretSharingUTIL {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-    private static final Marker MARKER = MarkerFactory.getMarker("SecretSharing-UTIL");
+//    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+//    private static final Marker MARKER = MarkerFactory.getMarker("SecretSharing-UTIL");
 
 
     public static BigInteger computeDecryptionShare(Ciphertext ciphertext, ElGamalSK sk) {
@@ -112,11 +112,9 @@ public class SecretSharingUTIL {
         for (int i = 0; i < sks.size(); i++) {
             ElGamalSK ski = sks.get(i);
             Integer s = S.get(i);
-//            logger.info(MARKER, String.format("P%d :: ski=%d",s, ski.sk));
 
             int x = 0;
             BigInteger lambda = Polynomial.getLambda(x, s, S, group);
-            logger.info(MARKER, String.format("lambda_%d(x=%d,s=%d,S=%s,group=..) = %d", i, x, s, S, lambda));
             sk = sk.add(ski.sk.multiply(lambda).mod(group.q)).mod(group.q);
         }
 

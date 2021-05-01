@@ -44,30 +44,7 @@ public class Group {
         return g;
     }
 
-    // Generates a multiplicative subgroup of order q, where p,q are primes and p=2q+1
-    public static Group generateGroup(int bitLength, Random random) {
-        // SECURE == 2048
-        BigInteger p, q, g;
-        do {
-            p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
-            q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
 
-
-            // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
-        } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
-
-        g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);
-
-
-        if (p.bitLength() <= bitLength) {
-            throw new RuntimeException("P, with bitLength " + p.bitLength() + ", is too small to encrypt numbers with bitlength " + bitLength);
-        }
-
-        assert g.modPow(q, p).equals(BigInteger.ONE) : "ElGamal group defined wrong, i.e. q definition is no good";
-
-
-        return new Group(p, q, g);
-    }
 
     public BigInteger newGenerator(Random random) {
         BigInteger i = UTIL.getRandomElement(q, random);

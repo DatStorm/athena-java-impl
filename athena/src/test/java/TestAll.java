@@ -29,7 +29,6 @@ public class TestAll {
 //@SelectPackages("")
 //@IncludeTags({
 //        "TestElgamal",
-//        // FIXME: add when done!
 ////        "TestsSigma1",
 ////        "TestsSigma2BulletProof",
 //        "TestsSigma3",

@@ -3,6 +3,7 @@ package cs.au.athena.athena;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import org.junit.jupiter.api.*;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.ElGamalSK;
@@ -22,7 +23,7 @@ public class TestAthenaVerify {
     MainAthenaFactory msFactory;
 
     private ElGamalSK sk;
-    private BulletinBoard bb;
+    private BulletinBoardV2_0 bb;
 
     private AthenaImpl athena;
 
@@ -33,9 +34,7 @@ public class TestAthenaVerify {
         athena = new AthenaImpl(msFactory);
         sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, kappa);
 
-
-//        bb = msFactory.getBulletinBoard();
-        bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+        bb = msFactory.getBulletinBoard();
 
 
     }
@@ -48,8 +47,6 @@ public class TestAthenaVerify {
     @Disabled
     @RepeatedTest(100)
     void TestAthenaVerify() {
-
-        PK_Vector pkv = bb.retrievePK_vector();
 
         RegisterStruct register1 = athena.Register(kappa);
         CredentialTuple dv1  = register1.d;

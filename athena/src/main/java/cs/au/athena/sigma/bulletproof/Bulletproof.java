@@ -177,10 +177,10 @@ public class Bulletproof {
 
         // Step 2: Send A,S => Hash(A,S)
         // Step 3: Generate y,z \in_R Z_q \ 0
-        Random hashRandom = new Random(hash(vectorU, A, S)); //TODO: hash should also take vector u
+        Random hashRandom = new Random(hash(vectorU, A, S));
 
         BigInteger y = generateChallenge(q, hashRandom);
-        Random hashRandom2 = new Random(hash(vectorU, A, S, y));  //TODO: hash should also take vector u
+        Random hashRandom2 = new Random(hash(vectorU, A, S, y));
         BigInteger z = generateChallenge(q, hashRandom2);
 
 

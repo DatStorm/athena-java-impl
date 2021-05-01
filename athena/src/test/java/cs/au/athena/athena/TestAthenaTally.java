@@ -3,6 +3,7 @@ package cs.au.athena.athena;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
+import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import org.junit.jupiter.api.*;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.ElGamalSK;
@@ -16,28 +17,23 @@ import static org.junit.Assert.assertNotNull;
 @Tag("TestsAthenaTally")
 @DisplayName("Test Athena Tally")
 public class TestAthenaTally {
-
     private final int kappa = CONSTANTS.KAPPA;
     private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
 
     MainAthenaFactory msFactory;
     private CredentialTuple dv;
-    private PK_Vector pkv;
-    private ElGamalSK sk;
-
     private Athena athena;
-    private BulletinBoard bb;
+    private BulletinBoardV2_0 bb;
+    private ElGamalSK sk;
 
 
     @BeforeEach
     void setUp() {
         msFactory = new MainAthenaFactory(CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
         athena = new AthenaImpl(msFactory);
-        ElGamalSK sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, this.kappa);
-//        bb = msFactory.getBulletinBoard();
-        bb = BulletinBoard.getInstance(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+        sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, this.kappa);
+        bb = msFactory.getBulletinBoard();
 
-        pkv = bb.retrievePK_vector();
         RegisterStruct register = athena.Register(this.kappa);
         dv = register.d;
 
@@ -60,7 +56,6 @@ public class TestAthenaTally {
 
         Map<Integer, Integer> tally = athena.Tally(1, sk, nc, this.kappa);
         assertNotNull("Should not be null", tally);
-
 
     }
 }

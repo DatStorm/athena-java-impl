@@ -138,7 +138,6 @@ public class Sigma1 {
     }
 
     public boolean VerifyKey(BigInteger h, Sigma1Proof rho, Group group, int kappa) {
-        // TODO: Use kappa
 
         // lists
         ArrayList<CoinFlipInfo> coinFlipInfoPairs = rho.getCoinFlipInfoPairs();

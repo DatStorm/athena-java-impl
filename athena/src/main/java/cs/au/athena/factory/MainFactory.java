@@ -15,7 +15,7 @@ public class MainFactory implements Factory {
 
     public MainFactory() {
         this.random = new Random(CONSTANTS.RANDOM_SEED);
-        int nc = 10; //TODO: What value?;
+        int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
 
         int bitlength = CONSTANTS.KAPPA * 8;
         this.elgamal = new ElGamal(CONSTANTS.ELGAMAL_CURRENT.GROUP, nc, random);

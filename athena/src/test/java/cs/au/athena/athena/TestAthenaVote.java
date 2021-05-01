@@ -4,10 +4,7 @@ package cs.au.athena.athena;
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.athena.bulletinboard.BulletinBoard;
 import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.elgamal.Ciphertext;
 import cs.au.athena.elgamal.ElGamal;
@@ -27,10 +24,8 @@ public class TestAthenaVote {
 
     private final int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
     private final int kappa = CONSTANTS.KAPPA;
-
-    MainAthenaFactory msFactory;
+    private MainAthenaFactory msFactory;
     private CredentialTuple dv;
-    private PK_Vector pkv;
     private ElGamalSK sk;
 
     private AthenaImpl athena;
@@ -40,18 +35,10 @@ public class TestAthenaVote {
     @BeforeEach
     void setUp() {
         msFactory = new MainAthenaFactory( CONSTANTS.SINGLE_TALLIER.TALLIER_COUNT,kappa);
-
-
         athena = new AthenaImpl(msFactory);
         sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, this.kappa);
-//        PK_Vector pk_vector = msFactory.getBulletinBoard().retrievePK_vector();
-        PK_Vector pk_vector = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
-        Group group = pk_vector.pk.group;
-
+        Group group = sk.pk.group;
         this.elgamal = new ElGamal(group, nc, msFactory.getRandom());
-
-        pkv = pk_vector;
-
         RegisterStruct register = athena.Register(this.kappa);
         dv = register.d;
 
@@ -79,7 +66,7 @@ public class TestAthenaVote {
         // Enc_pk(d) * Enc_pk(-d) = g^0
         Ciphertext combinedCredential = ballot.publicCredential.multiply(ballot.encryptedNegatedPrivateCredential, sk.pk.group.p);
         BigInteger m = ElGamal.decrypt(combinedCredential, sk);
-        assertEquals("m is equal to 1 ", BigInteger.ONE, m);
+        Assertions.assertEquals(BigInteger.ONE, m, "m is equal to 1 ");
 
 
         // ballot.encryptedVote = (g^t, g^v * h^t)

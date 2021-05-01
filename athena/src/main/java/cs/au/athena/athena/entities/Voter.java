@@ -52,13 +52,12 @@ public class Voter {
             System.err.println("Voter.castVote => pk is null! Please run Voter.init()");
              return;
         }
-
         if (vote > nc) {
             System.err.println("Voter.castVote => vote > nc! Please fix.");
             return;
         }
 
-        counter = counter + 1; // TODO: use a timestamp perhaps
+        counter = counter + 1;
         Ballot ballot = athena.Vote(credentialTuple, vote, counter, nc, kappa);
 
          // publish the ballot

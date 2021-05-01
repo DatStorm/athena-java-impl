@@ -23,8 +23,6 @@ import static org.hamcrest.CoreMatchers.is;
 @Tag("TestSecretSharing")
 @DisplayName("Test Secret Sharing.")
 public class TestSecretSharing {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-    private static final Marker MARKER = MarkerFactory.getMarker("TEST! SecretSharingUTIL");
 
     Random random;
     Group group;
@@ -58,12 +56,6 @@ public class TestSecretSharing {
 
         List<ElGamalSK> sks = Arrays.asList(sk1, sk2, sk3);
         List<Integer> S = Arrays.asList(1, 2, 3);
-
-        int i = 1;
-        for (ElGamalSK sk : sks) {
-            logger.info(MARKER, String.format("P%d :: ski=%d",i, sk.sk));
-            i++;
-        }
 
         ElGamalSK sk = SecretSharingUTIL.combineSecretKeys(sks, S, group);
 

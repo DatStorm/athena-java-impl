@@ -69,7 +69,6 @@ public class ElGamal {
             p = BigInteger.probablePrime(bitLength + 1, random); // p=2q+1
             q = p.subtract(BigInteger.ONE).divide(BigInteger.TWO); // q = (p-1)/2
 
-            // TODO: FIXME: this might lead to long execution time HOW CAN WE ADDRESS THIS
         } while (!q.isProbablePrime(bitLength)); // call returns true the probability that this BigInteger is prime exceeds (1 - 1/2^{certainty})
 
         g = UTIL.getRandomElement(BigInteger.TWO, p, random).modPow(BigInteger.TWO, p);

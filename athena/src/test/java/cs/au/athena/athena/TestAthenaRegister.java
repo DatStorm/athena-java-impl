@@ -34,10 +34,7 @@ public class TestAthenaRegister {
     @Test
     void TestAthenaImplRegister() {
         AthenaImpl athena = new AthenaImpl(msFactory);
-        ElGamalSK sk = athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, kappa);
-
-//        PK_Vector pkv = msFactory.getBulletinBoard().retrievePK_vector();
-        PK_Vector pkv = BulletinBoard.getInstance().retrievePK_vector(); // TODO: RePLACE WITH ABOVE WHEN BB IS DONE!
+        athena.Setup(CONSTANTS.SINGLE_TALLIER.TALLIER_INDEX,nc, kappa);
 
         RegisterStruct register = athena.Register(kappa);
 

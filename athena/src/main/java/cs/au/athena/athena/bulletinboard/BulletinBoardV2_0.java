@@ -82,9 +82,7 @@ public class BulletinBoardV2_0 {
         this.mixedBallotAndProofs = new HashMap<>(tallierCount);
         this.officialTallyMap = new HashMap<>(tallierCount);
 
-        /*********** FAKE FIXME; ***************/
-        this.fakeSKMAP = new HashMap<>();
-        /**************************/
+
 
         this.init(tallierCount);
     }
@@ -207,9 +205,6 @@ public class BulletinBoardV2_0 {
     }
 
 
-    /**
-     * TODO: SHOULD THIS BE synchronized
-     */
     public synchronized void publishPfdPhaseOneEntry(int tallierIndex, List<CombinedCiphertextAndProof> values) {
         if(values.size() != ballots.size()) {
             throw new IllegalArgumentException(String.format("T%d: list must be the same length as ballots", tallierIndex));
@@ -275,23 +270,5 @@ public class BulletinBoardV2_0 {
         return this.mixedBallotAndProofs.get(finalTallierIndex).join().mixedBallots;
     }
 
-    /*********************************************
-     * FAKE
-     ********************************************/
-    private Map<Integer, BigInteger> fakeSKMAP;
-    public void postSK_i(Integer tallierIndex, BigInteger p_j_0) { //P(j)
-        this.fakeSKMAP.put(tallierIndex,p_j_0);
-    }
 
-    public BigInteger getFakeSK_i(Integer tallierIndex) {
-        return fakeSKMAP.get(tallierIndex);
-    }
-
-    public ElGamalSK getFakeSK() { //SK_i = P_j(0)
-        BigInteger sk = BigInteger.ZERO;
-        for (int i = 1; i <= tallierCount; i++) {
-            sk = sk.add(this.getFakeSK_i(i)).mod(group.q); // sk = Sum( P_j(0) ) for all talliers j
-        }
-        return new ElGamalSK(group, sk);
-    }
 }

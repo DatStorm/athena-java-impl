@@ -241,28 +241,14 @@ public class AthenaTally {
         // Phase I. Nonced combinedCredential
         List<Ciphertext> combinedCredentialsWithNonce = this.distributed.performPfdPhaseOneHomoComb(tallierIndex, combinedCredentials, random, sk, kappa);
 
-        /******************************
-         * FAKE !!!!!!!!!
-         ********************************/
-        for (Ciphertext c : combinedCredentialsWithNonce) {
-            ElGamalSK fakeSK = bb.getFakeSK();
-
-            BigInteger decryptedM = ElGamal.decrypt(c, fakeSK);
-            logger.info(MARKER, String.format("T%d Decrypt(c)=%d", tallierIndex, decryptedM));
-            assert fakeSK.pk.h.equals(vbb.retrieveAndVerifyPK().h): "FakeSK did not match PK on BulletinBoard";
-
-        }
-
         // Phase II. Decrypt nonced combinedCredential
         List<BigInteger> m_list = this.distributed.performPfdPhaseTwoDecryption(tallierIndex, combinedCredentialsWithNonce, sk, kappa);
-        logger.info(MARKER, String.format("T%d: m_list=[ %s ]", tallierIndex, UTIL.ballotListToString(m_list)));
+//        logger.info(MARKER, String.format("T%d: m_list=[ %s ]", tallierIndex, UTIL.ballotListToString(m_list)));
 
 
 
         // Phase III. Decrypt authorized votes
         List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
-//        logger.info(MARKER, String.format("T%d: elgamal lookup table: %s", tallierIndex, UTIL.lookupTableToString(elgamal.getLookupTable())));
-//        logger.info(MARKER, String.format("T%d: decrypted vote elements to: %s", tallierIndex, voteElements.toString()));
         logger.info(MARKER, String.format("T%d: AthenaTally.revealAuthorisedVotes[ |votes|= %d ]", tallierIndex, voteElements.size()));
 
         return computeTally(voteElements, nc, sk.pk.group);

@@ -42,7 +42,6 @@ public class AthenaDistributed {
     }
 
     public ElGamalSK setup(int tallierIndex, int nc, int kappa) {
-        logger.info(MARKER, "getElGamalSK(...) => start");
         assert tallierIndex != 0 : "DistributedStrategy.Setup(...).tallierIndex can not be 0 and was " + tallierIndex;
         assert tallierIndex <= bb.retrieveTallierCount();
 
@@ -53,20 +52,17 @@ public class AthenaDistributed {
         int k = bb.retrieveK();
 
         // Generate random polynomial P_i(X)
-        logger.info(MARKER, "computing polynomial");
+        logger.info(MARKER, String.format("T%d computing polynomial", tallierIndex));
         Polynomial polynomial = Polynomial.newRandom(k, group, random);
 
         // For each commitment, coefficient pair, do proof
         List<BigInteger> coefficients = polynomial.getCoefficients();
         List<BigInteger> commitments = polynomial.getCommitments();
 
-        /**
-         * FAKE  TODO: REMOVE!
-         */
-        bb.postSK_i(tallierIndex, polynomial.eval(0));
+
 
         // Generate proofs for the commitments
-        logger.info(MARKER, "proving polynomial");
+        logger.info(MARKER, String.format("T%d proving polynomial", tallierIndex));
         List<CommitmentAndProof> commitmentAndProofs = new ArrayList<>();
         for(int ell = 0; ell <= k; ell++) {
             BigInteger commitment = commitments.get(ell);
@@ -89,11 +85,11 @@ public class AthenaDistributed {
         Sigma1Proof rho_i = this.proveKey(pk_i, sk_i, kappa);
 
         // Publish my individual public key, so others can send me a subShare
-        logger.info(MARKER, "publishing individual pk.");
+        logger.info(MARKER, String.format("T%d publishing individual pk.", tallierIndex));
         bb.publishIndividualPKvector(tallierIndex, new PK_Vector(pk_i, rho_i));
 
         // Send subshares P_i(j) to T_j
-        logger.info(MARKER, "publishing subshares");
+        logger.info(MARKER, String.format("T%d publishing subshares", tallierIndex));
         this.publishSubShares(tallierIndex, group, random, tallierCount, polynomial, kappa);
 
         // Receive subshares
@@ -207,7 +203,7 @@ public class AthenaDistributed {
             subShares.add(subShareFromTallier_j);
         }
 
-        logger.info(MARKER, "Received subshares");
+        logger.info(MARKER,  String.format("T%d Received subshares", tallierIndex));
 
 
         return subShares;
@@ -285,8 +281,6 @@ public class AthenaDistributed {
 
     // Returns a list of nonced ciphertexts
     public List<Ciphertext> performPfrPhaseOneHomoComb(int tallierIndex, List<Ballot> validBallots, BigInteger nonce, ElGamalSK sk, int kappa) {
-        int ell = validBallots.size();
-        logger.info(MARKER,String.format("T%d: AthenaDistributed.performPfrPhaseOneHomoComb[started]", tallierIndex));
 
         List<Ciphertext> encryptedNegatedPrivateCredentials = validBallots
                 .stream()
@@ -296,14 +290,14 @@ public class AthenaDistributed {
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.computeHomoCombinationAndProofs(encryptedNegatedPrivateCredentials, nonce, sk, kappa);
 
         // Publish
-        logger.info(MARKER, "publishing entry and awaiting threshold entries");
+        logger.info(MARKER,  String.format("T%d publishing entry and awaiting threshold entries", tallierIndex));
         bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve threshold shares
         PfPhase<CombinedCiphertextAndProof> validPfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne(encryptedNegatedPrivateCredentials).join();
 
         // Combine
-        logger.info(MARKER, "Retrieved threshold entries. Combining");
+        logger.info(MARKER,  String.format("T%d Retrieved threshold entries. Combining",tallierIndex));
 
         // Combine the homomorphic combinations using the talliers individual nonce shares n_j such that the returned ciphertext is nonced with n=Sum(n_j)
         return combineCiphertexts(validPfrPhaseOne, sk.pk.group);
@@ -465,7 +459,7 @@ public class AthenaDistributed {
             boolean isAuthorized = m.equals(BigInteger.ONE);
 
             if(!isAuthorized) {
-                logger.info(MARKER, String.format("unauthorized ballot removed. m:%d", m)); //TODO: FIXME: issue is here, so start here!!!!!!
+                logger.info(MARKER, String.format("unauthorized ballot removed. m:%d", m));
                 continue;
             }
 
