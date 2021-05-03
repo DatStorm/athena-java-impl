@@ -1,6 +1,7 @@
 package cs.au.athena.distributed;
 
 import cs.au.athena.CONSTANTS;
+import cs.au.athena.UTIL;
 import cs.au.athena.athena.AthenaImpl;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.dao.athena.Ballot;
@@ -83,19 +84,22 @@ public class TestAthenaDistributedWith3Talliers {
 //        System.err.println("--".repeat(30) + "> DONE SLEEPING");
 
         // Tally votes
+        final Map<Integer, Integer>[] tallyMap = new Map[]{null,null,null};
+
         Function<Integer, Runnable> tallyRunnable =
                 (tallierIndex) ->
                         () -> {
                             ElGamalSK T_i_sk = talliersSK_HACKY_ASF.get(tallierIndex);
 //                            System.err.println("--".repeat(30) + "> Tally T"+ tallierIndex + " is tallying");
 
-                            Map<Integer, Integer> map = athena.Tally(tallierIndex, T_i_sk, nc, kappa);
+                            tallyMap[tallierIndex - 1] = athena.Tally(tallierIndex, T_i_sk, nc, kappa);
+
                             try {
                                 Thread.sleep(10000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            MatcherAssert.assertThat("", map, notNullValue());
+                            MatcherAssert.assertThat("", tallyMap[0], notNullValue());
                         };
 
         Thread t1_tally = new Thread(tallyRunnable.apply(1));
@@ -109,6 +113,9 @@ public class TestAthenaDistributedWith3Talliers {
         t1_tally.join();
         t2_tally.join();
         t3_tally.join();
+
+        System.out.println(UTIL.prettyPrintTallyResult(tallyMap[0]));
+
 
         // Verify election
         boolean verification = athena.Verify(kappa);

@@ -41,6 +41,21 @@ public class TestUTIL {
     }
 
     @Test
+    void TestTPrettyPrintTallyResult() {
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(2, 0);
+        map.put(3, 1);
+
+        map.put(0, 0);
+        map.put(1, 4);
+
+        System.out.println(UTIL.prettyPrintTallyResult(map));
+
+    }
+
+
+
+    @Test
     void TestInversePermutation() {
         List<Integer> objects = UTIL.newPermutation(10, new Random(0));
         List<Integer> permutation = UTIL.newPermutation(10, new Random(1));

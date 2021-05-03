@@ -1,6 +1,7 @@
 package cs.au.athena;
 
 import com.google.common.collect.Streams;
+import cs.au.athena.athena.AthenaTally;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.sigma1.CoinFlipInfo;
 import cs.au.athena.elgamal.Ciphertext;
@@ -214,7 +215,7 @@ public class UTIL {
     }
 
     public static BigInteger dotProduct(List<BigInteger> l_vector, List<BigInteger> r_vector, BigInteger order) {
-        assert l_vector.size() == r_vector.size() : "cs.au.cs.au.athena.athena.UTIL.dotProduct() => " + l_vector.size() + " != " + r_vector.size();
+        assert l_vector.size() == r_vector.size() : "UTIL.dotProduct() => " + l_vector.size() + " != " + r_vector.size();
         
         return hadamardProduct(l_vector, r_vector, order).stream()
                 .reduce(BigInteger.ZERO, BigInteger::add)
@@ -323,6 +324,48 @@ public class UTIL {
         }
         s.append("---".repeat(20));
         s.append("\n");
+        return s.toString();
+    }
+
+    public static String prettyPrintTallyResult(Map<Integer, Integer> map) {
+        StringBuilder s = new StringBuilder();
+        s.append("\n");
+        s.append("---".repeat(20));
+        s.append("\n");
+        s.append("|\t\tCandidate\t\t\t|\t\t\t  Votes\t\t\t   |");
+        s.append("\n");
+
+        for(Map.Entry<Integer, Integer> entry : map.entrySet() ){
+            s.append("|\t\t\t");
+            s.append(entry.getKey());
+            s.append("\t\t\t\t|\t\t\t\t");
+            s.append(entry.getValue());
+            s.append("\t\t\t   |");
+            s.append("\n");
+        }
+        s.append("---".repeat(20));
+//        s.append("\n");
+//        s.append("\n");
+
+
+//        s.append("***".repeat(20));
+//        s.append("---".repeat(20));
+
+        s.append("\n");
+        int maxCandidate = Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+        int maxVotes = map.get(maxCandidate);
+        s.append("**** ");
+        s.append("\t\t\tCandidate ").append(maxCandidate).append(" won with ").append(maxVotes).append(" votes. ");
+        s.append("\t\t\t****");
+        s.append("\n");
+        s.append("***".repeat(20));
+//        s.append("---".repeat(20));
+
+        s.append("\n");
+
+
+
+
         return s.toString();
     }
 }

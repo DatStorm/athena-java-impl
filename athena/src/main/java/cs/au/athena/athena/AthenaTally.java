@@ -257,7 +257,7 @@ public class AthenaTally {
 
         // Tally votes
         for(Integer vote : votes) {
-            assert officialTally.containsKey(vote); // All votes have performed rangeproof for their vote. We don't need to check
+//            assert officialTally.containsKey(vote); // All votes have performed rangeproof for their vote. We don't need to check
             Integer totalVotes = officialTally.get(vote);
             officialTally.put(vote, totalVotes + 1);
         }

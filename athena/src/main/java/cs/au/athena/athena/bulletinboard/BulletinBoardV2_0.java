@@ -141,7 +141,7 @@ public class BulletinBoardV2_0 {
 
         assert tallierCommitmentsAndProofs.containsKey(tallierIndex): String.format("%d not contained in tallierCommitmentsAndProofs", tallierIndex);
 
-        assert SigmaCommonDistributed.verifyPK(commitmentAndProof, group, kappa): "verifyPK() ==> FALSE";
+//        assert SigmaCommonDistributed.verifyPK(commitmentAndProof, group, kappa): "verifyPK() ==> FALSE";
 
         tallierCommitmentsAndProofs.get(tallierIndex).complete(commitmentAndProof);
     }
