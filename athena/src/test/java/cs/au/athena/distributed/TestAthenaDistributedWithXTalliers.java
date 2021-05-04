@@ -27,8 +27,8 @@ public class TestAthenaDistributedWithXTalliers {
 
         @Test
     void TestWith3TalliersAnd1Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			125
-//        Athena Verify: Execution time in seconds : 			20
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
         int tallierCount = 3;
         int numVotes = 1;
         runAthena(tallierCount,numVotes);
@@ -79,6 +79,15 @@ public class TestAthenaDistributedWithXTalliers {
 //        int numVotes = 100;
 //        runAthena(tallierCount,numVotes);
 //    }
+
+    @Test
+    void TestWith7TalliersAnd1Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 7;
+        int numVotes = 1;
+        runAthena(tallierCount,numVotes);
+    }
 //
 //    @Test
 //    void TestWith7TalliersAnd5Votes() throws InterruptedException {
