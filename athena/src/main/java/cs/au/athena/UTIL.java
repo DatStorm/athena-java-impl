@@ -344,14 +344,16 @@ public class UTIL {
             s.append("\n");
         }
         s.append("---".repeat(20));
+        s.append("\n");
 //        s.append("\n");
 //        s.append("\n");
+
+        s.append("Total number of candidates and all total votes were " + );
 
 
 //        s.append("***".repeat(20));
 //        s.append("---".repeat(20));
 
-        s.append("\n");
         int maxCandidate = Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
         int maxVotes = map.get(maxCandidate);
         s.append("**** ");

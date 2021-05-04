@@ -153,8 +153,8 @@ public class TestAthenaDistributedWithXTalliers {
 
     @Test
     void TestWith15TalliersAnd100Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			?
-//        Athena Verify: Execution time in seconds : 			?
+//        Athena Tally: Execution time in seconds : 			33412
+//        Athena Verify: Execution time in seconds : 			5876
         int tallierCount = 15;
         int numVotes = 100;
         runAthena(tallierCount,numVotes);
