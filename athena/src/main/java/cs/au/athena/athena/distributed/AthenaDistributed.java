@@ -382,7 +382,7 @@ public class AthenaDistributed {
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfd(combinedCredentials, random, sk, kappa);
 
         // Publish
-        logger.info(MARKER, String.format("T%d publishing pfdPhaseOneEntry", tallierIndex));
+        logger.info(MARKER, String.format("T%d: publishing pfdPhaseOneEntry", tallierIndex));
         bb.publishPfdPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve threshold shares
