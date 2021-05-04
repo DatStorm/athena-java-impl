@@ -321,16 +321,15 @@ public class AthenaDistributed {
             result.add(Ciphertext.ONE());
         }
 
-        // For each tallier in the set
+        // For each entry, i.e. tallier
         for (int i = 0; i < validPfPhase.size(); i++) {
             // pfd: ciphertext is Enc(g^d * g^-d)^n_{ij} for tallier T_i and mixballot j
             Entry<CombinedCiphertextAndProof> entry = validPfPhase.getEntryFuture(i).join();
             List<CombinedCiphertextAndProof> ciphertextAndProofs = entry.getValues();
 
-            // For each ciphertext
             for (int j = 0; j < ell; j++) {
-                CombinedCiphertextAndProof combinedCiphertextAndProof = ciphertextAndProofs.get(i);
-                //logger.info(MARKER, String.format("T%d: CAlC_%d-Proof_%d", tallierIndex, i, j));
+                // For each ciphertext in the entry
+                CombinedCiphertextAndProof combinedCiphertextAndProof = ciphertextAndProofs.get(j);
 
                 // Multiply onto the result list
                 Ciphertext oldValue = result.get(j);

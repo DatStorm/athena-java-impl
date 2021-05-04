@@ -25,6 +25,16 @@ import static org.hamcrest.CoreMatchers.*;
 public class TestAthenaDistributedWithXTalliers {
 
 
+        @Test
+    void TestWith3TalliersAnd1Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			125
+//        Athena Verify: Execution time in seconds : 			20
+        int tallierCount = 3;
+        int numVotes = 1;
+        runAthena(tallierCount,numVotes);
+    }
+
+
 //    @Test
 //    void TestWith3TalliersAnd5Votes() throws InterruptedException {
 ////        Athena Tally: Execution time in seconds : 			151
