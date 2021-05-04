@@ -348,7 +348,13 @@ public class UTIL {
 //        s.append("\n");
 //        s.append("\n");
 
-        s.append("Total number of candidates and all total votes were " + );
+        int totalCandidates = map.keySet().size();
+        int totalVotes = map.values().stream().reduce(0, Integer::sum);
+        s.append("**** ");
+
+        s.append("\t").append(totalCandidates).append(" total candidates and all total votes were ").append(totalVotes);
+        s.append("\t****");
+        s.append("\n");
 
 
 //        s.append("***".repeat(20));

@@ -11,7 +11,7 @@
 <!--            <pattern>%d{HH:mm:ss} [%thread] %-5p %class{0}.%method:%L - %m%n</pattern>-->
 <!--            <pattern>%d %highlight{%p} %style{%C{1.} [%t] %m}{bold,green}%n</pattern>-->
 <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
-            <disableAnsi>false</disableAnsi>
+<!--            <disableAnsi>false</disableAnsi>-->
         </encoder>
     </appender>
     <root level="info">

@@ -27,117 +27,126 @@ public class TestAthenaDistributedWithXTalliers {
 
         @Test
     void TestWith3TalliersAnd1Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			?
-//        Athena Verify: Execution time in seconds : 			?
+//        Athena Tally: Execution time in seconds : 			57
+//        Athena Verify: Execution time in seconds : 			7
         int tallierCount = 3;
         int numVotes = 1;
         runAthena(tallierCount,numVotes);
     }
 
 
-//    @Test
-//    void TestWith3TalliersAnd5Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			151
-////        Athena Verify: Execution time in seconds : 			35
-//        int tallierCount = 3;
-//        int numVotes = 5;
-//        runAthena(tallierCount,numVotes);
-//    }
-//
-//    @Test
-//    void TestWith3TalliersAnd10Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			265
-////        Athena Verify: Execution time in seconds : 			70
-//        int tallierCount = 3;
-//        int numVotes = 10;
-//        runAthena(tallierCount,numVotes);
-//    }
-//
-//    @Test
-//    void TestWith3TalliersAnd20Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			506
-////        Athena Verify: Execution time in seconds : 			147
-//        int tallierCount = 3;
-//        int numVotes = 20;
-//        runAthena(tallierCount,numVotes);
-//    }
-//
-//    @Test
-//    void TestWith3TalliersAnd50Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			1354
-////        Athena Verify: Execution time in seconds : 			389
-//        int tallierCount = 3;
-//        int numVotes = 50;
-//        runAthena(tallierCount,numVotes);
-//    }
-//
-//    @Test
-//    void TestWith3TalliersAnd100Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			2983
-////        Athena Verify: Execution time in seconds : 			841
-//        int tallierCount = 3;
-//        int numVotes = 100;
-//        runAthena(tallierCount,numVotes);
-//    }
+    @Test
+    void TestWith3TalliersAnd5Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			151
+//        Athena Verify: Execution time in seconds : 			35
+        int tallierCount = 3;
+        int numVotes = 5;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void TestWith3TalliersAnd10Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			265
+//        Athena Verify: Execution time in seconds : 			70
+        int tallierCount = 3;
+        int numVotes = 10;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void TestWith3TalliersAnd20Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			506
+//        Athena Verify: Execution time in seconds : 			147
+        int tallierCount = 3;
+        int numVotes = 20;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void TestWith3TalliersAnd50Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			1354
+//        Athena Verify: Execution time in seconds : 			389
+        int tallierCount = 3;
+        int numVotes = 50;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void TestWith3TalliersAnd100Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			2983
+//        Athena Verify: Execution time in seconds : 			841
+        int tallierCount = 3;
+        int numVotes = 100;
+        runAthena(tallierCount,numVotes);
+    }
 
     @Test
     void TestWith7TalliersAnd1Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			?
-//        Athena Verify: Execution time in seconds : 			?
+//        Athena Tally: Execution time in seconds : 			141
+//        Athena Verify: Execution time in seconds : 			21
         int tallierCount = 7;
         int numVotes = 1;
         runAthena(tallierCount,numVotes);
     }
-//
-//    @Test
-//    void TestWith7TalliersAnd5Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			350
-////        Athena Verify: Execution time in seconds : 			106
-//        int tallierCount = 7;
-//        int numVotes = 5;
-//        runAthena(tallierCount,numVotes);
-//    }
-//
-//    @Test
-//    void TestWith7TalliersAnd10Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			633
-////        Athena Verify: Execution time in seconds : 			211
-//        int tallierCount = 7;
-//        int numVotes = 10;
-//        runAthena(tallierCount,numVotes);
-//    }
-//
-//    @Test
-//    void TestWith7TalliersAnd20Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			1217
-////        Athena Verify: Execution time in seconds : 			431
-//        int tallierCount = 7;
-//        int numVotes = 20;
-//        runAthena(tallierCount,numVotes);
-//    }
-//
-//    @Test
-//    void TestWith7TalliersAnd50Votes() throws InterruptedException {
-////        Athena Tally: Execution time in seconds : 			3332
-////        Athena Verify: Execution time in seconds : 			1136
-//        int tallierCount = 7;
-//        int numVotes = 50;
-//        runAthena(tallierCount,numVotes);
-//    }
+
+    @Test
+    void TestWith7TalliersAnd5Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			350
+//        Athena Verify: Execution time in seconds : 			106
+        int tallierCount = 7;
+        int numVotes = 5;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void TestWith7TalliersAnd10Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			633
+//        Athena Verify: Execution time in seconds : 			211
+        int tallierCount = 7;
+        int numVotes = 10;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void TestWith7TalliersAnd20Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			1217
+//        Athena Verify: Execution time in seconds : 			431
+        int tallierCount = 7;
+        int numVotes = 20;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void TestWith7TalliersAnd50Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			3332
+//        Athena Verify: Execution time in seconds : 			1136
+        int tallierCount = 7;
+        int numVotes = 50;
+        runAthena(tallierCount,numVotes);
+    }
 
     @Test
     void TestWith7TalliersAnd100Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			?
-//        Athena Verify: Execution time in seconds : 			?
+//        Athena Tally: Execution time in seconds : 			8221
+//        Athena Verify: Execution time in seconds : 			2476
         int tallierCount = 7;
         int numVotes = 100;
         runAthena(tallierCount,numVotes);
     }
 
     @Test
+    void TestWith15TalliersAnd1Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			663
+//        Athena Verify: Execution time in seconds : 			47
+        int tallierCount = 15;
+        int numVotes = 1;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
     void TestWith15TalliersAnd5Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			?
-//        Athena Verify: Execution time in seconds : 			?
+//        Athena Tally: Execution time in seconds : 			1429
+//        Athena Verify: Execution time in seconds : 			243
         int tallierCount = 15;
         int numVotes = 5;
         runAthena(tallierCount,numVotes);
@@ -145,8 +154,8 @@ public class TestAthenaDistributedWithXTalliers {
 
     @Test
     void TestWith15TalliersAnd10Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			?
-//        Athena Verify: Execution time in seconds : 			?
+//        Athena Tally: Execution time in seconds : 			2356
+//        Athena Verify: Execution time in seconds : 			488
         int tallierCount = 15;
         int numVotes = 10;
         runAthena(tallierCount,numVotes);
