@@ -2,6 +2,7 @@ package cs.au.athena.distributed;
 
 import cs.au.athena.CONSTANTS;
 import cs.au.athena.UTIL;
+import cs.au.athena.athena.Athena;
 import cs.au.athena.athena.AthenaImpl;
 import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.RegisterStruct;
@@ -264,7 +265,7 @@ public class TestAthenaDistributedWithXTalliers {
         int nc = CONSTANTS.NUMBER_OF_CANDIDATES_DEFAULT;
         MainAthenaFactory factory = new MainAthenaFactory(tallierCount, kappa);
 
-        AthenaImpl athena = new AthenaImpl(factory);
+        Athena athena = new AthenaImpl(factory);
         Map<Integer,ElGamalSK> talliersSK_HACKY_ASF = new HashMap<>();
 
         /** *********/
@@ -375,7 +376,7 @@ public class TestAthenaDistributedWithXTalliers {
         MatcherAssert.assertThat("Verify the election, should be true/valid", verification, is(true));
     }
 
-    private void registerAndVote(int voteToCast, AthenaFactory factory, AthenaImpl athena, int nc, int kappa) throws InterruptedException {
+    private void registerAndVote(int voteToCast, AthenaFactory factory, Athena athena, int nc, int kappa) throws InterruptedException {
         RegisterStruct registerResult = athena.Register(kappa);
         MatcherAssert.assertThat("pd != null", registerResult.pd, notNullValue());
         MatcherAssert.assertThat("d != null", registerResult.d, notNullValue());

@@ -135,7 +135,6 @@ public class AthenaVerify {
                 .collect(Collectors.toList());
 
         // Phase III: Mixnet
-        // Map<tallyIndex, MixProof>
         Map<Integer, CompletableFuture<MixedBallotsAndProof>> pfrPhaseThreeMixnet = vbb.retrieveValidMixedBallotAndProofs(initialMixBallots);
         List<MixBallot> finalMixedBallots = pfrPhaseThreeMixnet.get(bb.retrieveTallierCount()).join().mixedBallots; // Could be replaced with a PfPhaseMixnet.getFinalMix()
 

@@ -5,9 +5,12 @@ import java.math.BigInteger;
 // Creating a 1-1 mapping from Z_q to G, where G is a subgroup of Z_p^* for primes q, p=2q+1
 public class GroupTheory {
     public static BigInteger fromZqToG(BigInteger element, Group group){
+//        BigInteger groupDivider = BigInteger.valueOf(6);
+        BigInteger divider = BigInteger.TWO;
+
         BigInteger p = group.p;
         BigInteger y = element.add(BigInteger.ONE);
-        BigInteger tmp_y = y.modPow(p.subtract(BigInteger.ONE).divide(BigInteger.TWO),p);
+        BigInteger tmp_y = y.modPow(p.subtract(BigInteger.ONE).divide(divider),p);
         if(tmp_y.equals(BigInteger.ONE)){
             return y;
         }

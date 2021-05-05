@@ -130,7 +130,8 @@ public class AthenaDistributed {
             BigInteger subShare = polynomial.eval(j);
 
             // Encrypt subShare using pk_j
-            Ciphertext encSubShare = ElGamal.encrypt(GroupTheory.fromZqToG(subShare, group), pk_j, random);
+            BigInteger subShareElement = GroupTheory.fromZqToG(subShare, group);
+            Ciphertext encSubShare = ElGamal.encrypt(subShareElement, pk_j, random);
 
             // Send subshare, by encrypting and positing
             //logger.info(MARKER, String.format("tallier %d publishing P_%d(%d)", tallierIndex, tallierIndex ,j));

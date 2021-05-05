@@ -181,7 +181,7 @@ public class TestElGamal {
     @Disabled
     @Test
     void TestLookupTableComputationTime() {
-         // Version 2048 bits....
+        // Version 2048 bits....
         BigInteger p = CONSTANTS.ELGAMAL_2048_BITS.ELGAMAL_P;
         BigInteger q = CONSTANTS.ELGAMAL_2048_BITS.ELGAMAL_Q;
         BigInteger g = CONSTANTS.ELGAMAL_2048_BITS.ELGAMAL_G;
@@ -189,6 +189,20 @@ public class TestElGamal {
         Group group = new Group(p, q, g);
         int messageSpaceLength = (int) Math.pow(2, 10); // 1.000.000
         elGamal = new ElGamal(group, messageSpaceLength, random);
+    }
+
+    @Test
+    void ComputeNewEfficientGroup() {
+        // Version 2048 bits....
+        Random rand = new SecureRandom();
+
+        int bitlength = CONSTANTS.ELGAMAL_2048_BITS.ELGAMAL_BIT_LENGTH;
+        Group group = ElGamal.generateEfficientGroup(bitlength, rand);
+
+
+        System.out.println("p: " + group.p);
+        System.out.println("q: " + group.q);
+        System.out.println("g: " + group.g);
     }
 
 
