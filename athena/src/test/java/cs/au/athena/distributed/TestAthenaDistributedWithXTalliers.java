@@ -25,7 +25,10 @@ import static org.hamcrest.CoreMatchers.*;
 public class TestAthenaDistributedWithXTalliers {
 
 
-        @Test
+    /***********************************
+     ********* With 3 talliers *********
+     **********************************/
+    @Test
     void TestWith3TalliersAnd1Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			57
 //        Athena Verify: Execution time in seconds : 			7
@@ -33,8 +36,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 1;
         runAthena(tallierCount,numVotes);
     }
-
-
     @Test
     void TestWith3TalliersAnd5Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			151
@@ -43,7 +44,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 5;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith3TalliersAnd10Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			265
@@ -52,7 +52,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 10;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith3TalliersAnd20Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			506
@@ -61,7 +60,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 20;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith3TalliersAnd50Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			1354
@@ -70,7 +68,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 50;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith3TalliersAnd100Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			2983
@@ -80,6 +77,9 @@ public class TestAthenaDistributedWithXTalliers {
         runAthena(tallierCount,numVotes);
     }
 
+    /***********************************
+     ********* With 7 talliers *********
+     **********************************/
     @Test
     void TestWith7TalliersAnd1Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			141
@@ -88,7 +88,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 1;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith7TalliersAnd5Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			350
@@ -97,7 +96,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 5;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith7TalliersAnd10Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			633
@@ -106,7 +104,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 10;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith7TalliersAnd20Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			1217
@@ -115,7 +112,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 20;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith7TalliersAnd50Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			3332
@@ -124,7 +120,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 50;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith7TalliersAnd100Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			8221
@@ -134,6 +129,9 @@ public class TestAthenaDistributedWithXTalliers {
         runAthena(tallierCount,numVotes);
     }
 
+    /***********************************
+     ******** With 15 talliers *********
+     **********************************/
     @Test
     void TestWith15TalliersAnd1Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			663
@@ -142,7 +140,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 1;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith15TalliersAnd5Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			1429
@@ -151,7 +148,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 5;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith15TalliersAnd10Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			2356
@@ -160,7 +156,6 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 10;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith15TalliersAnd20Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			4438
@@ -169,21 +164,94 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 20;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith15TalliersAnd50Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			?
-//        Athena Verify: Execution time in seconds : 			?
+//        Athena Tally: Execution time in seconds : 			13293
+//        Athena Verify: Execution time in seconds : 			2608
         int tallierCount = 15;
         int numVotes = 50;
         runAthena(tallierCount,numVotes);
     }
-
     @Test
     void TestWith15TalliersAnd100Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			33412
 //        Athena Verify: Execution time in seconds : 			5876
         int tallierCount = 15;
+        int numVotes = 100;
+        runAthena(tallierCount,numVotes);
+    }
+
+
+
+    /***********************************
+     ************* SCHNOOR *************
+     ******** With 1 talliers *********
+     **********************************/
+    @Test
+    void Test_SCHNOOR_Group_1TalliersAnd1Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 1;
+        int numVotes = 1;
+        runAthena(tallierCount,numVotes);
+    }
+
+
+
+    /***********************************
+     ************* SCHNOOR *************
+     ******** With 3 talliers *********
+     **********************************/
+    @Test
+    void Test_SCHNOOR_Group_3TalliersAnd1Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 3;
+        int numVotes = 1;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void Test_SCHNOOR_Group_3TalliersAnd5Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 3;
+        int numVotes = 5;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void Test_SCHNOOR_Group_3TalliersAnd10Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 3;
+        int numVotes = 10;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void Test_SCHNOOR_Group_3TalliersAnd20Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 3;
+        int numVotes = 20;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void Test_SCHNOOR_Group_3TalliersAnd50Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 3;
+        int numVotes = 50;
+        runAthena(tallierCount,numVotes);
+    }
+
+    @Test
+    void Test_SCHNOOR_Group_3TalliersAnd100Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 3;
         int numVotes = 100;
         runAthena(tallierCount,numVotes);
     }
