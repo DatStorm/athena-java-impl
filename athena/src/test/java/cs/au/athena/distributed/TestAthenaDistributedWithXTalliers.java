@@ -27,6 +27,60 @@ public class TestAthenaDistributedWithXTalliers {
 
 
     /***********************************
+     ********* With 1 talliers *********
+     **********************************/
+    @Test
+    void TestWith1TalliersAnd1Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			29
+//        Athena Verify: Execution time in seconds : 			0
+        int tallierCount = 1;
+        int numVotes = 1;
+        runAthena(tallierCount,numVotes);
+    }
+    @Test
+    void TestWith1TalliersAnd5Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			53
+//        Athena Verify: Execution time in seconds : 			1
+        int tallierCount = 1;
+        int numVotes = 5;
+        runAthena(tallierCount,numVotes);
+    }
+    @Test
+    void TestWith1TalliersAnd10Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			84
+//        Athena Verify: Execution time in seconds : 			3
+        int tallierCount = 1;
+        int numVotes = 10;
+        runAthena(tallierCount,numVotes);
+    }
+    @Test
+    void TestWith1TalliersAnd20Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			145
+//        Athena Verify: Execution time in seconds : 			6
+        int tallierCount = 1;
+        int numVotes = 20;
+        runAthena(tallierCount,numVotes);
+    }
+    @Test
+    void TestWith1TalliersAnd50Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			340
+//        Athena Verify: Execution time in seconds : 			16
+        int tallierCount = 1;
+        int numVotes = 50;
+        runAthena(tallierCount,numVotes);
+    }
+    @Test
+    void TestWith1TalliersAnd100Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			697
+//        Athena Verify: Execution time in seconds :            31
+        int tallierCount = 1;
+        int numVotes = 100;
+        runAthena(tallierCount,numVotes);
+    }
+
+
+
+    /***********************************
      ********* With 3 talliers *********
      **********************************/
     @Test
@@ -77,6 +131,8 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 100;
         runAthena(tallierCount,numVotes);
     }
+
+
 
     /***********************************
      ********* With 7 talliers *********
@@ -129,6 +185,8 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 100;
         runAthena(tallierCount,numVotes);
     }
+
+
 
     /***********************************
      ******** With 15 talliers *********
