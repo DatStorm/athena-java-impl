@@ -314,7 +314,6 @@ public class AthenaDistributed {
 
         // Make and initial list of neutral ciphertexts
         /*
-
         List<Ciphertext> result = Stream.generate(Ciphertext::ONE)
                 .limit(ell)
                 .collect(Collectors.toList());
