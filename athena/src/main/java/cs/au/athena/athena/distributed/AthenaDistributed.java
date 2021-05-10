@@ -243,6 +243,8 @@ public class AthenaDistributed {
         List<MixBallot> previousRoundMixBallots = ballots;
         MixedBallotsAndProof mixedBallotsAndProof;
 
+        /* //TODO: use prooving version
+
         // For each mix round
         for (int nextTallierToMix = 1; nextTallierToMix <= bb.retrieveTallierCount(); nextTallierToMix++) {
             // Is it our turn to mix?
@@ -274,6 +276,7 @@ public class AthenaDistributed {
             // Feed result forward to next round
             previousRoundMixBallots = mixedBallotsAndProof.mixedBallots;
         }
+         */
 
         return previousRoundMixBallots;
     }

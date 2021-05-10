@@ -183,9 +183,9 @@ public class VerifyingBulletinBoardV2_0 {
                 // Grow list if valid
                 if (isValid) {
                     chainPfPhase.add(entry);
-                    //logger.info(MARKER, String.format("Received valid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfPhase.size()));
+                    logger.info(MARKER, String.format("Received valid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfPhase.size()));
                 } else {
-                    //logger.info(MARKER, String.format("Received invalid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfPhase.size()));
+                    logger.info(MARKER, String.format("Received invalid entry from T%d. Pf size is now %d", entry.getIndex(), chainPfPhase.size()));
                 }
 
                 // When done, complete and stop the chain of futures
