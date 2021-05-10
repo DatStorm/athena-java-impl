@@ -2,7 +2,7 @@ package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
-import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.VerifyingBB;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.elgamal.ElGamalPK;
 import cs.au.athena.factory.AthenaFactory;
@@ -24,7 +24,7 @@ public class AthenaRegister {
     private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-REGISTER");
 
     private BulletinBoardV2_0 bb;
-    private VerifyingBulletinBoardV2_0 vbb;
+    private VerifyingBB vbb;
     private Random random;
     private ElGamal elGamal;
     private int kappa;

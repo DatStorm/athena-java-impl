@@ -2,10 +2,8 @@ package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
 import cs.au.athena.SecretSharingUTIL;
-import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
-import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
-import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.VerifyingBB;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.dao.athena.*;
 import cs.au.athena.dao.bulletinboard.CombinedCiphertextAndProof;
@@ -13,9 +11,7 @@ import cs.au.athena.dao.bulletinboard.DecryptionShareAndProof;
 import cs.au.athena.dao.bulletinboard.PfPhase;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.elgamal.Ciphertext;
-import cs.au.athena.elgamal.ElGamal;
 import cs.au.athena.elgamal.ElGamalPK;
-import cs.au.athena.elgamal.ElGamalSK;
 import cs.au.athena.factory.AthenaFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -34,7 +30,7 @@ public class AthenaVerify {
     private static final Marker MARKER = MarkerFactory.getMarker("ATHENA-VERIFY");
 
     private BulletinBoardV2_0 bb;
-    private VerifyingBulletinBoardV2_0 vbb;
+    private VerifyingBB vbb;
 
     private AthenaVerify() {
     }
@@ -139,8 +135,8 @@ public class AthenaVerify {
                 .collect(Collectors.toList());
 
         // Phase III: Mixnet
-        //Map<Integer, CompletableFuture<MixedBallotsAndProof>> pfrPhaseThreeMixnet = vbb.retrieveValidMixedBallotAndProofs(initialMixBallots); //TODO: Use verifing bb
-        //List<MixBallot> finalMixedBallots = pfrPhaseThreeMixnet.get(bb.retrieveTallierCount()).join().mixedBallots; // Could be replaced with a PfPhaseMixnet.getFinalMix()
+//        Map<Integer, CompletableFuture<MixedBallotsAndProof>> pfrPhaseThreeMixnet = vbb.retrieveValidMixedBallotAndProofs(initialMixBallots); //TODO: Use verifing bb
+//        List<MixBallot> finalMixedBallots = pfrPhaseThreeMixnet.get(bb.retrieveTallierCount()).join().mixedBallots; // Could be replaced with a PfPhaseMixnet.getFinalMix()
         List<MixBallot> finalMixedBallots = initialMixBallots;
 
         /* ********
@@ -164,6 +160,8 @@ public class AthenaVerify {
         logger.info(MARKER, "Verifyng pfd phase 1");
         // Phase I. Nonce combinedCredential
         PfPhase<CombinedCiphertextAndProof> validPfdPhaseOne = vbb.retrieveValidThresholdPfdPhaseOne(combinedCredentials).join();
+
+
         List<Ciphertext> noncedCombinedCredentials = AthenaDistributed.combineCiphertexts(validPfdPhaseOne, pk.group);
 
 

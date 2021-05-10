@@ -64,15 +64,12 @@ public class TestAthenaVote {
         Ballot ballot = athena.Vote(this.dv, vote, cnt, this.nc, this.kappa);
 
         // Enc_pk(d) * Enc_pk(-d) = g^0
-        Ciphertext combinedCredential = ballot.publicCredential.multiply(ballot.encryptedNegatedPrivateCredential, sk.pk.group.p);
+        Ciphertext combinedCredential = ballot.publicCredential.multiply(ballot.encryptedNegatedPrivateCredential, sk.pk.group);
         BigInteger m = ElGamal.decrypt(combinedCredential, sk);
         Assertions.assertEquals(BigInteger.ONE, m, "m is equal to 1 ");
-
 
         // ballot.encryptedVote = (g^t, g^v * h^t)
         Integer decryptedVote = elgamal.exponentialDecrypt(ballot.encryptedVote, sk);
         assertEquals(vote, decryptedVote.intValue());
     }
-
-
 }

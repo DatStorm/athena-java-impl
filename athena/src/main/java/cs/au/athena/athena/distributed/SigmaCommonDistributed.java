@@ -81,7 +81,7 @@ public class SigmaCommonDistributed {
                 List<Ciphertext> listCombined = Arrays.asList(previousCombinedCiphertext, combinedCiphertext);
 
                 Sigma4Proof proof = sigma4.proveCombination(sk, listCombined, listCiphertexts, nonce, kappa);
-                assert sigma4.verifyCombination(sk.pk, listCombined, listCiphertexts, proof, kappa);
+//                assert sigma4.verifyCombination(sk.pk, listCombined, listCiphertexts, proof, kappa); // TODO: comment this OUT!
 
                 listOfCombinedCiphertextAndProof.add(new CombinedCiphertextAndProof(combinedCiphertext, proof));
             } else {
@@ -165,6 +165,7 @@ public class SigmaCommonDistributed {
             boolean isValid = sigma4.verifyCombination(pk, listCombined, listCiphertexts, proof, kappa);
 
             if(!isValid) {
+//                logger.info(MARKER, String.format("-----> Sigma4 verification failed for: %s", ciphertext.toOneLineShortString()));
                 return false;
             }
         }

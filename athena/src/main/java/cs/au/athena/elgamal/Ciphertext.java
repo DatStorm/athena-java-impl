@@ -42,12 +42,12 @@ public class Ciphertext {
         return "Ciphertext={\t'c1': " + this.c1.toString().substring(0,5) + ",\t'c2': " + this.c2.toString().substring(0,5) + "}";
     }
 
-    public Ciphertext multiply(Ciphertext c, BigInteger p) {
-        if (p == null || c == null) {
-            throw new IllegalArgumentException("Ciphertext.multiply: Missing group p ");
+    public Ciphertext multiply(Ciphertext c, Group group) {
+        if (group == null || c == null) {
+            throw new IllegalArgumentException("Ciphertext.multiply: Missing group ");
         }
-        BigInteger _c1 = this.c1.multiply(c.c1).mod(p);
-        BigInteger _c2 = this.c2.multiply(c.c2).mod(p);
+        BigInteger _c1 = this.c1.multiply(c.c1).mod(group.p);
+        BigInteger _c2 = this.c2.multiply(c.c2).mod(group.p);
 
         return new Ciphertext(_c1, _c2);
     }

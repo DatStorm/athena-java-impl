@@ -45,7 +45,7 @@ public class TestElGamalCiphertext {
         BigInteger p = pk.getGroup().p;
         BigInteger q = pk.getGroup().q;
         BigInteger g = pk.getGroup().g;
-        Ciphertext cAdd = c_1.multiply(c_2, p);
+        Ciphertext cAdd = c_1.multiply(c_2, pk.group);
         BigInteger dec_mult = elgamal.decrypt(cAdd, sk);
         BigInteger g_c = g.modPow(big_a.add(big_b).mod(q), p);
         assertEquals("Should be " + "a=" + a + ", b=" + b + ", a*b=c=" + dec_mult, 0, dec_mult.compareTo(g_c));
@@ -115,7 +115,7 @@ public class TestElGamalCiphertext {
         Ciphertext c_neg = elgamal.exponentialEncrypt(BigInteger.ONE, pk, r.negate());
 
         // Enc_pk(1; r) * Enc_pk(1; -r) = Enc_pk(2)
-        Ciphertext result = c.multiply(c_neg, p);
+        Ciphertext result = c.multiply(c_neg, pk.group);
         Ciphertext expected = elgamal.exponentialEncrypt(BigInteger.TWO, pk, BigInteger.ZERO);
 
         assertEquals(expected, result);
@@ -132,7 +132,7 @@ public class TestElGamalCiphertext {
         Ciphertext c_neg = c.modInverse(p); // (g^{-r}, g^{-1} * h^{-r})
 
         // c * c^{-1} = 0
-        Ciphertext result = c.multiply(c_neg, p);
+        Ciphertext result = c.multiply(c_neg, pk.group);
         Ciphertext expected = elgamal.exponentialEncrypt(BigInteger.ZERO, pk, BigInteger.ZERO);
 
         assertEquals(expected, result);
@@ -170,12 +170,12 @@ public class TestElGamalCiphertext {
         Ciphertext result = elgamal.exponentialEncrypt(BigInteger.valueOf(10), pk, r.add(r1));
 
         //  Enc_pk(10; r) * Enc_pk(e; r1) = Enc_pk(10; r + r1)
-        Ciphertext expected = c.multiply(c1, p);
+        Ciphertext expected = c.multiply(c1, pk.group);
         assertEquals(expected, result);
 
         // Recover original cipher text by multiply by negated r1
         Ciphertext c1_inv = elgamal.exponentialEncrypt(e, pk, r1.negate());
-        Ciphertext recoveredCiphertext = result.multiply(c1_inv, p);
+        Ciphertext recoveredCiphertext = result.multiply(c1_inv, pk.group);
         assertEquals(c, recoveredCiphertext);
     }
 

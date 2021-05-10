@@ -7,7 +7,7 @@
 
         <encoder>
 <!--     %highlight([%thread])   %cyan(%d{HH:mm:ss.SSS})   %logger{36}  %highlight(%-5level)-->
-            <pattern>%cyan(%d{HH:mm:ss.SSSS}) | %green(%-10.10(%thread)) | %highlight(%-50.50(%class{0}.%method:%L)) | %msg%n</pattern>
+            <pattern>%cyan(%d{HH:mm:ss.SSSS}) | %green(%-10.10(%thread)) | %highlight(%-100.100(%class{0}.%method:%L)) | %msg%n</pattern>
 <!--            <pattern>%d{HH:mm:ss} [%thread] %-5p %class{0}.%method:%L - %m%n</pattern>-->
 <!--            <pattern>%d %highlight{%p} %style{%C{1.} [%t] %m}{bold,green}%n</pattern>-->
 <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->

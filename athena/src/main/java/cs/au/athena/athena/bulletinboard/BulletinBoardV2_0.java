@@ -136,7 +136,7 @@ public class BulletinBoardV2_0 {
 
 
     // Post commitment to P(X)
-    public void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<CommitmentAndProof> commitmentAndProof) {
+    public synchronized void publishPolynomialCommitmentsAndProofs(int tallierIndex, List<CommitmentAndProof> commitmentAndProof) {
         assert tallierIndex <= tallierCount;
 
         assert tallierCommitmentsAndProofs.containsKey(tallierIndex): String.format("%d not contained in tallierCommitmentsAndProofs", tallierIndex);
@@ -150,7 +150,7 @@ public class BulletinBoardV2_0 {
         return tallierCommitmentsAndProofs;
     }
 
-    public void publishIndividualPKvector(int tallierIndex, PK_Vector pkv) {
+    public synchronized void publishIndividualPKvector(int tallierIndex, PK_Vector pkv) {
         mapOfIndividualPK_vector.get(tallierIndex).complete(pkv);
     }
 
@@ -158,11 +158,11 @@ public class BulletinBoardV2_0 {
         return mapOfIndividualPK_vector.get(tallierIndex);
     }
 
-    public void publishBallot(Ballot ballot) { this.ballots.add(ballot); }
+    public synchronized void publishBallot(Ballot ballot) { this.ballots.add(ballot); }
 
     public List<Ballot> retrieveBallots() { return this.ballots; }
 
-    public void publishEncSubShare(int i, int j, Ciphertext subShareToTallier_j) {
+    public synchronized void publishEncSubShare(int i, int j, Ciphertext subShareToTallier_j) {
         Pair<Integer, Integer> key = Pair.of(i, j);
         encryptedSubShares.get(key).complete(subShareToTallier_j);
     }
@@ -178,7 +178,7 @@ public class BulletinBoardV2_0 {
 
 
     // each tallier update their respective tally
-    public void publishTallyOfVotes(int tallierIndex, Map<Integer, Integer> tallyMap) {
+    public synchronized void publishTallyOfVotes(int tallierIndex, Map<Integer, Integer> tallyMap) {
         this.officialTallyMap.get(tallierIndex).complete(tallyMap);
     }
 
@@ -229,7 +229,7 @@ public class BulletinBoardV2_0 {
         pfdPhasePhaseThree.add(new Entry<>(tallierIndex, values));
     }
 
-    public void publishMixedBallotsAndProof(int tallierIndex, MixedBallotsAndProof mixedBallotsAndProof) {
+    public synchronized void publishMixedBallotsAndProof(int tallierIndex, MixedBallotsAndProof mixedBallotsAndProof) {
         this.mixedBallotAndProofs.get(tallierIndex).complete(mixedBallotsAndProof);
     }
 

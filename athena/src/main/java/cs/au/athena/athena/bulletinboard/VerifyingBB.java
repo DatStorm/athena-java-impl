@@ -26,7 +26,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class VerifyingBulletinBoardV2_0 {
+public class VerifyingBB {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private static final Marker MARKER = MarkerFactory.getMarker("VBB: ");
 
@@ -45,7 +45,7 @@ public class VerifyingBulletinBoardV2_0 {
     private List<BigInteger> h_vector_vote;
 
 
-    public VerifyingBulletinBoardV2_0(BulletinBoardV2_0 bb) {
+    public VerifyingBB(BulletinBoardV2_0 bb) {
         this.bb = bb;
         pkShares = new HashMap<>(this.bb.retrieveTallierCount());
     }
@@ -72,7 +72,16 @@ public class VerifyingBulletinBoardV2_0 {
 
     private Function<Entry<CombinedCiphertextAndProof>, Boolean> constructVerifyHomoCombPfd(List<Ciphertext> ciphertexts) {
         //            logger.info(MARKER, String.format("--".repeat(20) + "> Shit hit the fan: %b" , verify));
-        return (entry) -> SigmaCommonDistributed.verifyHomoCombPfd(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
+        return (entry) -> {
+            boolean isValid = SigmaCommonDistributed.verifyHomoCombPfd(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
+
+            String validInvalidString = isValid ? "valid" : "Invalid";
+            logger.info(String.format("received %s proof from T%d: for homoCombPfd.", validInvalidString, entry.getIndex()));
+            logger.info(String.format("received %s proof from T%d: pk=%s", validInvalidString, entry.getIndex(), retrievePKShare(entry.getIndex()).h.toString()));
+            logger.info(String.format("received %s proof from T%d: combinedCredentials=%s", validInvalidString, entry.getIndex(), ciphertexts.get(0).toOneLineShortString()));
+
+            return isValid;
+        };
     }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
@@ -211,7 +220,14 @@ public class VerifyingBulletinBoardV2_0 {
     }
 
     public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfdPhaseOne(List<Ciphertext> combinedCredentials) {
-        return retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCredentials));
+        CompletableFuture<PfPhase<CombinedCiphertextAndProof>> future = retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCredentials));
+        logger.info(MARKER, "--------------- I THINK IT IS STUCK BELOW");
+        PfPhase<CombinedCiphertextAndProof> join_test = future.join();
+        logger.info(MARKER, "--------------- :: " + join_test);
+
+        logger.info(MARKER, "--------------- I THINK IT IS STUCK ABOVE");
+
+        return future;
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseTwo(List<Ciphertext> ciphertexts) {

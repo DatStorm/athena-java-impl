@@ -2,7 +2,7 @@ package cs.au.athena.athena;
 
 import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
-import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.VerifyingBB;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.dao.Sigma2Pedersen.Sigma2PedersenProof;
 import cs.au.athena.factory.AthenaFactory;
@@ -39,7 +39,7 @@ public class AthenaVote {
     private int kappa;
     private AthenaDistributed distributed;
     private BulletinBoardV2_0 bb;
-    private VerifyingBulletinBoardV2_0 vbb;
+    private VerifyingBB vbb;
     private Sigma2Pedersen sigma2Pedersen;
 
     private AthenaVote() {

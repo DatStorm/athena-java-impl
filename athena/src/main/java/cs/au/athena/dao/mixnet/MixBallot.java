@@ -2,9 +2,9 @@ package cs.au.athena.dao.mixnet;
 
 import com.google.common.primitives.Bytes;
 import cs.au.athena.elgamal.Ciphertext;
+import cs.au.athena.elgamal.Group;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.Objects;
 
 public class MixBallot implements Serializable {
@@ -24,10 +24,10 @@ public class MixBallot implements Serializable {
         return Bytes.concat(c1_c1, c1_c2, cv_c1, cv_c2);
     }
 
-    public MixBallot multiply(MixBallot ballot, BigInteger q) {
-        Ciphertext c1_mult = this.combinedCredential.multiply(ballot.combinedCredential, q);
-        Ciphertext c2_vote = this.encryptedVote.multiply(ballot.encryptedVote, q);
-        return new MixBallot(c1_mult,c2_vote);
+    public MixBallot multiply(MixBallot ballot, Group group) {
+        Ciphertext c1_mult = this.combinedCredential.multiply(ballot.combinedCredential, group);
+        Ciphertext c2_vote = this.encryptedVote.multiply(ballot.encryptedVote, group);
+        return new MixBallot(c1_mult, c2_vote);
     }
 
 

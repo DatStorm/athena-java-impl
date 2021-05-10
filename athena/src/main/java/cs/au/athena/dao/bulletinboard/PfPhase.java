@@ -33,8 +33,11 @@ public class PfPhase<T> {
         return nextIncompleteEntry;
     }
 
+    @Override
     public String toString() {
-
-        return "";
+        return "PfPhase{" +
+                "entries=" + entries +
+                ", nextIncompleteEntry=" + nextIncompleteEntry +
+                '}';
     }
 }

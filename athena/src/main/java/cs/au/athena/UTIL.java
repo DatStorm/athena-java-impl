@@ -257,7 +257,7 @@ public class UTIL {
         return res;
     }
 
-    public static String ballotListToString(List<BigInteger> ballots ) {
+    public static <T> String prettyPrintList(List<T> ballots ) {
         StringBuilder s = new StringBuilder();
         s.append("\n");
         s.append("---".repeat(20));

@@ -69,8 +69,8 @@ public class TestMixnet {
         MixBallot mb1 = new MixBallot(cipher_1, v1);
         MixBallot mb2 = new MixBallot(cipher_2, v2);
 
-        BigInteger p = pk.getGroup().getP();
-        MixBallot mult = mb1.multiply(mb2,p);
+        MixBallot mult = mb1.multiply(mb2, pk.group);
+        BigInteger p = pk.group.p;
 
         BigInteger dec_c1 = ElGamal.decrypt(mult.getCombinedCredential(), sk);
         assertEquals("should be ??", g.modPow(BigInteger.valueOf(c),p), dec_c1);

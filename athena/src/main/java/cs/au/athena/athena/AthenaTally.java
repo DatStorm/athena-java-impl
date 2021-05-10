@@ -1,9 +1,8 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
-import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
-import cs.au.athena.athena.bulletinboard.VerifyingBulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.VerifyingBB;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
@@ -30,7 +29,7 @@ public class AthenaTally {
 
     private Random random;
     private BulletinBoardV2_0 bb;
-    private VerifyingBulletinBoardV2_0 vbb;
+    private VerifyingBB vbb;
     private AthenaDistributed distributed;
     private int tallierIndex;
     private int kappa;
@@ -58,6 +57,8 @@ public class AthenaTally {
         logger.info(MARKER, String.format("T%d: Filtering ReVotes", tallierIndex));
         Map<MapAKey, MapAValue> A = filterReVotes(tallierIndex, validBallots, skShare);
 
+        logger.info(MARKER, String.format("T%d completed filter revotes: %s", tallierIndex, A.values().stream().findFirst().toString().substring(0, 5)));
+
         // Perform random mix
         logger.info(MARKER, String.format("T%d: Mixnet", tallierIndex));
         List<MixBallot> mixedBallots = mixnet(A, pk);
@@ -78,7 +79,7 @@ public class AthenaTally {
 
 
     // Step 1 of Tally
-    public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoardV2_0 bb, VerifyingBulletinBoardV2_0 vbb) {
+    public static List<Ballot> removeInvalidBallots(ElGamalPK pk, BulletinBoardV2_0 bb, VerifyingBB vbb) {
         List<Ballot> finalBallots = new ArrayList<>(bb.retrievePublicBallots());
 
         for (Ballot ballot : bb.retrievePublicBallots()) {
@@ -87,7 +88,7 @@ public class AthenaTally {
             // Is the public credential
             boolean isPublicCredentialInL = bb.electoralRollContains(publicCredential);
             if (!isPublicCredentialInL) {
-                logger.info(MARKER, "AthenaTally.removeInvalidBallots => ballot posted with invalid public credential");
+                logger.info(MARKER, "removeInvalidBallots => ballot posted with invalid public credential");
                 finalBallots.remove(ballot);
             }
 
@@ -107,7 +108,7 @@ public class AthenaTally {
 
             // remove invalid ballots.
             if (!verify_encryptedNegatedPrivateCredential) {
-                logger.error(MARKER, "AthenaTally.removeInvalidBallots => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
+                logger.error(MARKER, "removeInvalidBallots => Removing ballot: VerCiph(Enc_pk(-d), proof_{-d}) = 0");
                 finalBallots.remove(ballot);
             }
 
@@ -141,7 +142,7 @@ public class AthenaTally {
 
             // remove invalid ballots.
             if (!verify_encVote) {
-                System.err.println("AthenaTally.removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(v), proof_{v}) = 0");
+                System.err.println("removeInvalidBallot => Removing ballot: VerCiph(Enc_pk(v), proof_{v}) = 0");
                 logger.info(MARKER, "Removing ballot");
                 finalBallots.remove(ballot);
             }
@@ -163,7 +164,9 @@ public class AthenaTally {
         List<BigInteger> noncedNegatedPrivateCredentials = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, noncedEncryptedNegatedPrivateCredentials, sk, kappa);
 
         // MapA
-        return performMapA(validBallots, noncedNegatedPrivateCredentials, sk.pk.group);
+        Map<MapAKey, MapAValue> mapAKeyMapAValueMap = performMapA(validBallots, noncedNegatedPrivateCredentials, sk.pk.group);
+
+        return mapAKeyMapAValueMap;
     }
 
     // Does the filtering. Read the athena paper for documentation.
@@ -190,7 +193,7 @@ public class AthenaTally {
         int counter = ballot.getCounter();
         if (existingValue == null || existingValue.getCounter() < counter) {
             // Update the map if A[(bi[1]; N)] is empty, or contains a lower counter
-            Ciphertext combinedCredential = ballot.getPublicCredential().multiply(ballot.getEncryptedNegatedPrivateCredential(), group.p);
+            Ciphertext combinedCredential = ballot.getPublicCredential().multiply(ballot.getEncryptedNegatedPrivateCredential(), group);
             return new MapAValue(counter, combinedCredential, ballot.getEncryptedVote());
         } else if (existingValue.getCounter() == counter) {
             // Duplicate counters are illegal. Set null entry.
@@ -206,6 +209,7 @@ public class AthenaTally {
         List<MixBallot> ballots = A.values().stream()
                 .map(MapAValue::toMixBallot)
                 .collect(Collectors.toList());
+
 
         return this.distributed.performMixnet(tallierIndex, ballots, pk, kappa);
 

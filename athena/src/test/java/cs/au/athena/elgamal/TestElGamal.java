@@ -152,7 +152,7 @@ public class TestElGamal {
         BigInteger d = UTIL.getRandomElement(q, random);
         Ciphertext publicCredential = elGamal.exponentialEncrypt(d, pk);
         Ciphertext encryptedNegatedPrivateCredential = elGamal.exponentialEncrypt(d.negate().mod(q).add(q).mod(q), pk);
-        Ciphertext combinedCredential = publicCredential.multiply(encryptedNegatedPrivateCredential, p);
+        Ciphertext combinedCredential = publicCredential.multiply(encryptedNegatedPrivateCredential, pk.group);
 
         // Nonce
         BigInteger n = UTIL.getRandomElement(q, random);
