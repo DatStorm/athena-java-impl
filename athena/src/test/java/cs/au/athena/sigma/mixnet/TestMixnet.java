@@ -1,10 +1,9 @@
 package cs.au.athena.sigma.mixnet;
 
+import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.*;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import cs.au.athena.CONSTANTS;
@@ -20,7 +19,11 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -101,8 +104,43 @@ public class TestMixnet {
         MixedBallotsAndProof pair = mixnet.mixAndProveMix(ballots, pk, kappa);
         MixStatement statement = new MixStatement(ballots, pair.mixedBallots);
 
-        boolean verification = mixnet.verify(statement, pair.mixProof, pk, kappa);
+        boolean verification = Mixnet.verify(statement, pair.mixProof, pk, kappa);
 
-        assertTrue("Should return 1: " + verification, verification);
+        Assertions.assertTrue(verification, "Should return 1: " + verification);
+    }
+
+
+
+    @Test
+    void TestMixAndProveMixWithXBallots() {
+//        Execution time in seconds : 			?
+//        int numBallots = 10; // 69
+//        int numBallots = 20; // 141
+//        int numBallots = 50; // 375
+//        int numBallots = 100;// 828
+//        int numBallots = 200;// 2014
+        int numBallots = 400; // ?
+
+        Ciphertext c1 = new Ciphertext(new BigInteger("10000"),new BigInteger("20000") );
+        Ciphertext c2 = new Ciphertext(new BigInteger("10000"),new BigInteger("20000") );
+
+        /***********/
+        long startTime = System.nanoTime();
+
+        Mixnet mixnet = new Mixnet();
+        List<MixBallot> mixBallots = IntStream.rangeClosed(1,numBallots).mapToObj((i) -> new MixBallot(c1, c2)).collect(Collectors.toList());
+
+        MixedBallotsAndProof mixedBallotsAndProof = mixnet.mixAndProveMix(mixBallots, pk, kappa);
+
+        MixStatement smnt = new MixStatement(mixBallots, mixedBallotsAndProof.mixedBallots);
+
+        boolean verification = Mixnet.verify(smnt, mixedBallotsAndProof.mixProof, pk, kappa);
+        long endTime = System.nanoTime();
+        /***********/
+
+        UTIL.printEvalMetrics(String.format("Mixnet with %d took: ", numBallots), startTime, endTime);
+
+
+        MatcherAssert.assertThat("Assert true.", verification, is(true));
     }
 }
