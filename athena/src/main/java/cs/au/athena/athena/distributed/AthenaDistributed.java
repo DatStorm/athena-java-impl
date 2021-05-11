@@ -9,6 +9,7 @@ import cs.au.athena.dao.athena.Ballot;
 import cs.au.athena.dao.athena.PK_Vector;
 import cs.au.athena.dao.bulletinboard.*;
 import cs.au.athena.dao.mixnet.MixBallot;
+import cs.au.athena.dao.mixnet.MixStatement;
 import cs.au.athena.dao.sigma1.Sigma1Proof;
 import cs.au.athena.elgamal.*;
 import cs.au.athena.factory.AthenaFactory;
@@ -240,39 +241,36 @@ public class AthenaDistributed {
         List<MixBallot> previousRoundMixBallots = ballots;
         MixedBallotsAndProof mixedBallotsAndProof;
 
-         //TODO: use prooving version
-//
-//        // For each mix round
-//        for (int nextTallierToMix = 1; nextTallierToMix <= bb.retrieveTallierCount(); nextTallierToMix++) {
-//            // Is it our turn to mix?
-//            if(nextTallierToMix == tallierIndex) {
-//
-//                // Mix and prove
-//                logger.info(MARKER, String.format("T%d: mixing", tallierIndex));
-//                mixedBallotsAndProof = mixnet.mixAndProveMix(previousRoundMixBallots, pk, kappa);
-//
-//                // Publish
-//                logger.info(MARKER, String.format("T%d: publishing mix", tallierIndex));
-//                bb.publishMixedBallotsAndProof(tallierIndex, mixedBallotsAndProof);
-//
-//            } else {
-//
-//                // Retrieve mixed ballots from bb
-//                mixedBallotsAndProof = bb.retrieveMixedBallotAndProofs().get(nextTallierToMix).join();
-//
-//                // Verify
-//                MixStatement statement = new MixStatement(previousRoundMixBallots, mixedBallotsAndProof.mixedBallots);
-//                boolean isValidMix = SigmaCommonDistributed.verifyMix(statement, mixedBallotsAndProof.mixProof, pk, bb.retrieveKappa());
-//
-//                if(!isValidMix){
-//                    throw new RuntimeException(String.format("Malicious tallier T%d did not mix correctly", nextTallierToMix));
-//                }
-//
-//            }
-//
-//            // Feed result forward to next round
-//            previousRoundMixBallots = mixedBallotsAndProof.mixedBallots;
-//        }
+
+        // For each mix round
+        for (int nextTallierToMix = 1; nextTallierToMix <= bb.retrieveTallierCount(); nextTallierToMix++) {
+            // Is it our turn to mix?
+            if(nextTallierToMix == tallierIndex) {
+                // Mix and prove
+                logger.info(MARKER, String.format("T%d: mixing", tallierIndex));
+                mixedBallotsAndProof = mixnet.mixAndProveMix(previousRoundMixBallots, pk, kappa);
+
+                // Publish
+                logger.info(MARKER, String.format("T%d: publishing mix", tallierIndex));
+                bb.publishMixedBallotsAndProof(tallierIndex, mixedBallotsAndProof);
+
+            } else {
+                // Retrieve mixed ballots from bb
+                mixedBallotsAndProof = bb.retrieveMixedBallotAndProofs().get(nextTallierToMix).join();
+
+                // Verify
+                MixStatement statement = new MixStatement(previousRoundMixBallots, mixedBallotsAndProof.mixedBallots);
+                boolean isValidMix = SigmaCommonDistributed.verifyMix(statement, mixedBallotsAndProof.mixProof, pk, bb.retrieveKappa());
+
+                // Abort if invalid
+                if(!isValidMix){
+                    throw new RuntimeException(String.format("Malicious tallier T%d did not mix correctly", nextTallierToMix));
+                }
+            }
+
+            // Feed result forward to next round
+            previousRoundMixBallots = mixedBallotsAndProof.mixedBallots;
+        }
 
         return previousRoundMixBallots;
     }
@@ -341,15 +339,6 @@ public class AthenaDistributed {
             }
         }
 
-        /* When doing PFR
-            For: T_1(knows n_1), T_2(knows n_2), T_3(knows n_3)
-                For: c_1 c_2 c_3 c_4
-                    [j=0] newValue = 1 * Enc(g^d1 * g^-d1)^n_1 * Enc(g^d1 * g^-d1)^n_2 * Enc(g^d1 * g^-d1)^n_3 = Enc(g^d1 * g^-d1)^(n_1+n_2+n_3)
-                    [j=1] newValue = 1 * Enc(g^d2 * g^-d2)^n_1 * Enc(g^d2 * g^-d2)^n_2 * Enc(g^d2 * g^-d2)^n_3 = Enc(g^d2 * g^-d2)^(n_1+n_2+n_3)
-                    [j=2] newValue = 1 * Enc(g^d3 * g^-d3)^n_1 * Enc(g^d3 * g^-d3)^n_2 * Enc(g^d3 * g^-d3)^n_3 = Enc(g^d3 * g^-d3)^(n_1+n_2+n_3)
-                    [j=3] newValue = 1 * Enc(g^d4 * g^-d4)^n_1 * Enc(g^d4 * g^-d4)^n_2 * Enc(g^d4 * g^-d4)^n_3 = Enc(g^d4 * g^-d4)^(n_1+n_2+n_3)
-         */
-
         return result;
     }
 
@@ -385,40 +374,15 @@ public class AthenaDistributed {
     public List<Ciphertext> performPfdPhaseOneHomoComb(int tallierIndex, List<Ciphertext> combinedCredentials, Random random, ElGamalSK sk, int kappa) {
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfd(combinedCredentials, random, sk, kappa);
 
-        // TODO: REMOVE! Debugging below
-        boolean isValid = SigmaCommonDistributed.verifyHomoCombPfd(combinedCredentials, listOfCombinedCiphertextAndProof, sk.pk, kappa);
-
-        if(isValid) {
-            logger.info(String.format("T%d: computed valid proof for homoCombPfd.", tallierIndex));
-            logger.info(String.format("T%d: pk= %s", tallierIndex, sk.pk.h.toString()));
-            logger.info(String.format("T%d: combinedCredentials= %s", tallierIndex, combinedCredentials.get(0).toOneLineShortString()));
-        } else {
-            throw new RuntimeException("Mark fixme");
-        }
-
         // Publish
         logger.info(MARKER, String.format("T%d: publishing pfdPhaseOneEntry", tallierIndex));
         bb.publishPfdPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
-
         // Retrieve threshold shares
         PfPhase<CombinedCiphertextAndProof> completedPfdPhaseOne = vbb.retrieveValidThresholdPfdPhaseOne(combinedCredentials).join();
 
-        // We want to create a list of ciphertexts, where element i is the product of the k+1 ciphertexts
-        // This is done by making a list of ciphertexts, and multiplying a talliers ciphertexts onto the corresponding entry
-        List<Ciphertext> combinedNoncedCombinedCredentials = combineCiphertexts(completedPfdPhaseOne, sk.pk.group);
-
-//        logger.info(MARKER, String.format("T%d had:  [ %s ]", tallierIndex, UTIL.cipherTextListToString(combinedCredentials)));
-//        logger.info(MARKER, String.format("T%d Made: [ %s ]", tallierIndex, UTIL.cipherTextListToString(listOfCombinedCiphertextAndProof.stream().map(CombinedCiphertextAndProof::getCombinedCiphertext).collect(Collectors.toList()))));
-
-        /*
-         * c1 = T1, T2, T3 = 100
-         * c2 = T1, T2, T3 = 100
-         * c3 = T1, T2, T3 = 100
-         */
-//        logger.info(MARKER, String.format("T%d FINIS:[ %s ]", tallierIndex, UTIL.cipherTextListToString(combinedNoncedCombinedCredentials)));
-
-        return combinedNoncedCombinedCredentials;
+        // Combine
+        return combineCiphertexts(completedPfdPhaseOne, sk.pk.group);
     }
 
     /**

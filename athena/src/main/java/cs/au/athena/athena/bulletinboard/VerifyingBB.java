@@ -72,16 +72,7 @@ public class VerifyingBB {
 
     private Function<Entry<CombinedCiphertextAndProof>, Boolean> constructVerifyHomoCombPfd(List<Ciphertext> ciphertexts) {
         //            logger.info(MARKER, String.format("--".repeat(20) + "> Shit hit the fan: %b" , verify));
-        return (entry) -> {
-            boolean isValid = SigmaCommonDistributed.verifyHomoCombPfd(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
-
-            String validInvalidString = isValid ? "valid" : "Invalid";
-            logger.info(String.format("received %s proof from T%d: for homoCombPfd.", validInvalidString, entry.getIndex()));
-            logger.info(String.format("received %s proof from T%d: pk=%s", validInvalidString, entry.getIndex(), retrievePKShare(entry.getIndex()).h.toString()));
-            logger.info(String.format("received %s proof from T%d: combinedCredentials=%s", validInvalidString, entry.getIndex(), ciphertexts.get(0).toOneLineShortString()));
-
-            return isValid;
-        };
+        return (entry) -> SigmaCommonDistributed.verifyHomoCombPfd(ciphertexts, entry.getValues(), retrievePKShare(entry.getIndex()), bb.retrieveKappa());
     }
 
     // Constructs the method for verifying a Entry<DecryptionShareAndProof>. Used in phases Two and Three
@@ -220,14 +211,7 @@ public class VerifyingBB {
     }
 
     public CompletableFuture<PfPhase<CombinedCiphertextAndProof>> retrieveValidThresholdPfdPhaseOne(List<Ciphertext> combinedCredentials) {
-        CompletableFuture<PfPhase<CombinedCiphertextAndProof>> future = retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCredentials));
-        logger.info(MARKER, "--------------- I THINK IT IS STUCK BELOW");
-        PfPhase<CombinedCiphertextAndProof> join_test = future.join();
-        logger.info(MARKER, "--------------- :: " + join_test);
-
-        logger.info(MARKER, "--------------- I THINK IT IS STUCK ABOVE");
-
-        return future;
+        return retrieveValidThresholdPfPhase(bb, bb.retrievePfdPhaseOne(), constructVerifyHomoCombPfd(combinedCredentials));
     }
 
     public CompletableFuture<PfPhase<DecryptionShareAndProof>> retrieveValidThresholdPfdPhaseTwo(List<Ciphertext> ciphertexts) {

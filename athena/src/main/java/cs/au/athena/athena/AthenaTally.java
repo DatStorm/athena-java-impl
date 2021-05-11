@@ -1,6 +1,7 @@
 package cs.au.athena.athena;
 
 import cs.au.athena.GENERATOR;
+import cs.au.athena.UTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
 import cs.au.athena.athena.bulletinboard.VerifyingBB;
 import cs.au.athena.athena.distributed.AthenaDistributed;
@@ -43,25 +44,31 @@ public class AthenaTally {
         /* ********
          * Step 1: Remove invalid ballots
          *********/
-        logger.info(MARKER, "Removing invalid ballots");
+        logger.info(MARKER, "Removing invalid ballots phase");
         List<Ballot> validBallots = removeInvalidBallots(pk, this.bb, this.vbb);
         if (validBallots.isEmpty()) {
             logger.error(MARKER,"T"+ tallierIndex+ ": AthenaTally.Tally =>  Step 1 yielded no valid ballots on bulletin-board.");
             throw new RuntimeException("Step 1 yielded no valid ballots on bulletin-board.");
         }
 
+
+
         /* ********
          * Step 2: Mix final votes
          *********/
         //Filter ReVotes and pfr proof of same nonce
         logger.info(MARKER, String.format("T%d: Filtering ReVotes", tallierIndex));
-        Map<MapAKey, MapAValue> A = filterReVotes(tallierIndex, validBallots, skShare);
+        List<MixBallot> filteredBallots = filterReVotes(tallierIndex, validBallots, skShare);
 
-        logger.info(MARKER, String.format("T%d completed filter revotes: %s", tallierIndex, A.values().stream().findFirst().toString().substring(0, 5)));
+//        logger.info(MARKER, String.format("T%d completed filter revotes: %s", tallierIndex, A.values().stream().findFirst().toString()));
+
+
 
         // Perform random mix
         logger.info(MARKER, String.format("T%d: Mixnet", tallierIndex));
-        List<MixBallot> mixedBallots = mixnet(A, pk);
+        List<MixBallot> mixedBallots = mixnet(filteredBallots, pk);
+
+        //logger.info(MARKER, String.format("T%d completed mixnet: %s", tallierIndex, mixedBallots.get(0).toString()));
 
 
         /* ********
@@ -152,7 +159,7 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Returns map of the highest counter ballot, for each credential pair, and a proof having used the same nonce for all ballots.
-    private Map<MapAKey, MapAValue> filterReVotes(int tallierIndex, List<Ballot> validBallots, ElGamalSK sk) {
+    private List<MixBallot> filterReVotes(int tallierIndex, List<Ballot> validBallots, ElGamalSK sk) {
 
         // Pick a nonce to mask public credentials.
         BigInteger nonce_n = GENERATOR.generateUniqueNonce(BigInteger.ONE, sk.pk.group.q, this.random);
@@ -164,27 +171,47 @@ public class AthenaTally {
         List<BigInteger> noncedNegatedPrivateCredentials = this.distributed.performPfrPhaseTwoDecryption(tallierIndex, noncedEncryptedNegatedPrivateCredentials, sk, kappa);
 
         // MapA
-        Map<MapAKey, MapAValue> mapAKeyMapAValueMap = performMapA(validBallots, noncedNegatedPrivateCredentials, sk.pk.group);
+        List<MixBallot> ballots = performMapA(validBallots, noncedNegatedPrivateCredentials, sk.pk.group);
 
-        return mapAKeyMapAValueMap;
+        return ballots;
     }
 
     // Does the filtering. Read the athena paper for documentation.
-    public static Map<MapAKey, MapAValue> performMapA(List<Ballot> validBallots, List<BigInteger> listOfNoncedNegatedPrivateCredentialElement, Group group) {
+    public static List<MixBallot> performMapA(List<Ballot> validBallots, List<BigInteger> listOfNoncedNegatedPrivateCredentialElement, Group group) {
         int ell = validBallots.size();
 
         Map<MapAKey, MapAValue> A = new HashMap<>();
         for (int i = 0; i < ell; i++) {
             Ballot ballot = validBallots.get(i);
             BigInteger N = listOfNoncedNegatedPrivateCredentialElement.get(i);
+            MapAKey key = new MapAKey(ballot.getPublicCredential(), N);
 
             // Update map with highest counter entry.
-            MapAKey key = new MapAKey(ballot.getPublicCredential(), N);
             MapAValue existingValue = A.get(key);
             MapAValue updatedValue = getHighestCounterEntry(existingValue, ballot, group);
             A.put(key, updatedValue);
         }
-        return A;
+
+        // Convert map values to "ordered" list
+        List<MixBallot> ballots = new ArrayList<>();
+        for (int i = 0; i < ell; i++){
+            Ballot ballot = validBallots.get(i);
+            BigInteger N = listOfNoncedNegatedPrivateCredentialElement.get(i);
+            MapAKey key = new MapAKey(ballot.getPublicCredential(), N);
+
+            if (!A.containsKey(key)) {
+                logger.error(MARKER, "A.keys(..) does not contain this key!");
+            }
+
+            MapAValue mapAValue = A.get(key);
+            if (mapAValue == null) {
+                logger.error(MARKER, "NULL. So the key generated is wrong.");
+            }
+            assert mapAValue != null : "Make sure that the key is not null! ";
+            MixBallot mixBallot = mapAValue.toMixBallot();
+            ballots.add(mixBallot);
+        }
+        return ballots;
     }
 
     // Step 2 of Tally. Returns a MapAValue, representing the ballot with the highest counter.
@@ -204,15 +231,8 @@ public class AthenaTally {
     }
 
     // Step 2 of Tally. Mix ballots
-    private List<MixBallot> mixnet(Map<MapAKey, MapAValue> A, ElGamalPK pk) {
-        // Cast to mix ballot list
-        List<MixBallot> ballots = A.values().stream()
-                .map(MapAValue::toMixBallot)
-                .collect(Collectors.toList());
-
-
+    private List<MixBallot> mixnet(List<MixBallot> ballots, ElGamalPK pk) {
         return this.distributed.performMixnet(tallierIndex, ballots, pk, kappa);
-
     }
 
     // Step 3 of tally. Nonce and decrypt ballots, and keep a tally of the eligible votes.

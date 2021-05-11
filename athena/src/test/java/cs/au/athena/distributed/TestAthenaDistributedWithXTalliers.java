@@ -35,49 +35,61 @@ public class TestAthenaDistributedWithXTalliers {
 //        Athena Verify: Execution time in seconds : 			0
         int tallierCount = 1;
         int numVotes = 1;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith1TalliersAnd5Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			53
 //        Athena Verify: Execution time in seconds : 			1
         int tallierCount = 1;
         int numVotes = 5;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith1TalliersAnd10Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			84
 //        Athena Verify: Execution time in seconds : 			3
         int tallierCount = 1;
         int numVotes = 10;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith1TalliersAnd20Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			145
 //        Athena Verify: Execution time in seconds : 			6
         int tallierCount = 1;
         int numVotes = 20;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith1TalliersAnd50Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			340
 //        Athena Verify: Execution time in seconds : 			16
         int tallierCount = 1;
         int numVotes = 50;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith1TalliersAnd100Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			697
 //        Athena Verify: Execution time in seconds :            31
         int tallierCount = 1;
         int numVotes = 100;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
-
+    @Test
+    void TestWith1TalliersAnd200Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds :            ?
+        int tallierCount = 1;
+        int numVotes = 200;
+        runAthena(tallierCount, numVotes);
+    }
 
 
     /***********************************
@@ -89,49 +101,53 @@ public class TestAthenaDistributedWithXTalliers {
 //        Athena Verify: Execution time in seconds : 			7
         int tallierCount = 3;
         int numVotes = 1;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith3TalliersAnd5Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			151
 //        Athena Verify: Execution time in seconds : 			35
         int tallierCount = 3;
         int numVotes = 5;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith3TalliersAnd10Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			265
 //        Athena Verify: Execution time in seconds : 			70
         int tallierCount = 3;
         int numVotes = 10;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith3TalliersAnd20Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			506
 //        Athena Verify: Execution time in seconds : 			147
         int tallierCount = 3;
         int numVotes = 20;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith3TalliersAnd50Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			1354
 //        Athena Verify: Execution time in seconds : 			389
         int tallierCount = 3;
         int numVotes = 50;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith3TalliersAnd100Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			2983
 //        Athena Verify: Execution time in seconds : 			841
         int tallierCount = 3;
         int numVotes = 100;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
-
 
 
     /***********************************
@@ -139,53 +155,66 @@ public class TestAthenaDistributedWithXTalliers {
      **********************************/
     @Test
     void TestWith7TalliersAnd1Votes() throws InterruptedException {
-//        Athena Tally: Execution time in seconds : 			141  =====> 91
-//        Athena Verify: Execution time in seconds : 			21   =====> 0
+//        Athena Tally: Execution time in seconds : 			141
+//        Athena Verify: Execution time in seconds : 			21
         int tallierCount = 7;
         int numVotes = 1;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith7TalliersAnd5Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			350
 //        Athena Verify: Execution time in seconds : 			106
         int tallierCount = 7;
         int numVotes = 5;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith7TalliersAnd10Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			633
 //        Athena Verify: Execution time in seconds : 			211
         int tallierCount = 7;
         int numVotes = 10;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith7TalliersAnd20Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			1217
 //        Athena Verify: Execution time in seconds : 			431
         int tallierCount = 7;
         int numVotes = 20;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith7TalliersAnd50Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			3332
 //        Athena Verify: Execution time in seconds : 			1136
         int tallierCount = 7;
         int numVotes = 50;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith7TalliersAnd100Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			8221
 //        Athena Verify: Execution time in seconds : 			2476
         int tallierCount = 7;
         int numVotes = 100;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
 
+    @Test
+    void TestWith7TalliersAnd200Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 7;
+        int numVotes = 200;
+        runAthena(tallierCount, numVotes);
+    }
 
 
     /***********************************
@@ -197,49 +226,53 @@ public class TestAthenaDistributedWithXTalliers {
 //        Athena Verify: Execution time in seconds : 			47
         int tallierCount = 15;
         int numVotes = 1;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith15TalliersAnd5Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			1429
 //        Athena Verify: Execution time in seconds : 			243
         int tallierCount = 15;
         int numVotes = 5;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith15TalliersAnd10Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			2356
 //        Athena Verify: Execution time in seconds : 			488
         int tallierCount = 15;
         int numVotes = 10;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith15TalliersAnd20Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			4438
 //        Athena Verify: Execution time in seconds : 			961
         int tallierCount = 15;
         int numVotes = 20;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith15TalliersAnd50Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			13293
 //        Athena Verify: Execution time in seconds : 			2608
         int tallierCount = 15;
         int numVotes = 50;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
+
     @Test
     void TestWith15TalliersAnd100Votes() throws InterruptedException {
 //        Athena Tally: Execution time in seconds : 			33412
 //        Athena Verify: Execution time in seconds : 			5876
         int tallierCount = 15;
         int numVotes = 100;
-        runAthena(tallierCount,numVotes);
+        runAthena(tallierCount, numVotes);
     }
-
 
 
     private void runAthena(int tallierCount, int numVotes) throws InterruptedException {
@@ -248,7 +281,7 @@ public class TestAthenaDistributedWithXTalliers {
         MainAthenaFactory factory = new MainAthenaFactory(tallierCount, kappa);
 
         Athena athena = new AthenaImpl(factory);
-        Map<Integer,ElGamalSK> talliersSK_HACKY_ASF = new HashMap<>();
+        Map<Integer, ElGamalSK> talliersSK_HACKY_ASF = new HashMap<>();
 
         /** *********/
         long startTime = System.nanoTime();
@@ -306,19 +339,19 @@ public class TestAthenaDistributedWithXTalliers {
         final Map<Integer, Integer>[] tallyMap = new Map[tallierCount];
 
         Function<Integer, Runnable> tallyRunnable =
-            (tallierIndex) ->
-            () -> {
-                ElGamalSK T_i_sk = talliersSK_HACKY_ASF.get(tallierIndex);
+                (tallierIndex) ->
+                        () -> {
+                            ElGamalSK T_i_sk = talliersSK_HACKY_ASF.get(tallierIndex);
 
-                tallyMap[tallierIndex - 1] = athena.Tally(tallierIndex, T_i_sk, nc, kappa);
+                            tallyMap[tallierIndex - 1] = athena.Tally(tallierIndex, T_i_sk, nc, kappa);
 
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                MatcherAssert.assertThat("", tallyMap[0], notNullValue());
-            };
+                            try {
+                                Thread.sleep(10000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            MatcherAssert.assertThat("", tallyMap[0], notNullValue());
+                        };
 
         List<Thread> threadsTally = new ArrayList<>(tallierCount);
         for (int i = 1; i <= tallierCount; i++) {

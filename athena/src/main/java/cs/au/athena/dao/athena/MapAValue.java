@@ -1,5 +1,6 @@
 package cs.au.athena.dao.athena;
 
+import cs.au.athena.CONSTANTS;
 import cs.au.athena.dao.mixnet.MixBallot;
 import cs.au.athena.elgamal.Ciphertext;
 
@@ -35,12 +36,20 @@ public class MapAValue {
         return new MixBallot(this.combinedCredential, this.encryptedVote);
     }
 
-    @Override
-    public String toString() {
+    public String toLongString() {
         return "MapAValue{" +
                 "counter=" + counter +
                 ", homoCombPubCredAndEncNegatedPrivCred=" + combinedCredential +
                 ", encryptedVote=" + encryptedVote +
+                '}';
+    }
+
+    @Override
+    public String toString() {
+        return "A.Val:{" +
+                "cnt" + counter +
+                CONSTANTS.ANSI_YELLOW + ", homoCombPubCredAndEncNegatedPrivCred=" + combinedCredential.toShortString() + CONSTANTS.ANSI_RESET +
+                ", encVote=" + encryptedVote.toShortString() +
                 '}';
     }
 }

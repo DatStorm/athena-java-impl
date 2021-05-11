@@ -3,6 +3,7 @@ package cs.au.athena.athena;
 import cs.au.athena.GENERATOR;
 import cs.au.athena.SecretSharingUTIL;
 import cs.au.athena.athena.bulletinboard.BulletinBoardV2_0;
+import cs.au.athena.athena.bulletinboard.MixedBallotsAndProof;
 import cs.au.athena.athena.bulletinboard.VerifyingBB;
 import cs.au.athena.athena.distributed.AthenaDistributed;
 import cs.au.athena.dao.athena.*;
@@ -126,18 +127,12 @@ public class AthenaVerify {
 
         logger.info(MARKER, "Verifying mixnet");
         // MapA
-        Map<MapAKey, MapAValue> A = AthenaTally.performMapA(validBallots, noncedNegatedPrivateCredentials, pk.group);
+//        Map<MapAKey, MapAValue> A = AthenaTally.performMapA(validBallots, noncedNegatedPrivateCredentials, pk.group);
+        List<MixBallot> initialMixBallots = AthenaTally.performMapA(validBallots, noncedNegatedPrivateCredentials, pk.group);
 
-        // Mixnet: Verify that filtering of ballots(only keeping highest counter) and mixnet is valid
-        // Cast to mix ballot list
-        List<MixBallot> initialMixBallots = A.values().stream()
-                .map(MapAValue::toMixBallot)
-                .collect(Collectors.toList());
-
-        // Phase III: Mixnet
-//        Map<Integer, CompletableFuture<MixedBallotsAndProof>> pfrPhaseThreeMixnet = vbb.retrieveValidMixedBallotAndProofs(initialMixBallots); //TODO: Use verifing bb
-//        List<MixBallot> finalMixedBallots = pfrPhaseThreeMixnet.get(bb.retrieveTallierCount()).join().mixedBallots; // Could be replaced with a PfPhaseMixnet.getFinalMix()
-        List<MixBallot> finalMixedBallots = initialMixBallots;
+        // Phase III: Mixnet  Verify that filtering of ballots(only keeping highest counter) and mixnet is valid
+        Map<Integer, CompletableFuture<MixedBallotsAndProof>> pfrPhaseThreeMixnet = vbb.retrieveValidMixedBallotAndProofs(initialMixBallots);
+        List<MixBallot> finalMixedBallots = pfrPhaseThreeMixnet.get(bb.retrieveTallierCount()).join().mixedBallots; // Could be replaced with a PfPhaseMixnet.getFinalMix()
 
         /* ********
          * Verify step 3: check the tally revelation

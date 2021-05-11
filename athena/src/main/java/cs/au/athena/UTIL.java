@@ -143,7 +143,7 @@ public class UTIL {
 
     public static List<Integer> newPermutation(int size, Random random) {
         List<Integer> range = IntStream.range(0, size).boxed().collect(Collectors.toList());
-        Collections.shuffle(range);
+        Collections.shuffle(range, random);
         return range;
     }
 

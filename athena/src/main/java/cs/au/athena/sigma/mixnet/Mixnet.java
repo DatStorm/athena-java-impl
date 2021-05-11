@@ -135,6 +135,7 @@ public class Mixnet {
                 BigInteger composedS = shadowS.negate().add(realS).mod(group.q);  // -s1 + s2
                 composedRandomnessS.add(composedS);
             }
+
             // Calculate composed permutation
             List<Integer> shadowPermutationInverse = UTIL.inversePermutation(shadowMixSecret.permutation);
             List<Integer> composedPermutation = UTIL.composePermutation(shadowPermutationInverse, originalMixSecret.permutation);

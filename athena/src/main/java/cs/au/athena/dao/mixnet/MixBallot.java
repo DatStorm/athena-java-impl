@@ -39,21 +39,27 @@ public class MixBallot implements Serializable {
         return encryptedVote;
     }
 
-    @Override
-    public String toString() {
-        return "MixBallot{" +
+    public String toLongString() {
+        return "{" +
                 "c1=" + combinedCredential.toString() +
                 ", c2=" + encryptedVote.toString() +
-                '}';
+                "}";
     }
+    @Override
+    public String toString() {
+        return "MB{" +
+                "c1=" + combinedCredential.toShortString() +
+                ", c2=" + encryptedVote.toShortString() +
+                "}";
+    }
+
 
     public String toShortString() {
         return "MB{" +
                 "c1=" + combinedCredential.toShortString() +
                 ", c2=" + encryptedVote.toShortString() +
-                '}';
+                "}";
     }
-
 
 
     @Override
