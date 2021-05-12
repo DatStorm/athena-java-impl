@@ -66,9 +66,12 @@ public class AthenaTally {
 
         // Perform random mix
         logger.info(MARKER, String.format("T%d: Mixnet", tallierIndex));
-        List<MixBallot> mixedBallots = mixnet(filteredBallots, pk);
 
-        //logger.info(MARKER, String.format("T%d completed mixnet: %s", tallierIndex, mixedBallots.get(0).toString()));
+
+        /** TODO: COMMENT BACK IN WHEN DONE! */
+//        List<MixBallot> mixedBallots = this.distributed.performMixnet(tallierIndex, ballots, pk, kappa);
+        List<MixBallot> mixedBallots = filteredBallots;
+
 
 
         /* ********
@@ -228,11 +231,6 @@ public class AthenaTally {
         } else {
             return existingValue;
         }
-    }
-
-    // Step 2 of Tally. Mix ballots
-    private List<MixBallot> mixnet(List<MixBallot> ballots, ElGamalPK pk) {
-        return this.distributed.performMixnet(tallierIndex, ballots, pk, kappa);
     }
 
     // Step 3 of tally. Nonce and decrypt ballots, and keep a tally of the eligible votes.

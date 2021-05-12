@@ -127,22 +127,20 @@ public class AthenaDistributed {
             // Compute subshare
             BigInteger subShare = polynomial.eval(j);
 
-            // Encrypt subShare using pk_j
-            BigInteger subShareElement = GroupTheory.fromZqToG(subShare, group);
-            Ciphertext encSubShare = ElGamal.encrypt(subShareElement, pk_j, random);
+            // DO NOT DELETE BELOW. This is needed for the "regular" group, i.e. p=2q+1
+//            // Encrypt subShare using pk_j
+//            BigInteger subShareElement = GroupTheory.fromZqToG(subShare, group);
+//            Ciphertext encSubShare = ElGamal.encrypt(subShareElement, pk_j, random);
+//
+//            // Send subshare, by encrypting and positing
+//            //logger.info(MARKER, String.format("tallier %d publishing P_%d(%d)", tallierIndex, tallierIndex ,j));
+//            bb.publishEncSubShare(tallierIndex, j, encSubShare); // key = (i,j)
 
-            // Send subshare, by encrypting and positing
-            //logger.info(MARKER, String.format("tallier %d publishing P_%d(%d)", tallierIndex, tallierIndex ,j));
-            bb.publishEncSubShare(tallierIndex, j, encSubShare); // key = (i,j)
+//            // FOR THE OTHER GROUP, i.e. p=8q+1
+            bb.sendSubShare(tallierIndex, j, subShare);
         }
     }
 
-    public boolean verifyKey(BigInteger h, Sigma1Proof rho, int kappa) {
-        Sigma1 sigma1 = new Sigma1();
-        Group group = bb.retrieveGroup();
-
-        return sigma1.VerifyKey(h, rho, group, kappa);
-    }
 
     // Receive, decrypt and verify the encrypted subshares
     private List<BigInteger> receiveSubShares(int tallierIndex, Group group, int tallierCount, int k, ElGamalSK sk_i, int kappa) {
@@ -154,8 +152,16 @@ public class AthenaDistributed {
                 continue;
             }
 
-            // Receive subshare
-            Ciphertext encSubShare = bb.retrieveEncSubShare(j, tallierIndex).join();
+            // DO NOT DELETE BELOW. This is needed for the "regular" group, i.e. p=2q+1
+//            // Receive subshare
+//            Ciphertext encSubShare = bb.retrieveEncSubShare(j, tallierIndex).join();
+//
+//            // Decrypt encrypted subshare
+//            BigInteger subShareFromTallier_j = GroupTheory.fromGToZq(ElGamal.decrypt(encSubShare, sk_i), group);
+
+////            NEW
+            BigInteger subShareFromTallier_j = bb.fetchSubShare(j, tallierIndex).join();
+
 
             // Retrieve commitments
             List<CommitmentAndProof> commitmentAndProofs = bb.retrievePolynomialCommitmentsAndProofs(j).join();
@@ -180,8 +186,8 @@ public class AthenaDistributed {
                 }
             }
 
-            // Decrypt encrypted subshare
-            BigInteger subShareFromTallier_j = GroupTheory.fromGToZq(ElGamal.decrypt(encSubShare, sk_i), group);
+
+
 
             // Verify subshare
             // - First calculate the subshare commitment from the commitments on BB
@@ -221,6 +227,14 @@ public class AthenaDistributed {
         assert group.g.modPow(sk, group.p).equals(pk) : "ProveKey: pk and sk does not match";
 
         return sigma1.ProveKey(pk, sk, group, random, kappa);
+    }
+
+
+    public boolean verifyKey(BigInteger h, Sigma1Proof rho, int kappa) {
+        Sigma1 sigma1 = new Sigma1();
+        Group group = bb.retrieveGroup();
+
+        return sigma1.VerifyKey(h, rho, group, kappa);
     }
 
 //    public Sigma4Proof proveCombination(List<Ciphertext> listOfCombinedCiphertexts, List<Ciphertext> listCiphertexts, BigInteger nonce_n, ElGamalSK sk, int kappa) {

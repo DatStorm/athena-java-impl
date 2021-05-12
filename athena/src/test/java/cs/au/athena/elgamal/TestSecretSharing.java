@@ -33,8 +33,9 @@ public class TestSecretSharing {
         Factory factory = new MainFactory();
         elGamal = factory.getElgamal();
         random = new Random(CONSTANTS.RANDOM_SEED);
-        group = CONSTANTS.ELGAMAL_2048_BITS.GROUP;
-        group = CONSTANTS.ELGAMAL_32_BITS.GROUP;
+//        group = CONSTANTS.ELGAMAL_2048_BITS.GROUP;
+//        group = CONSTANTS.ELGAMAL_32_BITS.GROUP;
+        group = CONSTANTS.ELGAMAL__DIFFIE_HELLMAN_GROUP__.GROUP;
     }
 
 

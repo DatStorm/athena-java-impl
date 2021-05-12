@@ -14,6 +14,7 @@ import cs.au.athena.elgamal.Group;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
+import java.nio.channels.MulticastChannel;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -32,6 +33,9 @@ public class BulletinBoardV2_0 {
 
     private final Map<Integer, CompletableFuture<List<CommitmentAndProof>>> tallierCommitmentsAndProofs;
     private final Map<Pair<Integer, Integer>, CompletableFuture<Ciphertext>> encryptedSubShares;
+    private final Map<Pair<Integer, Integer>, CompletableFuture<BigInteger>> subShares;
+
+
     private final Map<Integer, CompletableFuture<PK_Vector>> mapOfIndividualPK_vector;
 
     // Completed when a tallier posts homocomb or decryption shares
@@ -74,6 +78,7 @@ public class BulletinBoardV2_0 {
         this.tallierCommitmentsAndProofs = new HashMap<>();
         this.mapOfIndividualPK_vector = new HashMap<>();
         this.encryptedSubShares = new HashMap<>();
+        this.subShares = new HashMap<>();
         this.pfrPhasePhaseOne = new PfPhase<>(tallierCount);
         this.pfrPhasePhaseTwo = new PfPhase<>(tallierCount);
         this.pfdPhasePhaseOne = new PfPhase<>(tallierCount);
@@ -103,6 +108,7 @@ public class BulletinBoardV2_0 {
 
                 Pair<Integer, Integer> key = Pair.of(i, j);
                 encryptedSubShares.put(key, new CompletableFuture<>());
+                subShares.put(key, new CompletableFuture<>());
             }
         }
     }
@@ -269,5 +275,14 @@ public class BulletinBoardV2_0 {
         return this.mixedBallotAndProofs.get(finalTallierIndex).join().mixedBallots;
     }
 
+
+    public void sendSubShare(int tallierIndex, int j, BigInteger subShareToTallier_j) {
+        Pair<Integer, Integer> key = Pair.of(tallierIndex, j);
+        subShares.get(key).complete(subShareToTallier_j);
+    }
+    public CompletableFuture<BigInteger> fetchSubShare(int i, int j) {
+        Pair<Integer, Integer> key = Pair.of(i, j);
+        return subShares.get(key);
+    }
 
 }

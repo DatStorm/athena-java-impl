@@ -43,7 +43,7 @@ public class TestSigma1 {
         this.sk = factory.getSK();
         this.pk = factory.getPK();
         this.sigma1 = new Sigma1();
-        this.random = new Random(123);
+        this.random = new Random(CONSTANTS.RANDOM_SEED);
     }
 
 
@@ -103,7 +103,6 @@ public class TestSigma1 {
     void TestProveKey_Verify_step4() {
         Sigma1Proof rho = sigma1.ProveKey(this.pk, this.sk, random, this.kappa);
         ArrayList<CoinFlipInfo> coinFlipInfo_pairs = rho.getCoinFlipInfoPairs();
-        ArrayList<BigInteger> s1_sk = rho.getS1_Sk();
         ArrayList<BigInteger> y1_yk = rho.getY1_Yk();
 
         // index j

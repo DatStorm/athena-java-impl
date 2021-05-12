@@ -1,6 +1,7 @@
 package cs.au.athena.elgamal;
 
 import cs.au.athena.CONSTANTS;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.*;
 import cs.au.athena.UTIL;
 import cs.au.athena.athena.AthenaCommon;
@@ -9,6 +10,8 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("TestElgamal")
@@ -204,6 +207,34 @@ public class TestElGamal {
         System.out.println("q: " + group.q);
         System.out.println("g: " + group.g);
     }
+
+    @Test
+    void TestDiegoGroup() {
+        // Version 2048 bits....
+//        Group group = CONSTANTS.ELGAMAL__DIFFIE_HELLMAN_GROUP__.GROUP;
+        Group group = CONSTANTS.ELGAMAL_2048_BITS.GROUP;
+
+        System.out.println("q length" + group.q.bitLength());
+        System.out.println("p length" + group.p.bitLength());
+
+        boolean probable_p_Prime = group.p.isProbablePrime(32);
+        boolean probable_q_Prime = group.q.isProbablePrime(32);
+
+        MatcherAssert.assertThat("Q is not prime", probable_q_Prime, is(true));
+        MatcherAssert.assertThat("P is not prime", probable_p_Prime, is(true));
+
+        //p=2q+1 => q er 1024 bits WRONG => q er 2045 bits
+
+
+        // Chech that g is a generator of the group.
+        for (int i = 0; i < 20; i++) {
+            boolean success = group.g.pow(i).modPow(group.q, group.p).equals(BigInteger.ONE);
+            MatcherAssert.assertThat(String.format("Incorrect i=%d",i), success, is(true));
+
+        }
+
+    }
+
 
 
 }

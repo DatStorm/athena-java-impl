@@ -131,7 +131,6 @@ public class Sigma1 {
 
         // f -> F(r,b_A)
         byte[] concat = Bytes.concat(rand_bytes, bA_bytes);
-
         byte[] hashbytes = HASH.hash(concat);
 
         return hashbytes;

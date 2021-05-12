@@ -274,6 +274,33 @@ public class TestAthenaDistributedWithXTalliers {
         runAthena(tallierCount, numVotes);
     }
 
+    @Test
+    void TestWith15TalliersAnd200Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			1392 (no mixnet)
+//        Athena Verify: Execution time in seconds : 			153 (no mixnet)
+        int tallierCount = 15;
+        int numVotes = 200;
+        runAthena(tallierCount, numVotes);
+    }
+
+    @Test
+    void TestWith15TalliersAnd500Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			? 2722 (no mixnet)
+//        Athena Verify: Execution time in seconds : 			389 (no mixnet)
+        int tallierCount = 15;
+        int numVotes = 500;
+        runAthena(tallierCount, numVotes);
+    }
+
+    @Test
+    void TestWith15TalliersAnd1000Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 15;
+        int numVotes = 1000;
+        runAthena(tallierCount, numVotes);
+    }
+
 
     private void runAthena(int tallierCount, int numVotes) throws InterruptedException {
         int kappa = CONSTANTS.KAPPA;
@@ -378,7 +405,7 @@ public class TestAthenaDistributedWithXTalliers {
         long endTime = System.nanoTime();
         UTIL.printEvalMetrics("Athena Tally: ", startTime, endTime);
 
-        System.out.println(UTIL.prettyPrintTallyResult(tallyMap[0]));
+//        System.out.println(UTIL.prettyPrintTallyResult(tallyMap[0]));
 
 
         // Verify election

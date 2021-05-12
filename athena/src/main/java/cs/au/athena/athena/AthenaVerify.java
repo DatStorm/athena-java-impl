@@ -131,8 +131,10 @@ public class AthenaVerify {
         List<MixBallot> initialMixBallots = AthenaTally.performMapA(validBallots, noncedNegatedPrivateCredentials, pk.group);
 
         // Phase III: Mixnet  Verify that filtering of ballots(only keeping highest counter) and mixnet is valid
-        Map<Integer, CompletableFuture<MixedBallotsAndProof>> pfrPhaseThreeMixnet = vbb.retrieveValidMixedBallotAndProofs(initialMixBallots);
-        List<MixBallot> finalMixedBallots = pfrPhaseThreeMixnet.get(bb.retrieveTallierCount()).join().mixedBallots; // Could be replaced with a PfPhaseMixnet.getFinalMix()
+        /** TODO: COMMENT BACK IN WHEN DONE! */
+//        Map<Integer, CompletableFuture<MixedBallotsAndProof>> pfrPhaseThreeMixnet = vbb.retrieveValidMixedBallotAndProofs(initialMixBallots);
+//        List<MixBallot> finalMixedBallots = pfrPhaseThreeMixnet.get(bb.retrieveTallierCount()).join().mixedBallots; // Could be replaced with a PfPhaseMixnet.getFinalMix()
+        List<MixBallot> finalMixedBallots = initialMixBallots;
 
         /* ********
          * Verify step 3: check the tally revelation

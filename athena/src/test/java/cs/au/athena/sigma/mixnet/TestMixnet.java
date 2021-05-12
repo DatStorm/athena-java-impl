@@ -114,12 +114,15 @@ public class TestMixnet {
     @Test
     void TestMixAndProveMixWithXBallots() {
 //        Execution time in seconds : 			?
+//        int numBallots = 1; // 6
+//        int numBallots = 5; // 35
 //        int numBallots = 10; // 69
 //        int numBallots = 20; // 141
 //        int numBallots = 50; // 375
 //        int numBallots = 100;// 828
 //        int numBallots = 200;// 2014
-        int numBallots = 400; // ?
+        int numBallots = 80;
+
 
         Ciphertext c1 = new Ciphertext(new BigInteger("10000"),new BigInteger("20000") );
         Ciphertext c2 = new Ciphertext(new BigInteger("10000"),new BigInteger("20000") );
