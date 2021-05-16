@@ -1,0 +1,153 @@
+---
+title: "Experiments Athena for Master Thesis"
+output: html_notebook
+---
+
+
+# Load results of the experiment
+```{r}
+crypto_exp <- read.csv("Eval_Athena.csv")
+crypto_exp
+crypto_exp$experiment <- as.character(crypto_exp$experiment)
+summary(crypto_exp$experiment)
+```
+
+# Filter data (if neccessary)
+```{r}
+library(tidyverse)
+crypto_exp_singleTallier <- filter(crypto_exp, experiment %in% c("singleTallier(ST)", "verification(ST)"))
+crypto_exp_distributed <- filter(crypto_exp, experiment %in% c("singleTallier(ST)","threeDistributed(3DT)", "sevenDistributed(7DT)", "fifteenDistributed(15DT)"))
+crypto_exp_distributed_noMixnet <- filter(crypto_exp, experiment %in% c("ST-noMixnet","3DT-noMixnet", "7DT-noMixnet", "15DT-noMixnet"))
+crypto_exp_distributed_mixnet <- filter(crypto_exp, experiment %in% c("Mixnet"))
+crypto_exp_distributed_verification <- filter(crypto_exp, experiment %in% c( "verification(ST)","verification(3DT)", "verification(7DT)", "verification(15DT)"))
+crypto_exp_threeTallierAndSingle <- filter(crypto_exp, experiment %in% c("threeDistributed(3DT)", "singleTallier(ST)"))
+# crypto_exp_singleTallierDistributed <- filter(crypto_exp, experiment %in% c("singleDistributed(1DT)", "verification(1DT)"))
+```
+
+
+
+# Visualize the experiments
+
+## Experiment 1: Single tallier
+```{r}
+library(ggplot2)
+ggplot(crypto_exp_singleTallier, aes(x=num_ballots, y=time_sec, color=experiment)) +
+  geom_point() +
+  # geom_smooth(method = "lm", se=T) +
+  geom_line() +
+  labs(x="number of ballots", y="time in seconds", title = "Time spent in Athena")
+```
+
+
+## Experiment 2: Distributed talliers
+```{r}
+library(ggplot2)
+ggplot(crypto_exp_distributed, aes(x=num_ballots, y=time_sec, color=experiment)) +
+  geom_point() +
+  # geom_smooth(method = "lm", se=T) +
+  geom_line() +
+  labs(x="number of ballots", y="time in seconds", title = "Time spent in Athena")
+
+
+library(ggplot2)
+ggplot(crypto_exp_distributed_verification, aes(x=num_ballots, y=time_sec, color=experiment)) +
+  geom_point() +
+  # geom_smooth(method = "lm", se=T) +
+  geom_line() +
+  labs(x="number of ballots", y="time in seconds", title = "Time spent in Athena verification")
+
+
+library(ggplot2)
+ggplot(crypto_exp_threeTallierAndSingle, aes(x=num_ballots, y=time_sec, color=experiment)) +
+  geom_point() +
+  # geom_smooth(method = "lm", se=T) +
+  geom_line() +
+  labs(x="number of ballots", y="time in seconds", title = "Time spent in Athena")
+```
+
+
+
+
+
+
+## Experiment 3: Effects of Mixnet
+```{r}
+library(ggplot2)
+ggplot(crypto_exp_distributed_mixnet, aes(x=num_ballots, y=time_sec)) +
+  geom_point() +
+  # geom_smooth(method = "lm", se=T) +
+  geom_line() +
+  labs(x="number of ballots", y="time in seconds", title = "Time spent in Mixnet")
+
+
+library(ggplot2)
+ggplot(crypto_exp_distributed_noMixnet, aes(x=num_ballots, y=time_sec, color=experiment)) +
+  geom_point() +
+  # geom_smooth(method = "lm", se=T) +
+  geom_line() +
+  labs(x="number of ballots", y="time in seconds", title = "Time spent in Athena without Mixnet")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Experiment 4: Comparison different Schnorr group
+```{r}
+# create data for comparison of Schnoor groups
+crypto_exp_comparisonSchnorr <- crypto_exp %>% 
+  mutate(
+    experiment = as.character(experiment),
+    group = if_else(endsWith(crypto_exp$experiment, "SchnorrGroup"), "|q|=256 bits", "|q|=2047 bits")
+  ) %>%
+  filter(experiment %in% c("singleTallier(ST)", "sevenDistributed(7DT)", "fifteenDistributed(15DT)", "singleTallierSchnorrGroup" ,"sevenDistributedSchnorrGroup", "fifteenDistributedSchnorrGroup")) %>%
+  mutate(
+    experiment = if_else(startsWith(experiment, "singleTallier"), "singleTallier(ST)", 
+                         if_else(startsWith(experiment, "sevenDistributed"), "sevenDistributed(7DT)", "fifteenDistributed(15DT)"))
+  )
+
+# plot
+library(ggplot2)
+ggplot(crypto_exp_comparisonSchnorr, aes(x=num_ballots, y=time_sec, color=experiment)) +
+  geom_point() +
+  # scale_x_log10()  +
+  # scale_y_log10() + 
+  geom_line(aes(linetype=group)) +
+  labs(x="number of ballots", y="time in seconds", title = "Time spent in Athena using different group")
+
+
+# p + theme(legend.position="top")
+# p + theme(legend.position="bottom")
+# # Remove legend
+# p + theme(legend.position="none")
+```
+
+
+
+
+
+
+
+
+
