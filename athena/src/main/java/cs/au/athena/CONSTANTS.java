@@ -25,17 +25,30 @@ public class CONSTANTS {
 
 
     public static class ELGAMAL_CURRENT {
-        public static final BigInteger ELGAMAL_P = ELGAMAL__DIFFIE_HELLMAN_GROUP__.ELGAMAL_P;
-        public static final BigInteger ELGAMAL_Q = ELGAMAL__DIFFIE_HELLMAN_GROUP__.ELGAMAL_Q;
-        public static final BigInteger ELGAMAL_G = ELGAMAL__DIFFIE_HELLMAN_GROUP__.ELGAMAL_G;
+        public static final BigInteger ELGAMAL_P = ELGAMAL_2048_BITS.ELGAMAL_P;
+        public static final BigInteger ELGAMAL_Q = ELGAMAL_2048_BITS.ELGAMAL_Q;
+        public static final BigInteger ELGAMAL_G = ELGAMAL_2048_BITS.ELGAMAL_G;
 
         /**
          * Elgamal bit length specify how big values to use.
          */
-        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL__DIFFIE_HELLMAN_GROUP__.ELGAMAL_BIT_LENGTH;
-        public static final Group GROUP = ELGAMAL__DIFFIE_HELLMAN_GROUP__.GROUP;
+        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL_2048_BITS.ELGAMAL_BIT_LENGTH;
+        public static final Group GROUP = ELGAMAL_2048_BITS.GROUP;
 
     }
+
+//    public static class ELGAMAL_CURRENT {
+//        public static final BigInteger ELGAMAL_P = ELGAMAL__DIFFIE_HELLMAN_GROUP__.ELGAMAL_P;
+//        public static final BigInteger ELGAMAL_Q = ELGAMAL__DIFFIE_HELLMAN_GROUP__.ELGAMAL_Q;
+//        public static final BigInteger ELGAMAL_G = ELGAMAL__DIFFIE_HELLMAN_GROUP__.ELGAMAL_G;
+//
+//        /**
+//         * Elgamal bit length specify how big values to use.
+//         */
+//        public static final int ELGAMAL_BIT_LENGTH = ELGAMAL__DIFFIE_HELLMAN_GROUP__.ELGAMAL_BIT_LENGTH;
+//        public static final Group GROUP = ELGAMAL__DIFFIE_HELLMAN_GROUP__.GROUP;
+//
+//    }
 
 
     /**

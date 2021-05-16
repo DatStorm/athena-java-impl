@@ -57,7 +57,7 @@ public class AthenaTally {
          * Step 2: Mix final votes
          *********/
         //Filter ReVotes and pfr proof of same nonce
-        logger.info(MARKER, String.format("T%d: Filtering ReVotes", tallierIndex));
+        logger.info(MARKER, String.format("T%02d: Filtering ReVotes", tallierIndex));
         List<MixBallot> filteredBallots = filterReVotes(tallierIndex, validBallots, skShare);
 
 //        logger.info(MARKER, String.format("T%d completed filter revotes: %s", tallierIndex, A.values().stream().findFirst().toString()));
@@ -65,11 +65,11 @@ public class AthenaTally {
 
 
         // Perform random mix
-        logger.info(MARKER, String.format("T%d: Mixnet", tallierIndex));
+        logger.info(MARKER, String.format("T%02d: Mixnet", tallierIndex));
 
 
         /** TODO: COMMENT BACK IN WHEN DONE! */
-//        List<MixBallot> mixedBallots = this.distributed.performMixnet(tallierIndex, ballots, pk, kappa);
+//        List<MixBallot> mixedBallots = this.distributed.performMixnet(tallierIndex, filteredBallots, pk, kappa);
         List<MixBallot> mixedBallots = filteredBallots;
 
 
@@ -77,7 +77,7 @@ public class AthenaTally {
         /* ********
          * Step 3: Reveal eligible votes
          *********/
-        logger.info(MARKER, String.format("T%d: Revealing authorised votes", tallierIndex));
+        logger.info(MARKER, String.format("T%02d: Revealing authorised votes", tallierIndex));
 
         // Tally eligible votes and prove computations
         Map<Integer, Integer> officialTally = revealAuthorisedVotes(mixedBallots, skShare, kappa);
@@ -258,7 +258,7 @@ public class AthenaTally {
 
         // Phase III. Decrypt authorized votes
         List<BigInteger> voteElements = this.distributed.performPfdPhaseThreeDecryption(tallierIndex, m_list, encryptedVotes, sk, kappa);
-        logger.info(MARKER, String.format("T%d: computing tally with -> |votes|= %d", tallierIndex, voteElements.size()));
+        logger.info(MARKER, String.format("T%02d: computing tally with -> |votes|= %d", tallierIndex, voteElements.size()));
 
         return computeTally(voteElements, nc, sk.pk.group);
     }

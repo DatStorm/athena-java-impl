@@ -80,7 +80,7 @@ public class AthenaVote {
         BigInteger randomness_t = UTIL.getRandomElement(q, random);
         Ciphertext encryptedVote = elgamal.exponentialEncrypt(voteAsBigInteger, pk, randomness_t);
 
-        logger.info(MARKER, String.format("voting=%d", vote));
+        logger.info(MARKER, String.format("Vote[voted=%d]", vote));
 
         // message/vector u used to make ballot proofs specific to the given ballot
         //  consists of (public credential, encrypted negated private credential, encrypted vote, counter)

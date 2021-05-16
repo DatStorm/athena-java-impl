@@ -90,6 +90,14 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 200;
         runAthena(tallierCount, numVotes);
     }
+    @Test
+    void TestWith1TalliersAnd500Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds :            ?
+        int tallierCount = 1;
+        int numVotes = 500;
+        runAthena(tallierCount, numVotes);
+    }
 
 
     /***********************************
@@ -146,6 +154,22 @@ public class TestAthenaDistributedWithXTalliers {
 //        Athena Verify: Execution time in seconds : 			841
         int tallierCount = 3;
         int numVotes = 100;
+        runAthena(tallierCount, numVotes);
+    }
+    @Test
+    void TestWith3TalliersAnd200Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 3;
+        int numVotes = 200;
+        runAthena(tallierCount, numVotes);
+    }
+    @Test
+    void TestWith3TalliersAnd500Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 3;
+        int numVotes = 500;
         runAthena(tallierCount, numVotes);
     }
 
@@ -215,6 +239,16 @@ public class TestAthenaDistributedWithXTalliers {
         int numVotes = 200;
         runAthena(tallierCount, numVotes);
     }
+
+    @Test
+    void TestWith7TalliersAnd500Votes() throws InterruptedException {
+//        Athena Tally: Execution time in seconds : 			?
+//        Athena Verify: Execution time in seconds : 			?
+        int tallierCount = 7;
+        int numVotes = 500;
+        runAthena(tallierCount, numVotes);
+    }
+
 
 
     /***********************************
@@ -370,14 +404,15 @@ public class TestAthenaDistributedWithXTalliers {
                         () -> {
                             ElGamalSK T_i_sk = talliersSK_HACKY_ASF.get(tallierIndex);
 
-                            tallyMap[tallierIndex - 1] = athena.Tally(tallierIndex, T_i_sk, nc, kappa);
+                            int mapIndex = tallierIndex - 1;
+                            tallyMap[mapIndex] = athena.Tally(tallierIndex, T_i_sk, nc, kappa);
 
                             try {
                                 Thread.sleep(10000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            MatcherAssert.assertThat("", tallyMap[0], notNullValue());
+                            MatcherAssert.assertThat("", tallyMap[mapIndex], notNullValue());
                         };
 
         List<Thread> threadsTally = new ArrayList<>(tallierCount);

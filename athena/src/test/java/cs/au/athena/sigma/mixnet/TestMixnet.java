@@ -121,7 +121,7 @@ public class TestMixnet {
 //        int numBallots = 50; // 375
 //        int numBallots = 100;// 828
 //        int numBallots = 200;// 2014
-        int numBallots = 80;
+        int numBallots = 500;
 
 
         Ciphertext c1 = new Ciphertext(new BigInteger("10000"),new BigInteger("20000") );

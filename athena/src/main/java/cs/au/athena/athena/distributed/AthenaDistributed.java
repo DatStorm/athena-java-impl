@@ -60,7 +60,7 @@ public class AthenaDistributed {
 
 
         // Generate proofs for the commitments
-        logger.info(MARKER, String.format("T%d proving polynomial", tallierIndex));
+        logger.info(MARKER, String.format("T%02d proving polynomial", tallierIndex));
         List<CommitmentAndProof> commitmentAndProofs = new ArrayList<>();
         for(int ell = 0; ell <= k; ell++) {
             BigInteger commitment = commitments.get(ell);
@@ -72,7 +72,7 @@ public class AthenaDistributed {
         }
 
         // Publish polynomial commitments and proofs
-        logger.info(MARKER, String.format("T%d publishing polynomial commitment and proofs", tallierIndex));
+        logger.info(MARKER, String.format("T%02d publishing polynomial commitment and proofs", tallierIndex));
         bb.publishPolynomialCommitmentsAndProofs(tallierIndex, commitmentAndProofs);
 
 
@@ -83,11 +83,11 @@ public class AthenaDistributed {
         Sigma1Proof rho_i = this.proveKey(pk_i, sk_i, kappa);
 
         // Publish my individual public key, so others can send me a subShare
-        logger.info(MARKER, String.format("T%d publishing individual pk.", tallierIndex));
+        logger.info(MARKER, String.format("T%02d publishing individual pk.", tallierIndex));
         bb.publishIndividualPKvector(tallierIndex, new PK_Vector(pk_i, rho_i));
 
         // Send subshares P_i(j) to T_j
-        logger.info(MARKER, String.format("T%d publishing subshares", tallierIndex));
+        logger.info(MARKER, String.format("T%02d publishing subshares", tallierIndex));
         this.publishSubShares(tallierIndex, group, random, tallierCount, polynomial, kappa);
 
         // Receive subshares
@@ -169,7 +169,7 @@ public class AthenaDistributed {
             // Check length of polynomial commitment
             if (commitmentAndProofs.size() != k +1) {
                 // FUTUREWORK: If the commitment is invalid or incorrect length, T_j is malicious and should be removed.
-                throw new RuntimeException(String.format("Tallier %d published commitments of %d degree polynomial. Should be k=%d ", j, commitmentAndProofs.size(), k));
+                throw new RuntimeException(String.format("Tallier %02d published commitments of %d degree polynomial. Should be k=%d ", j, commitmentAndProofs.size(), k));
             }
 
             // VerifyKey on polynomial commitments
@@ -182,7 +182,7 @@ public class AthenaDistributed {
 
                 if (!isValid) {
                     // FUTUREWORK: If the proofs are invalid, T_j is malicious and should be removed.
-                    throw new RuntimeException(String.format("Tallier %d published commitments with invalid proofs", j));
+                    throw new RuntimeException(String.format("Tallier %02d published commitments with invalid proofs", j));
                 }
             }
 
@@ -208,7 +208,7 @@ public class AthenaDistributed {
             subShares.add(subShareFromTallier_j);
         }
 
-        logger.info(MARKER,  String.format("T%d Received subshares", tallierIndex));
+        logger.info(MARKER,  String.format("T%02d Received subshares", tallierIndex));
 
 
         return subShares;
@@ -261,11 +261,11 @@ public class AthenaDistributed {
             // Is it our turn to mix?
             if(nextTallierToMix == tallierIndex) {
                 // Mix and prove
-                logger.info(MARKER, String.format("T%d: mixing", tallierIndex));
+                logger.info(MARKER, String.format("T%02d: mixing", tallierIndex));
                 mixedBallotsAndProof = mixnet.mixAndProveMix(previousRoundMixBallots, pk, kappa);
 
                 // Publish
-                logger.info(MARKER, String.format("T%d: publishing mix", tallierIndex));
+                logger.info(MARKER, String.format("T%02d: publishing mix", tallierIndex));
                 bb.publishMixedBallotsAndProof(tallierIndex, mixedBallotsAndProof);
 
             } else {
@@ -302,19 +302,19 @@ public class AthenaDistributed {
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.computeHomoCombinationAndProofs(encryptedNegatedPrivateCredentials, nonce, sk, kappa);
 
         // Publish
-        logger.info(MARKER,  String.format("T%d publishing entry and awaiting threshold entries", tallierIndex));
+        logger.info(MARKER,  String.format("T%02d publishing entry and awaiting threshold entries", tallierIndex));
         bb.publishPfrPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve threshold shares
         PfPhase<CombinedCiphertextAndProof> validPfrPhaseOne = vbb.retrieveValidThresholdPfrPhaseOne(encryptedNegatedPrivateCredentials).join();
 
         // Combine
-        logger.info(MARKER,  String.format("T%d Retrieved threshold entries. Combining",tallierIndex));
+        logger.info(MARKER,  String.format("T%02d Retrieved threshold entries. Combining",tallierIndex));
 
         // Combine the homomorphic combinations using the talliers individual nonce shares n_j such that the returned ciphertext is nonced with n=Sum(n_j)
         List<Ciphertext> ciphertexts = combineCiphertexts(validPfrPhaseOne, sk.pk.group);
 
-        logger.info(MARKER, String.format("T%d completed PfrPhase 1: %s", tallierIndex, ciphertexts.get(0).toOneLineShortString()));
+        logger.info(MARKER, String.format("T%02d completed PfrPhase 1: %s", tallierIndex, ciphertexts.get(0).toOneLineShortString()));
         return ciphertexts;
     }
 
@@ -364,7 +364,7 @@ public class AthenaDistributed {
     public List<BigInteger> performPfrPhaseTwoDecryption(int tallierIndex, List<Ciphertext> combinedCiphertexts, ElGamalSK sk, int kappa) {
         int k = bb.retrieveK();
 
-        logger.info(MARKER, String.format("T%d computing and publishing decryption shares", tallierIndex));
+        logger.info(MARKER, String.format("T%02d computing and publishing decryption shares", tallierIndex));
         List<DecryptionShareAndProof> decryptionSharesAndProofs = SigmaCommonDistributed.computeDecryptionShareAndProofs(combinedCiphertexts, sk, kappa);
 
         // Publish
@@ -376,7 +376,7 @@ public class AthenaDistributed {
 
         // Decrypt nonced negated private credentials
         List<BigInteger> bigIntegers = SecretSharingUTIL.combineDecryptionSharesAndDecrypt(combinedCiphertexts, completedPfrPhaseTwo, sk.pk.group);
-        logger.info(MARKER, String.format("T%d completed PfrPhase 2: %s", tallierIndex, bigIntegers.get(0).toString().substring(0, 5)));
+//        logger.info(MARKER, String.format("T%d completed PfrPhase 2: %s", tallierIndex, bigIntegers.get(0).toString().substring(0, 5)));
 
         return bigIntegers;
     }
@@ -389,7 +389,7 @@ public class AthenaDistributed {
         List<CombinedCiphertextAndProof> listOfCombinedCiphertextAndProof = SigmaCommonDistributed.proveHomoCombPfd(combinedCredentials, random, sk, kappa);
 
         // Publish
-        logger.info(MARKER, String.format("T%d: publishing pfdPhaseOneEntry", tallierIndex));
+        logger.info(MARKER, String.format("T%02d: publishing pfdPhaseOneEntry", tallierIndex));
         bb.publishPfdPhaseOneEntry(tallierIndex, listOfCombinedCiphertextAndProof);
 
         // Retrieve threshold shares
@@ -405,14 +405,14 @@ public class AthenaDistributed {
      */
     public List<BigInteger> performPfdPhaseTwoDecryption(int tallierIndex, List<Ciphertext> combinedCredentialCiphertexts, ElGamalSK sk, int kappa) {
         int k = bb.retrieveK();
-        logger.info(MARKER, String.format("T%d proving decryption of Combined credentials.",tallierIndex ));
+        logger.info(MARKER, String.format("T%02d proving decryption of Combined credentials.",tallierIndex ));
         List<DecryptionShareAndProof> decryptionSharesAndProofs = SigmaCommonDistributed.computeDecryptionShareAndProofs(combinedCredentialCiphertexts, sk, kappa);
 
         // Publish
         bb.publishPfdPhaseTwoEntry(tallierIndex, decryptionSharesAndProofs);
 
         // SK share should match our committed polynomial.
-        assert sk.pk.group.g.modPow(sk.sk, sk.pk.group.p).equals(vbb.retrievePKShare(tallierIndex).h): String.format("T%d: sk WRONG", tallierIndex);
+        assert sk.pk.group.g.modPow(sk.sk, sk.pk.group.p).equals(vbb.retrievePKShare(tallierIndex).h): String.format("T%02d: sk WRONG", tallierIndex);
 
         // Retrieve list of talliers with decryption shares and proofs for all ballots.
         PfPhase<DecryptionShareAndProof> completedPfdPhaseTwo = vbb.retrieveValidThresholdPfdPhaseTwo(combinedCredentialCiphertexts).join();
