@@ -111,17 +111,39 @@ public class TestMixnet {
 
 
 
+    /*
+    ============= 5 ============
+    mix of 5 took:  [ms=126]
+    proveMix of 5 took:  [ms=17105]
+
+    ============= 50 ============
+    mix of 50 took:  [ms=747]
+    proveMix of 50 took:  [ms=183694]
+
+    ============= 100 ===========
+    mix of 100 took:  [ms=1380]
+    proveMix of 100 took:  [ms=410232]
+
+
+    ============= 150 ===========
+
+    ============= 200 ===========
+
+     */
+
     @Test
     void TestMixAndProveMixWithXBallots() {
 //        Execution time in seconds : 			?
-//        int numBallots = 1; // 6
-//        int numBallots = 5; // 35
-//        int numBallots = 10; // 69
-//        int numBallots = 20; // 141
-//        int numBallots = 50; // 375
-//        int numBallots = 100;// 828
-//        int numBallots = 200;// 2014
-        int numBallots = 500;
+        int numBallots = 0;
+//         numBallots = 1; // 6
+//         numBallots = 5; // 35
+//        numBallots = 10; // 69
+//        numBallots = 20; // 141
+//        numBallots = 50; // 375
+//        numBallots = 100;// 828
+        numBallots = 150; //
+//        numBallots = 200;// 2014
+//        numBallots = 500;
 
 
         Ciphertext c1 = new Ciphertext(new BigInteger("10000"),new BigInteger("20000") );
@@ -137,11 +159,19 @@ public class TestMixnet {
 
         MixStatement smnt = new MixStatement(mixBallots, mixedBallotsAndProof.mixedBallots);
 
-        boolean verification = Mixnet.verify(smnt, mixedBallotsAndProof.mixProof, pk, kappa);
         long endTime = System.nanoTime();
+        UTIL.printEvalMetrics(String.format("Mixnet with %d took: ", numBallots), startTime, endTime);
         /***********/
 
-        UTIL.printEvalMetrics(String.format("Mixnet with %d took: ", numBallots), startTime, endTime);
+
+        /***********/
+        startTime = System.nanoTime();
+        boolean verification = Mixnet.verify(smnt, mixedBallotsAndProof.mixProof, pk, kappa);
+        endTime = System.nanoTime();
+        UTIL.printNarrowEvalMetrics(String.format("verify of %d took: ", numBallots), startTime, endTime);
+        /***********/
+
+
 
 
         MatcherAssert.assertThat("Assert true.", verification, is(true));

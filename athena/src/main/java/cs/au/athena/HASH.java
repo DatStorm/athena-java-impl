@@ -13,7 +13,6 @@ import java.util.BitSet;
 import java.util.List;
 
 public class HASH {
-    private static final MessageDigest hashH = getHashInstance();
 
     private static MessageDigest getHashInstance() {
         MessageDigest sha3_256 = null;

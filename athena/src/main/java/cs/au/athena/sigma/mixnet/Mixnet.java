@@ -25,12 +25,24 @@ public class Mixnet {
     }
 
     public MixedBallotsAndProof mixAndProveMix(List<MixBallot> ballots, ElGamalPK pk, int kappa) {
+        long startTime = System.nanoTime();
+
         MixStruct mixStruct = mix(ballots, pk);
+
+        long endTime = System.nanoTime();
+        UTIL.printNarrowEvalMetrics(String.format("mix of %d took: ", ballots.size()), startTime, endTime);
+
+
         List<MixBallot> mixedBallots = mixStruct.mixedBallots;
 
         MixStatement statement = new MixStatement(ballots, mixedBallots);
         MixSecret secret = mixStruct.mixSecret;
+
+        startTime = System.nanoTime();
         MixProof proof = proveMix(statement, secret, pk, kappa);
+        endTime = System.nanoTime();
+        UTIL.printNarrowEvalMetrics(String.format("proveMix of %d took: ", ballots.size()), startTime, endTime);
+
 
         return new MixedBallotsAndProof(mixedBallots, proof);
     }
@@ -174,17 +186,22 @@ public class Mixnet {
 
             //Change proof based on challenge
             if (challenge) { // c = 1
+                // source = B_j
+                // dest = B^prime
+                // source \equiv dest
                 sourceMix = shadowMix;
                 destinationMix = mixedOriginalBallots;
             } else {
-                sourceMix = shadowMix;
-                destinationMix = originalBallots;
+                // source = B
+                // dest = B_j
+                // source \equiv dest
+                sourceMix = originalBallots;
+                destinationMix = shadowMix;
             }
 
-            if (verifyShadowMix(sourceMix, destinationMix, mixSecret, pk)) {
+            if (!verifyShadowMix(sourceMix, destinationMix, mixSecret, pk)) {
                 return false;
             }
-            
         }
 
         return true;
@@ -198,21 +215,21 @@ public class Mixnet {
         //Undo permutation
         // c = 0 => permutes B
         // c = 1 => permutes mixed
-        //List<MixBallot> destinationMix = cs.au.cs.au.athena.athena.UTIL.permute(destinationMix, permutation);
+        //List<MixBallot> destinationMix = UTIL.permute(destinationMix, permutation);
 
-        List<MixBallot> reencryptedSourceMix = new ArrayList<>();
+        List<MixBallot> reencryptedSourceMix = new ArrayList<>(ell);
         for (int i = 0; i < ell; i++) {
-            MixBallot destinationBallot = destinationMix.get(i);
+            MixBallot sourceBallot = sourceMix.get(i);
 
             BigInteger e = ElGamal.getNeutralElement();
 
             //c1 * Enc(1,R)
             Ciphertext reencryptionFactorR = ElGamal.encrypt(e, pk, randomnessR.get(i));
-            Ciphertext c1 = destinationBallot.getCombinedCredential().multiply(reencryptionFactorR, pk.group);
+            Ciphertext c1 = sourceBallot.getCombinedCredential().multiply(reencryptionFactorR, pk.group);
 
             //c2 * Enc(1,S)
             Ciphertext reencryptionFactorS = ElGamal.encrypt(e, pk, randomnessS.get(i));
-            Ciphertext c2 = destinationBallot.getEncryptedVote().multiply(reencryptionFactorS, pk.group);
+            Ciphertext c2 = sourceBallot.getEncryptedVote().multiply(reencryptionFactorS, pk.group);
 
             reencryptedSourceMix.add(new MixBallot(c1, c2));
         }

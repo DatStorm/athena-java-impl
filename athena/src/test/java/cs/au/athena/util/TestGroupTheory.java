@@ -40,4 +40,44 @@ public class TestGroupTheory {
 
         MatcherAssert.assertThat("Should be the same", subShareFromTallier_j, is(randEl));
     }
+
+
+    @Test
+    void TestExperimentGroupExponentiations() {
+        int experiments;
+//        experiments = 10000;
+        experiments = 20000;
+//        experiments = 50000;
+
+        Group big_group = CONSTANTS.ELGAMAL_2048_BITS.GROUP; // Big group: |q| = 2048 bits
+        Group small_group = CONSTANTS.ELGAMAL__DIFFIE_HELLMAN_GROUP__.GROUP; // small group: |q| = 256 bits
+
+        Group group = big_group;
+
+        /** *********/
+        BigInteger elem = UTIL.getRandomElement(group.q, new Random(CONSTANTS.RANDOM_SEED));
+
+        long startTime = System.nanoTime();
+
+        BigInteger p = group.p;
+        BigInteger q = group.q;
+        BigInteger g = group.g;
+
+        // Do many exponentiations
+        for (int i = 0; i < experiments; i++) {
+
+            // g^el mod p , el \in q
+            BigInteger tmp = g.modPow(elem, p);
+        }
+
+
+
+        long endTime = System.nanoTime();
+        /** *********/
+
+        System.out.println(String.format("experiments: %d", experiments));
+        UTIL.printNarrowEvalMetrics("Big group: ", startTime, endTime);
+
+    }
+
 }

@@ -242,6 +242,15 @@ public class UTIL {
         System.out.println(TAG + "Execution time in minutes : \t\t\t" + nanosecToMin(timeElapsed)); // HERE..
     }
 
+    public static void printNarrowEvalMetrics(String TAG, long startTime, long endTime){
+        long timeElapsed = endTime - startTime;
+        System.out.printf("%s [ms=%d]%n", TAG ,nanosecToMilli(timeElapsed));
+    }
+
+    private static long nanosecToMilli(long timeElapsed) {
+        return TimeUnit.MILLISECONDS.convert(timeElapsed, TimeUnit.NANOSECONDS);
+    }
+
     private static long nanosecToSec(long timeElapsed) {
         return TimeUnit.SECONDS.convert(timeElapsed, TimeUnit.NANOSECONDS);
     }
